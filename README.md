@@ -1,10 +1,10 @@
-# Droid Web Search Evaluations
+# Droid ACP Evaluations
 
-Evaluate Droid's web search capabilities using [@plaited/acp-harness](https://www.npmjs.com/package/@plaited/acp-harness) - comparing built-in Factory search against MCP server implementations like You.com.
+Evaluate Droid's capabilities using [@plaited/acp-harness](https://www.npmjs.com/package/@plaited/acp-harness) through the Agent Client Protocol (ACP).
 
 ## What This Does
 
-Runs web search queries through Droid and captures full trajectories (tool calls, responses, timing) for analysis. Compare different search provider performance across categories like debugging, API docs, general knowledge, and more.
+Runs evaluation prompts through Droid and captures full trajectories (messages, tool calls, responses, timing) for analysis. Currently contains web search queries for testing Droid's search capabilities.
 
 ## Quick Start
 
@@ -12,17 +12,19 @@ Runs web search queries through Droid and captures full trajectories (tool calls
 # Install dependencies
 bun install
 
-# Run test evaluation (5-10 queries)
+# Set your Factory API key
+cp .env.example .env
+# Edit .env and add your FACTORY_API_KEY=fk-...
+
+# Run test evaluation (5 queries)
 bunx @plaited/acp-harness capture eval/prompts-test.jsonl bun src/main.ts -o eval/test-results.jsonl --progress
 
-# Run full evaluation (~250 queries)
+# Run full evaluation (1,254 queries)
 bunx @plaited/acp-harness capture eval/prompts.jsonl bun src/main.ts -o eval/results.jsonl --progress
 
 # Multi-run analysis (pass@k)
 bunx @plaited/acp-harness trials eval/prompts-test.jsonl bun src/main.ts -k 5 -o eval/trials.jsonl --progress
 ```
-
-**Note:** Set `FACTORY_API_KEY` in `.env` before running.
 
 ## How It Works
 
@@ -47,13 +49,18 @@ flowchart LR
 
 | File | Description | Count |
 |------|-------------|-------|
-| `eval/prompts.jsonl` | Full evaluation set | ~250 |
-| `eval/prompts-test.jsonl` | Quick test subset | ~10 |
-| `eval/data.jsonl` | Dataset with embeddings | ~250 |
+| `eval/prompts.jsonl` | Full evaluation set (WebSearch) | 1,254 |
+| `eval/prompts-test.jsonl` | Quick test subset | 5 |
+| `eval/data.jsonl` | Raw dataset with embeddings | 1,995 |
 
-**Categories:** Learning, Debugging, API_Reference, Documentation, General_Knowledge, Product_Info
+**Categories:** Learning, Debugging, API_Reference, Documentation, General_Knowledge, Product_Info, etc.
 
-Each prompt includes metadata for filtering by category, language, tool type, and dev/non-dev classification.
+**Prompt Format:**
+```jsonl
+{"id":"websearch-1","input":"search query text","metadata":{"category":"Learning","subcategory":"Web_Design_Patterns","tool":"WebSearch","is_dev":false}}
+```
+
+Each prompt includes metadata for filtering by category, subcategory, language, tool type, and dev/non-dev classification.
 
 ## Analyzing Results
 
@@ -110,17 +117,32 @@ This project was built with agent-first development using Plaited skills. Ask yo
 ```
 .
 ├── eval/                   # Evaluation datasets and results
-│   ├── prompts.jsonl       # Main evaluation set
-│   └── prompts-test.jsonl  # Quick test subset
+│   ├── prompts.jsonl       # Full evaluation set (1,254 prompts)
+│   ├── prompts-test.jsonl  # Quick test subset (5 prompts)
+│   ├── data.jsonl          # Raw dataset with embeddings
+│   └── results-*.jsonl     # Captured trajectories from runs
+│
 ├── src/                    # Droid ACP adapter
-│   ├── main.ts             # ACP stdio server
+│   ├── main.ts             # ACP stdio server entry point
 │   ├── agent.ts            # Agent interface implementation
-│   └── droid-adapter.ts    # Droid CLI communication
+│   ├── droid-adapter.ts    # Droid CLI protocol communication
+│   ├── types.ts            # TypeScript type definitions
+│   └── utils.ts            # Utility functions
+│
+├── dev/                    # Development/debugging scripts
+│   ├── README.md           # Script documentation
+│   ├── test-adapter.sh     # Manual ACP adapter testing
+│   ├── test-droid-direct.sh    # Direct droid CLI testing
+│   └── test-droid-tool-use.sh  # Tool notification testing
+│
 ├── .plaited/rules/         # Development conventions (see @AGENTS.md)
-└── .claude/skills/         # Agent Skills for this project
+├── .claude/skills/         # Agent Skills for this project
+└── .env                    # API keys (create from .env.example)
 ```
 
 ## Development
+
+### Code Quality
 
 ```bash
 # Type check
@@ -137,6 +159,25 @@ bun test
 ```
 
 **Before committing:** Pre-commit hooks run automatically. Never bypass with `--no-verify`.
+
+### Debugging the Adapter
+
+The `dev/` directory contains manual testing scripts for debugging adapter issues:
+
+```bash
+# Test ACP adapter with manual JSON-RPC messages
+./dev/test-adapter.sh
+
+# Test droid CLI directly (bypassing adapter)
+./dev/test-droid-direct.sh
+
+# Test droid with search to observe tool notifications
+./dev/test-droid-tool-use.sh
+```
+
+See [`dev/README.md`](dev/README.md) for detailed documentation of each script.
+
+### Development Rules
 
 See [@AGENTS.md](AGENTS.md) for complete development rules and conventions.
 

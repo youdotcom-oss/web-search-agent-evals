@@ -1,0 +1,41 @@
+{
+  "name": "droid-acp-adapter",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "./src/main.ts",
+  "bin": {
+    "droid-acp": "./src/main.ts"
+  },
+  "exports": {
+    ".": "./src/main.ts"
+  },
+  "scripts": {
+    "check": "bun run format:check && bun run lint && bun run typecheck",
+    "check:write": "bun run format && bun run lint:fix && bun run format:package",
+    "format": "biome format --write",
+    "format:check": "biome format",
+    "format:package": "format-package --write",
+    "lint": "biome lint .",
+    "lint:fix": "biome lint --write .",
+    "test": "bun test ./src/test",
+    "typecheck": "tsc --noEmit",
+    "prepare": "git config core.hooksPath .hooks"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx,json,md}": ["biome format --write", "biome lint --write"],
+    "package.json": ["format-package -w"]
+  },
+  "dependencies": {
+    "@agentclientprotocol/sdk": "^0.13.0",
+    "@plaited/acp-harness": "^0.3.3"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@types/bun": "latest",
+    "@types/node": "^25.0.8",
+    "bun-types": "latest",
+    "format-package": "^7.0.0",
+    "lint-staged": "^15.2.11",
+    "typescript": "^5.9.3"
+  }
+}

@@ -16,6 +16,7 @@ const DEBUG = process.env.DROID_ACP_DEBUG === "1";
  */
 export function log(...args: unknown[]): void {
   if (DEBUG) {
+    // biome-ignore lint/suspicious/noConsole: stderr logging for debugging (stdout reserved for ACP protocol)
     console.error("[droid-acp]", ...args);
   }
 }
@@ -24,6 +25,7 @@ export function log(...args: unknown[]): void {
  * Log error to stderr
  */
 export function logError(...args: unknown[]): void {
+  // biome-ignore lint/suspicious/noConsole: stderr logging for errors (stdout reserved for ACP protocol)
   console.error("[droid-acp ERROR]", ...args);
 }
 

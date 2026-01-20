@@ -134,7 +134,7 @@ describe("Droid ACP Adapter Integration", () => {
     // The createSession() call succeeds when it should fail, making the test unreliable.
     // Save and clear API key
     const originalKey = process.env.FACTORY_API_KEY;
-    delete process.env.FACTORY_API_KEY;
+    process.env.FACTORY_API_KEY = undefined;
 
     const adapterPath = path.join(__dirname, "..", "main.ts");
 

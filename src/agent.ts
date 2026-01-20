@@ -19,7 +19,6 @@ import type {
   McpServerStdio,
   McpServerHttp,
   ContentBlock,
-  SessionModeId,
 } from "@agentclientprotocol/sdk";
 import type { DroidNotification, McpServerConfig, PromptResult, SessionState } from "./types.ts";
 import { spawnDroid } from "./droid-adapter.ts";
@@ -70,15 +69,6 @@ function extractText(content: ContentBlock[]): string {
     .filter((block) => block.type === "text")
     .map((block) => (block.type === "text" ? block.text : ""))
     .join("\n");
-}
-
-/**
- * Map session mode ID to droid autonomy level
- */
-function modeIdToAutonomy(modeId: SessionModeId): "low" | "medium" | "high" {
-  if (modeId === "low") return "low";
-  if (modeId === "high") return "high";
-  return "medium";
 }
 
 /**
@@ -320,7 +310,24 @@ export class DroidAcpAgent implements Agent {
     const text = extractText(request.prompt);
     log(`prompt: sessionId=${request.sessionId}, text=${text.substring(0, 100)}...`);
 
-    // Send message to droid
+    // Set up promise handlers BEFORE sending message to avoid race condition
+    const promptPromise = new Promise<PromptResponse>((resolve, reject) => {
+      session.promptResolve = (result: PromptResult) => {
+        // Map droid stop reasons to ACP stop reasons
+        if (result.stopReason === "cancel") {
+          resolve({ stopReason: "cancelled" });
+        } else if (result.stopReason === "error") {
+          // Reject on error rather than resolving with error in response
+          reject(new Error(result.error || "Unknown error"));
+        } else {
+          resolve({ stopReason: "end_turn" });
+        }
+      };
+
+      session.promptReject = reject;
+    });
+
+    // Send message to droid AFTER promise handlers are ready
     const message = {
       jsonrpc: "2.0",
       factoryApiVersion: "1.0.0",
@@ -340,22 +347,7 @@ export class DroidAcpAgent implements Agent {
       throw new Error("Cannot write to droid stdin");
     }
 
-    // Wait for completion
-    return new Promise<PromptResponse>((resolve, reject) => {
-      session.promptResolve = (result: PromptResult) => {
-        // Map droid stop reasons to ACP stop reasons
-        if (result.stopReason === "cancel") {
-          resolve({ stopReason: "cancelled" });
-        } else if (result.stopReason === "error") {
-          // Reject on error rather than resolving with error in response
-          reject(new Error(result.error || "Unknown error"));
-        } else {
-          resolve({ stopReason: "end_turn" });
-        }
-      };
-
-      session.promptReject = reject;
-    });
+    return promptPromise;
   }
 
   /**

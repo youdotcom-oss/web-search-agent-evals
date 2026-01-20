@@ -13,49 +13,61 @@ const DEBUG = process.env.DROID_ACP_DEBUG === "1";
 
 /**
  * Log message to stderr (stdout reserved for ACP protocol)
+ *
+ * @public
  */
-export function log(...args: unknown[]): void {
+export const log = (...args: unknown[]): void => {
   if (DEBUG) {
     // biome-ignore lint/suspicious/noConsole: stderr logging for debugging (stdout reserved for ACP protocol)
     console.error("[droid-acp]", ...args);
   }
-}
+};
 
 /**
  * Log error to stderr
+ *
+ * @public
  */
-export function logError(...args: unknown[]): void {
+export const logError = (...args: unknown[]): void => {
   // biome-ignore lint/suspicious/noConsole: stderr logging for errors (stdout reserved for ACP protocol)
   console.error("[droid-acp ERROR]", ...args);
-}
+};
 
 /**
  * Read file using Bun's file API
+ *
+ * @public
  */
-export async function readFile(filePath: string): Promise<string> {
+export const readFile = async (filePath: string): Promise<string> => {
   const file = Bun.file(filePath);
   return await file.text();
-}
+};
 
 /**
  * Write file using Bun's file API
+ *
+ * @public
  */
-export async function writeFile(filePath: string, data: string): Promise<void> {
+export const writeFile = async (filePath: string, data: string): Promise<void> => {
   await Bun.write(filePath, data);
-}
+};
 
 /**
  * Check if file exists
+ *
+ * @public
  */
-export async function fileExists(filePath: string): Promise<boolean> {
+export const fileExists = async (filePath: string): Promise<boolean> => {
   const file = Bun.file(filePath);
   return await file.exists();
-}
+};
 
 /**
  * Map ACP mode to Droid autonomy level
+ *
+ * @public
  */
-export function mapAutonomyLevel(mode?: string): AutonomyLevel {
+export const mapAutonomyLevel = (mode?: string): AutonomyLevel => {
   switch (mode) {
     case "low":
       return "low";
@@ -64,27 +76,33 @@ export function mapAutonomyLevel(mode?: string): AutonomyLevel {
     default:
       return "medium";
   }
-}
+};
 
 /**
  * Generate unique ID using crypto
+ *
+ * @public
  */
-export function generateId(): string {
+export const generateId = (): string => {
   return crypto.randomUUID();
-}
+};
 
 /**
  * Get Factory MCP config path
+ *
+ * @public
  */
-export function getMcpConfigPath(_cwd?: string): string {
+export const getMcpConfigPath = (_cwd?: string): string => {
   const homeDir = os.homedir();
   return path.join(homeDir, ".factory", "mcp.json");
-}
+};
 
 /**
  * Read Factory MCP config
+ *
+ * @public
  */
-export async function readMcpConfig(cwd?: string): Promise<FactoryMcpConfig> {
+export const readMcpConfig = async (cwd?: string): Promise<FactoryMcpConfig> => {
   const configPath = getMcpConfigPath(cwd);
 
   if (!(await fileExists(configPath))) {
@@ -98,12 +116,14 @@ export async function readMcpConfig(cwd?: string): Promise<FactoryMcpConfig> {
     logError("Failed to read MCP config:", error);
     return { mcpServers: {} };
   }
-}
+};
 
 /**
  * Write Factory MCP config
+ *
+ * @public
  */
-export async function writeMcpConfig(config: FactoryMcpConfig, cwd?: string): Promise<void> {
+export const writeMcpConfig = async (config: FactoryMcpConfig, cwd?: string): Promise<void> => {
   const configPath = getMcpConfigPath(cwd);
   const configDir = path.dirname(configPath);
 
@@ -117,12 +137,14 @@ export async function writeMcpConfig(config: FactoryMcpConfig, cwd?: string): Pr
 
   await writeFile(configPath, JSON.stringify(config, null, 2));
   log("Wrote MCP config to", configPath);
-}
+};
 
 /**
  * Add MCP servers to Factory config with session-specific keys
+ *
+ * @public
  */
-export async function addMcpServers(servers: McpServerConfig[], sessionId: string, cwd?: string): Promise<string[]> {
+export const addMcpServers = async (servers: McpServerConfig[], sessionId: string, cwd?: string): Promise<string[]> => {
   const config = await readMcpConfig(cwd);
   const keys: string[] = [];
 
@@ -149,12 +171,14 @@ export async function addMcpServers(servers: McpServerConfig[], sessionId: strin
 
   await writeMcpConfig(config, cwd);
   return keys;
-}
+};
 
 /**
  * Remove MCP servers by keys
+ *
+ * @public
  */
-export async function removeMcpServers(keys: string[], cwd?: string): Promise<void> {
+export const removeMcpServers = async (keys: string[], cwd?: string): Promise<void> => {
   const config = await readMcpConfig(cwd);
 
   if (!config.mcpServers) {
@@ -167,12 +191,14 @@ export async function removeMcpServers(keys: string[], cwd?: string): Promise<vo
   }
 
   await writeMcpConfig(config, cwd);
-}
+};
 
 /**
  * Parse NDJSON line
+ *
+ * @public
  */
-export function parseNdjsonLine(line: string): unknown | null {
+export const parseNdjsonLine = (line: string): unknown | null => {
   const trimmed = line.trim();
   if (!trimmed) {
     return null;
@@ -184,11 +210,13 @@ export function parseNdjsonLine(line: string): unknown | null {
     logError("Failed to parse NDJSON line:", trimmed, error);
     return null;
   }
-}
+};
 
 /**
  * Sleep for specified milliseconds
+ *
+ * @public
  */
-export function sleep(ms: number): Promise<void> {
+export const sleep = (ms: number): Promise<void> => {
   return new Promise((resolve) => setTimeout(resolve, ms));
-}
+};

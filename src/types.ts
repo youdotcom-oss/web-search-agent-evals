@@ -7,11 +7,15 @@ import type { Subprocess } from "bun";
 /**
  * Autonomy level for Droid CLI
  * Maps to ACP mode: low/medium/high
+ *
+ * @public
  */
 export type AutonomyLevel = "low" | "medium" | "high";
 
 /**
  * Droid JSON-RPC message types
+ *
+ * @public
  */
 export type DroidMessage = {
   jsonrpc: "2.0";
@@ -24,6 +28,8 @@ export type DroidMessage = {
 
 /**
  * Droid JSON-RPC response
+ *
+ * @public
  */
 export type DroidResponse = {
   jsonrpc: "2.0";
@@ -38,6 +44,8 @@ export type DroidResponse = {
 
 /**
  * Droid notification types
+ *
+ * @public
  */
 export type DroidNotification =
   | {
@@ -81,6 +89,8 @@ export type DroidNotification =
 
 /**
  * Session state tracked by the adapter
+ *
+ * @public
  */
 export type SessionState = {
   /** ACP session ID */
@@ -128,6 +138,8 @@ export type SessionState = {
 
 /**
  * Result of a prompt request
+ *
+ * @public
  */
 export type PromptResult = {
   stopReason: "end_turn" | "cancel" | "error";
@@ -136,6 +148,8 @@ export type PromptResult = {
 
 /**
  * MCP server configuration
+ *
+ * @public
  */
 export type McpServerConfig = {
   name: string;
@@ -149,6 +163,8 @@ export type McpServerConfig = {
 
 /**
  * Configuration file format for .factory/mcp.json
+ *
+ * @public
  */
 export type FactoryMcpConfig = {
   mcpServers?: Record<
@@ -166,6 +182,8 @@ export type FactoryMcpConfig = {
 
 /**
  * Droid adapter interface
+ *
+ * @public
  */
 export type DroidAdapter = {
   /** Write data to droid's stdin */

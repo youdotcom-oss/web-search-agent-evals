@@ -27,19 +27,19 @@ import { addMcpServers, generateId, log, logError, removeMcpServers } from "./ut
 /**
  * Type guard for stdio MCP server
  */
-function isStdioServer(server: unknown): server is McpServerStdio {
+const isStdioServer = (server: unknown): server is McpServerStdio => {
   return (
     typeof server === "object" &&
     server !== null &&
     "command" in server &&
     typeof (server as { command?: unknown }).command === "string"
   );
-}
+};
 
 /**
  * Type guard for HTTP MCP server
  */
-function isHttpServer(server: unknown): server is McpServerHttp & { type: "http" } {
+const isHttpServer = (server: unknown): server is McpServerHttp & { type: "http" } => {
   return (
     typeof server === "object" &&
     server !== null &&
@@ -47,40 +47,45 @@ function isHttpServer(server: unknown): server is McpServerHttp & { type: "http"
     (server as { type?: unknown }).type === "http" &&
     "url" in server
   );
-}
+};
 
 /**
  * Type guard for writable stdin
  */
-function isWritableStdin(stdin: unknown): stdin is { write: (data: string) => void } {
+const isWritableStdin = (stdin: unknown): stdin is { write: (data: string) => void } => {
   return (
     typeof stdin === "object" &&
     stdin !== null &&
     "write" in stdin &&
     typeof (stdin as { write?: unknown }).write === "function"
   );
-}
+};
 
 /**
  * Extract text from ContentBlock array
  */
-function extractText(content: ContentBlock[]): string {
+const extractText = (content: ContentBlock[]): string => {
   return content
     .filter((block) => block.type === "text")
     .map((block) => (block.type === "text" ? block.text : ""))
     .join("\n");
-}
+};
 
 /**
  * Droid ACP Agent implementation
+ *
+ * @remarks
+ * Factory Droid implementation of the Agent Client Protocol
+ *
+ * @public
  */
 export class DroidAcpAgent implements Agent {
-  private connection: AgentSideConnection;
-  private sessions: Map<string, SessionState> = new Map();
-  private authenticated = false;
+  #connection: AgentSideConnection;
+  #sessions: Map<string, SessionState> = new Map();
+  #authenticated = false;
 
   constructor(connection: AgentSideConnection) {
-    this.connection = connection;
+    this.#connection = connection;
     log("DroidAcpAgent created");
   }
 
@@ -134,7 +139,7 @@ export class DroidAcpAgent implements Agent {
       throw new Error("Invalid Factory API key format (should start with fk-)");
     }
 
-    this.authenticated = true;
+    this.#authenticated = true;
     log("authenticated successfully");
 
     return {};
@@ -145,7 +150,7 @@ export class DroidAcpAgent implements Agent {
    */
   async newSession(request: NewSessionRequest): Promise<NewSessionResponse> {
     // Auto-authenticate if not already authenticated but API key is available
-    if (!this.authenticated) {
+    if (!this.#authenticated) {
       const apiKey = process.env.FACTORY_API_KEY;
       if (!apiKey) {
         throw new Error("Not authenticated: FACTORY_API_KEY environment variable not set");
@@ -156,7 +161,7 @@ export class DroidAcpAgent implements Agent {
 
       // Auto-authenticate
       log("Auto-authenticating with Factory API key");
-      this.authenticated = true;
+      this.#authenticated = true;
     }
 
     const sessionId = generateId();
@@ -219,7 +224,7 @@ export class DroidAcpAgent implements Agent {
 
     session.process = adapter.process;
     session.adapter = adapter;
-    this.sessions.set(sessionId, session);
+    this.#sessions.set(sessionId, session);
 
     // Send init message to droid
     const initMessage = {
@@ -288,7 +293,7 @@ export class DroidAcpAgent implements Agent {
    * Handle prompt request
    */
   async prompt(request: PromptRequest): Promise<PromptResponse> {
-    const session = this.sessions.get(request.sessionId);
+    const session = this.#sessions.get(request.sessionId);
     if (!session) {
       throw new Error(`Unknown session: ${request.sessionId}`);
     }
@@ -354,7 +359,7 @@ export class DroidAcpAgent implements Agent {
    * Handle cancellation
    */
   async cancel(notification: CancelNotification): Promise<void> {
-    const session = this.sessions.get(notification.sessionId);
+    const session = this.#sessions.get(notification.sessionId);
     if (!session) {
       log(`cancel: session ${notification.sessionId} not found`);
       return;
@@ -382,7 +387,7 @@ export class DroidAcpAgent implements Agent {
    * The mode should be set via the session/new request instead.
    */
   async setSessionMode(request: SetSessionModeRequest): Promise<void> {
-    const session = this.sessions.get(request.sessionId);
+    const session = this.#sessions.get(request.sessionId);
     if (!session) {
       throw new Error(`Unknown session: ${request.sessionId}`);
     }
@@ -403,7 +408,7 @@ export class DroidAcpAgent implements Agent {
    * Handle notifications from droid
    */
   private handleDroidNotification(sessionId: string, notification: DroidNotification): void {
-    const session = this.sessions.get(sessionId);
+    const session = this.#sessions.get(sessionId);
     if (!session) {
       logError(`Notification for unknown session: ${sessionId}`);
       return;
@@ -426,7 +431,7 @@ export class DroidAcpAgent implements Agent {
         break;
 
       case "message":
-        this.connection.sessionUpdate({
+        this.#connection.sessionUpdate({
           sessionId,
           update: {
             sessionUpdate: "agent_message_chunk",
@@ -440,7 +445,7 @@ export class DroidAcpAgent implements Agent {
 
       case "toolCall":
         session.activeToolCallIds.add(notification.toolCallId);
-        this.connection.sessionUpdate({
+        this.#connection.sessionUpdate({
           sessionId,
           update: {
             sessionUpdate: "tool_call",
@@ -453,7 +458,7 @@ export class DroidAcpAgent implements Agent {
 
       case "toolResult":
         session.activeToolCallIds.delete(notification.toolCallId);
-        this.connection.sessionUpdate({
+        this.#connection.sessionUpdate({
           sessionId,
           update: {
             sessionUpdate: "tool_call_update",
@@ -466,7 +471,7 @@ export class DroidAcpAgent implements Agent {
 
       case "permissionRequest":
         // Forward permission request to client
-        this.connection
+        this.#connection
           .requestPermission({
             sessionId,
             toolCall: {
@@ -515,7 +520,7 @@ export class DroidAcpAgent implements Agent {
    * Clean up session
    */
   private async cleanupSession(sessionId: string): Promise<void> {
-    const session = this.sessions.get(sessionId);
+    const session = this.#sessions.get(sessionId);
     if (!session) {
       return;
     }
@@ -557,7 +562,7 @@ export class DroidAcpAgent implements Agent {
     }
 
     // Remove from sessions map
-    this.sessions.delete(sessionId);
+    this.#sessions.delete(sessionId);
     log(`Session cleaned up: ${sessionId}`);
   }
 
@@ -567,7 +572,7 @@ export class DroidAcpAgent implements Agent {
   async cleanup(): Promise<void> {
     log("Cleaning up all sessions");
 
-    const cleanupPromises = Array.from(this.sessions.keys()).map((sessionId) => this.cleanupSession(sessionId));
+    const cleanupPromises = Array.from(this.#sessions.keys()).map((sessionId) => this.cleanupSession(sessionId));
 
     await Promise.all(cleanupPromises);
   }

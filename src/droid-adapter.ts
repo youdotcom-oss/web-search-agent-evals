@@ -8,12 +8,19 @@ import { log, logError, parseNdjsonLine } from "./utils.ts";
 
 /**
  * Spawn droid process with stream-json format
+ *
+ * @param cwd - Working directory for droid process
+ * @param autonomy - Autonomy level (low, medium, high)
+ * @param onNotification - Callback for droid notifications
+ * @returns Droid adapter interface
+ *
+ * @public
  */
-export function spawnDroid(
+export const spawnDroid = (
   cwd: string,
   autonomy: AutonomyLevel,
   onNotification: (notification: DroidNotification) => void,
-): DroidAdapter {
+): DroidAdapter => {
   log(`Spawning droid: cwd=${cwd}, autonomy=${autonomy}`);
 
   const args = [
@@ -58,12 +65,15 @@ export function spawnDroid(
     process: proc,
     cleanupPromises,
   };
-}
+};
 
 /**
  * Set up NDJSON parser for droid stdout
  */
-function setupStdoutParser(proc: Subprocess, onNotification: (notification: DroidNotification) => void): Promise<void> {
+const setupStdoutParser = (
+  proc: Subprocess,
+  onNotification: (notification: DroidNotification) => void,
+): Promise<void> => {
   // Check if stdout is a ReadableStream
   if (!proc.stdout || typeof proc.stdout === "number") {
     logError("stdout is not a ReadableStream");
@@ -106,12 +116,12 @@ function setupStdoutParser(proc: Subprocess, onNotification: (notification: Droi
       reader.releaseLock();
     }
   })();
-}
+};
 
 /**
  * Set up stderr logging for debugging
  */
-function setupStderrLogging(proc: Subprocess): Promise<void> {
+const setupStderrLogging = (proc: Subprocess): Promise<void> => {
   // Check if stderr is a ReadableStream
   if (!proc.stderr || typeof proc.stderr === "number") {
     return Promise.resolve();
@@ -137,12 +147,12 @@ function setupStderrLogging(proc: Subprocess): Promise<void> {
       reader.releaseLock();
     }
   })();
-}
+};
 
 /**
  * Handle messages from droid
  */
-function handleDroidMessage(message: unknown, onNotification: (notification: DroidNotification) => void): void {
+const handleDroidMessage = (message: unknown, onNotification: (notification: DroidNotification) => void): void => {
   if (typeof message !== "object" || message === null) {
     logError("Invalid droid message:", message);
     return;
@@ -323,4 +333,4 @@ function handleDroidMessage(message: unknown, onNotification: (notification: Dro
 
   // Log unhandled messages
   log("Unhandled droid message:", msg);
-}
+};

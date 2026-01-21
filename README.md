@@ -1,10 +1,10 @@
 # ACP Evaluation Playoffs
 
-Evaluate multiple agents (Claude Code, Gemini, Droid) with different web search tools (builtin, You.com MCP) in isolated Docker containers.
+Evaluate multiple agents (Claude Code, Gemini, Droid, Codex) with different web search tools (builtin, You.com MCP) in isolated Docker containers.
 
 ## Overview
 
-The **playoffs** system runs a matrix evaluation: 3 agents × 2 tools = 6 pairings, capturing full trajectories for comparison.
+The **playoffs** system runs a matrix evaluation: 4 agents × 2 tools = 8 pairings, capturing full trajectories for comparison.
 
 **Key Features:**
 - **Headless adapters** - No custom code, just JSON schemas ([@plaited/acp-harness](https://www.npmjs.com/package/@plaited/acp-harness))
@@ -68,6 +68,7 @@ ACP headless adapter schemas - no custom code, just JSON configuration:
 | `claude-code.json` | Claude Code | stream | ✅ Tested |
 | `gemini.json` | Gemini CLI | iterative | ✅ Tested |
 | `droid.json` | Droid CLI | stream | 🔄 New |
+| `codex.json` | Codex CLI | stream | 🔄 New |
 
 **Session Modes:**
 - **stream**: Process stays alive, multi-turn via stdin
@@ -83,7 +84,8 @@ tools/
 └── schemas/            # Zod schemas (agent-specific formats)
     ├── claude-mcp.ts   # .mcp.json
     ├── gemini-mcp.ts   # .gemini/settings.json
-    └── droid-mcp.ts    # .factory/mcp.json
+    ├── droid-mcp.ts    # .factory/mcp.json
+    └── codex-mcp.ts    # CLI commands (codex mcp add)
 ```
 
 **Available Tools:**
@@ -110,8 +112,9 @@ docker/
 ├── claude-code.Dockerfile
 ├── gemini.Dockerfile
 ├── droid.Dockerfile
+├── codex.Dockerfile
 ├── entrypoint.sh             # Calls generate-mcp-config.ts
-└── docker-compose.yml        # 6 services (3 agents × 2 tools)
+└── docker-compose.yml        # 8 services (4 agents × 2 tools)
 ```
 
 ## Prompts
@@ -139,7 +142,10 @@ data/results/
 ├── gemini/
 │   ├── builtin.jsonl
 │   └── you.jsonl
-└── droid/
+├── droid/
+│   ├── builtin.jsonl
+│   └── you.jsonl
+└── codex/
     ├── builtin.jsonl
     └── you.jsonl
 ```
@@ -299,6 +305,7 @@ acp-evals/
 │   ├── claude-code.json
 │   ├── gemini.json
 │   ├── droid.json
+│   ├── codex.json
 │   └── README.md
 │
 ├── tools/                  # MCP configs (single source of truth)

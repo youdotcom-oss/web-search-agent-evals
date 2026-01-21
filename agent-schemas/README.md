@@ -7,6 +7,7 @@ ACP headless adapter schemas for evaluating agents.
 | claude-code.json | Claude Code | stream | [acp-adapters](../.claude/skills/acp-adapters@plaited_acp-harness/schemas/claude-headless.json) | ✅ Tested |
 | gemini.json | Gemini CLI | iterative | [acp-adapters](../.claude/skills/acp-adapters@plaited_acp-harness/schemas/gemini-headless.json) | ✅ Tested |
 | droid.json | Droid CLI | stream | Created for playoffs | 🔄 New |
+| codex.json | Codex CLI | stream | Created for playoffs | 🔄 New |
 
 **Session Modes:**
 - **stream**: Process stays alive, multi-turn conversations via stdin
@@ -25,4 +26,7 @@ GEMINI_API_KEY=... bunx @plaited/acp-harness adapter:check bunx @plaited/acp-har
 
 # Test Droid schema
 FACTORY_API_KEY=... bunx @plaited/acp-harness adapter:check bunx @plaited/acp-harness headless --schema agent-schemas/droid.json
+
+# Test Codex schema
+OPENAI_API_KEY=... bunx @plaited/acp-harness adapter:check bunx @plaited/acp-harness headless --schema agent-schemas/codex.json
 ```

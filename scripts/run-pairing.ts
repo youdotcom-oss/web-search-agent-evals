@@ -13,10 +13,10 @@
 import { parseArgs } from 'node:util'
 import { spawn } from 'node:child_process'
 
-type Agent = 'claude-code' | 'gemini' | 'droid'
+type Agent = 'claude-code' | 'gemini' | 'droid' | 'codex'
 type Tool = 'builtin' | 'you'
 
-const AGENTS: Agent[] = ['claude-code', 'gemini', 'droid']
+const AGENTS: Agent[] = ['claude-code', 'gemini', 'droid', 'codex']
 const TOOLS: Tool[] = ['builtin', 'you']
 
 /**

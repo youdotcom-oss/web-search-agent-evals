@@ -26,11 +26,15 @@ import {
   DROID_CONFIG_PATH,
   generateDroidConfig,
 } from '../tools/schemas/droid-mcp.ts'
+import {
+  CODEX_CONFIG_PATH,
+  generateCodexConfig,
+} from '../tools/schemas/codex-mcp.ts'
 
-type Agent = 'claude-code' | 'gemini' | 'droid'
+type Agent = 'claude-code' | 'gemini' | 'droid' | 'codex'
 type Tool = 'builtin' | 'you'
 
-const AGENTS: Agent[] = ['claude-code', 'gemini', 'droid']
+const AGENTS: Agent[] = ['claude-code', 'gemini', 'droid', 'codex']
 const TOOLS: Tool[] = ['builtin', 'you']
 
 /**
@@ -124,7 +128,7 @@ const main = async () => {
   // Generate agent-specific config
   const env = process.env as Record<string, string | undefined>
   let config: any
-  let configPath: string
+  let configPath: string | null
   let configDir: string | undefined
 
   switch (agent) {
@@ -142,6 +146,15 @@ const main = async () => {
       configPath = join(cwd, DROID_CONFIG_PATH)
       configDir = join(cwd, '.factory')
       break
+    case 'codex':
+      // Codex uses CLI commands, not config files
+      const commands = generateCodexConfig(filteredServers, env)
+      console.log(`✓ Generated ${agent} MCP commands:`)
+      for (const cmd of commands) {
+        console.log(`  ${cmd}`)
+      }
+      console.log(`\nRun these commands in your Codex environment to configure MCP servers`)
+      return
   }
 
   // Ensure config directory exists
@@ -150,8 +163,10 @@ const main = async () => {
   }
 
   // Write config
-  await Bun.write(configPath, JSON.stringify(config, null, 2))
-  console.log(`✓ Generated ${agent} MCP config at ${configPath}`)
+  if (configPath) {
+    await Bun.write(configPath, JSON.stringify(config, null, 2))
+    console.log(`✓ Generated ${agent} MCP config at ${configPath}`)
+  }
 }
 
 main().catch((error) => {

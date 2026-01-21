@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "name": "codex-headless",
+  "command": ["codex"],
+  "sessionMode": "stream",
+  "prompt": {
+    "flag": ""
+  },
+  "output": {
+    "flag": "--json",
+    "value": ""
+  },
+  "autoApprove": [],
+  "outputEvents": [
+    {
+      "match": { "path": "$.type", "value": "message" },
+      "emitAs": "message",
+      "extract": { "content": "$.content" }
+    }
+  ],
+  "result": {
+    "matchPath": "$.type",
+    "matchValue": "result",
+    "contentPath": "$.output"
+  }
+}

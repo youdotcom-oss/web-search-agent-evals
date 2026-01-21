@@ -30,7 +30,7 @@ bunx @plaited/acp-harness trials eval/prompts-test.jsonl bun src/main.ts -k 5 -o
 
 ```mermaid
 flowchart LR
-    A[prompts.jsonl] --> B[@plaited/acp-harness]
+    A[prompts.jsonl] --> B[plaited/acp-harness]
     B --> C[Droid ACP Adapter]
     C --> D[Droid CLI]
     D --> E[Factory Agent]

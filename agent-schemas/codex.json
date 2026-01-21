@@ -1,26 +1,25 @@
 {
   "version": 1,
   "name": "codex-headless",
-  "command": ["codex"],
-  "sessionMode": "stream",
+  "command": ["codex", "exec", "--json", "--skip-git-repo-check", "--dangerously-bypass-approvals-and-sandbox", "-"],
+  "sessionMode": "iterative",
   "prompt": {
-    "flag": ""
+    "stdin": true
   },
   "output": {
-    "flag": "--json",
+    "flag": "",
     "value": ""
   },
-  "autoApprove": [],
   "outputEvents": [
     {
-      "match": { "path": "$.type", "value": "message" },
+      "match": { "path": "$.item.type", "value": "agent_message" },
       "emitAs": "message",
-      "extract": { "content": "$.content" }
+      "extract": { "content": "$.item.text" }
     }
   ],
   "result": {
     "matchPath": "$.type",
-    "matchValue": "result",
-    "contentPath": "$.output"
+    "matchValue": "turn.completed",
+    "contentPath": "$.usage.output_tokens"
   }
 }

@@ -22,14 +22,14 @@
       "extract": { "content": "$.message.content[0].text" }
     },
     {
-      "match": { "path": "$.type", "value": "tool_use" },
+      "match": { "path": "$.message.content[*].type", "value": "tool_use" },
       "emitAs": "tool_call",
       "extract": { "title": "$.name", "status": "'pending'" }
     },
     {
-      "match": { "path": "$.type", "value": "tool_result" },
+      "match": { "path": "$.message.content[*].type", "value": "tool_result" },
       "emitAs": "tool_call",
-      "extract": { "title": "$.name", "status": "'completed'" }
+      "extract": { "title": "$.tool_use_id", "status": "'completed'" }
     }
   ],
   "result": {

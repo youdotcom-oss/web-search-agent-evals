@@ -1,17 +1,12 @@
 FROM base
 
-USER root
-
-# Install Droid CLI using official installer
-RUN curl -fsSL https://app.factory.ai/cli | sh
-
-# Add droid to PATH for all users
-ENV PATH="/root/.local/bin:${PATH}"
-
 USER evaluser
 
-# Add droid to evaluser's PATH
-ENV PATH="/root/.local/bin:${PATH}"
+# Install Droid CLI as evaluser (not root)
+RUN curl -fsSL https://app.factory.ai/cli | sh
+
+# Droid installs to ~/.local/bin for the current user
+ENV PATH="/home/evaluser/.local/bin:${PATH}"
 
 # Verify Droid CLI installed
 RUN droid --version

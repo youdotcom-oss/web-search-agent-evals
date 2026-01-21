@@ -1,7 +1,4 @@
 {
-  "name": "acp-evals-playoffs",
-  "description": "Evaluate agents (Claude Code, Gemini, Droid, Codex) with different web search tools",
-  "version": "0.1.0",
   "type": "module",
   "scripts": {
     "check": "bun run format:check && bun run lint && bun run typecheck",
@@ -30,7 +27,7 @@
     ]
   },
   "dependencies": {
-    "@plaited/acp-harness": "^0.4.0",
+    "@plaited/acp-harness": "^0.4.4",
     "zod": "^3.24.1"
   },
   "devDependencies": {

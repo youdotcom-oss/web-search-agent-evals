@@ -11,14 +11,15 @@ services:
       - AGENT=gemini
     volumes:
       - ./data:/eval/data:ro
+      - /tmp/acp-harness:/acp-harness:ro
       - ./agent-schemas:/eval/agent-schemas:ro
       - ./tools:/eval/tools:ro
       - ./scripts:/eval/scripts:ro
       - ./data/results:/eval/data/results:rw
     working_dir: /workspace
     command:
-      - bunx
-      - "@plaited/acp-harness"
+      - bun
+      - /acp-harness/bin/cli.ts
       - capture
       - /eval/data/prompts/search-test.jsonl
       - --cwd
@@ -27,8 +28,8 @@ services:
       - /eval/data/results/gemini/builtin.jsonl
       - --progress
       - --
-      - bunx
-      - "@plaited/acp-harness"
+      - bun
+      - /acp-harness/bin/cli.ts
       - headless
       - --schema
       - /eval/agent-schemas/gemini.json
@@ -45,14 +46,15 @@ services:
       - AGENT=gemini
     volumes:
       - ./data:/eval/data:ro
+      - /tmp/acp-harness:/acp-harness:ro
       - ./agent-schemas:/eval/agent-schemas:ro
       - ./tools:/eval/tools:ro
       - ./scripts:/eval/scripts:ro
       - ./data/results:/eval/data/results:rw
     working_dir: /workspace
     command:
-      - bunx
-      - "@plaited/acp-harness"
+      - bun
+      - /acp-harness/bin/cli.ts
       - capture
       - /eval/data/prompts/search-test.jsonl
       - --cwd
@@ -61,8 +63,8 @@ services:
       - /eval/data/results/gemini/you.jsonl
       - --progress
       - --
-      - bunx
-      - "@plaited/acp-harness"
+      - bun
+      - /acp-harness/bin/cli.ts
       - headless
       - --schema
       - /eval/agent-schemas/gemini.json
@@ -79,24 +81,27 @@ services:
       - AGENT=claude-code
     volumes:
       - ./data:/eval/data:ro
+      - /tmp/acp-harness:/acp-harness:ro
       - ./agent-schemas:/eval/agent-schemas:ro
       - ./tools:/eval/tools:ro
       - ./scripts:/eval/scripts:ro
       - ./data/results:/eval/data/results:rw
     working_dir: /workspace
     command:
-      - bunx
-      - "@plaited/acp-harness"
+      - bun
+      - /acp-harness/bin/cli.ts
       - capture
       - /eval/data/prompts/search-test.jsonl
       - --cwd
       - /workspace
       - -o
       - /eval/data/results/claude-code/builtin.jsonl
+      - --timeout
+      - "90000"
       - --progress
       - --
-      - bunx
-      - "@plaited/acp-harness"
+      - bun
+      - /acp-harness/bin/cli.ts
       - headless
       - --schema
       - /eval/agent-schemas/claude-code.json
@@ -113,24 +118,27 @@ services:
       - AGENT=claude-code
     volumes:
       - ./data:/eval/data:ro
+      - /tmp/acp-harness:/acp-harness:ro
       - ./agent-schemas:/eval/agent-schemas:ro
       - ./tools:/eval/tools:ro
       - ./scripts:/eval/scripts:ro
       - ./data/results:/eval/data/results:rw
     working_dir: /workspace
     command:
-      - bunx
-      - "@plaited/acp-harness"
+      - bun
+      - /acp-harness/bin/cli.ts
       - capture
-      - /eval/data/prompts/search-test.jsonl
+      - /eval/data/prompts/search-test-mcp.jsonl
       - --cwd
       - /workspace
       - -o
       - /eval/data/results/claude-code/you.jsonl
+      - --timeout
+      - "90000"
       - --progress
       - --
-      - bunx
-      - "@plaited/acp-harness"
+      - bun
+      - /acp-harness/bin/cli.ts
       - headless
       - --schema
       - /eval/agent-schemas/claude-code.json
@@ -147,14 +155,15 @@ services:
       - AGENT=droid
     volumes:
       - ./data:/eval/data:ro
+      - /tmp/acp-harness:/acp-harness:ro
       - ./agent-schemas:/eval/agent-schemas:ro
       - ./tools:/eval/tools:ro
       - ./scripts:/eval/scripts:ro
       - ./data/results:/eval/data/results:rw
     working_dir: /workspace
     command:
-      - bunx
-      - "@plaited/acp-harness"
+      - bun
+      - /acp-harness/bin/cli.ts
       - capture
       - /eval/data/prompts/search-test.jsonl
       - --cwd
@@ -163,8 +172,8 @@ services:
       - /eval/data/results/droid/builtin.jsonl
       - --progress
       - --
-      - bunx
-      - "@plaited/acp-harness"
+      - bun
+      - /acp-harness/bin/cli.ts
       - headless
       - --schema
       - /eval/agent-schemas/droid.json
@@ -179,16 +188,21 @@ services:
     environment:
       - MCP_TOOL=you
       - AGENT=droid
+    deploy:
+      resources:
+        limits:
+          memory: 4G
     volumes:
       - ./data:/eval/data:ro
+      - /tmp/acp-harness:/acp-harness:ro
       - ./agent-schemas:/eval/agent-schemas:ro
       - ./tools:/eval/tools:ro
       - ./scripts:/eval/scripts:ro
       - ./data/results:/eval/data/results:rw
     working_dir: /workspace
     command:
-      - bunx
-      - "@plaited/acp-harness"
+      - bun
+      - /acp-harness/bin/cli.ts
       - capture
       - /eval/data/prompts/search-test.jsonl
       - --cwd
@@ -197,8 +211,8 @@ services:
       - /eval/data/results/droid/you.jsonl
       - --progress
       - --
-      - bunx
-      - "@plaited/acp-harness"
+      - bun
+      - /acp-harness/bin/cli.ts
       - headless
       - --schema
       - /eval/agent-schemas/droid.json
@@ -213,26 +227,30 @@ services:
     environment:
       - MCP_TOOL=builtin
       - AGENT=codex
+      - NODE_PATH=/acp-harness/node_modules
     volumes:
       - ./data:/eval/data:ro
+      - /tmp/acp-harness:/acp-harness:ro
       - ./agent-schemas:/eval/agent-schemas:ro
       - ./tools:/eval/tools:ro
       - ./scripts:/eval/scripts:ro
       - ./data/results:/eval/data/results:rw
     working_dir: /workspace
     command:
-      - bunx
-      - "@plaited/acp-harness"
+      - bun
+      - /acp-harness/bin/cli.ts
       - capture
       - /eval/data/prompts/search-test.jsonl
       - --cwd
       - /workspace
+      - --timeout
+      - "120000"
       - -o
       - /eval/data/results/codex/builtin.jsonl
       - --progress
       - --
-      - bunx
-      - "@plaited/acp-harness"
+      - bun
+      - /acp-harness/bin/cli.ts
       - headless
       - --schema
       - /eval/agent-schemas/codex.json
@@ -249,14 +267,15 @@ services:
       - AGENT=codex
     volumes:
       - ./data:/eval/data:ro
+      - /tmp/acp-harness:/acp-harness:ro
       - ./agent-schemas:/eval/agent-schemas:ro
       - ./tools:/eval/tools:ro
       - ./scripts:/eval/scripts:ro
       - ./data/results:/eval/data/results:rw
     working_dir: /workspace
     command:
-      - bunx
-      - "@plaited/acp-harness"
+      - bun
+      - /acp-harness/bin/cli.ts
       - capture
       - /eval/data/prompts/search-test.jsonl
       - --cwd
@@ -265,8 +284,8 @@ services:
       - /eval/data/results/codex/you.jsonl
       - --progress
       - --
-      - bunx
-      - "@plaited/acp-harness"
+      - bun
+      - /acp-harness/bin/cli.ts
       - headless
       - --schema
       - /eval/agent-schemas/codex.json

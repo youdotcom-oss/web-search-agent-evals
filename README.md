@@ -1,4 +1,4 @@
-# ACP Evaluation Playoffs
+# Agentic Web Search Playoffs
 
 Evaluate multiple agents (Claude Code, Gemini, Droid, Codex) with different web search tools (builtin, You.com MCP) in isolated Docker containers.
 

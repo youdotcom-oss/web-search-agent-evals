@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "name": "droid-headless",
+  "command": ["droid", "exec"],
+  "sessionMode": "stream",
+  "prompt": {
+    "flag": ""
+  },
+  "output": {
+    "flag": "-o",
+    "value": "stream-json"
+  },
+  "autoApprove": ["--skip-permissions-unsafe"],
+  "resume": {
+    "flag": "-s",
+    "sessionIdPath": "$.session_id"
+  },
+  "outputEvents": [
+    {
+      "match": { "path": "$.type", "value": "message", "role": "assistant" },
+      "emitAs": "message",
+      "extract": { "content": "$.text" }
+    }
+  ],
+  "result": {
+    "matchPath": "$.type",
+    "matchValue": "completion",
+    "contentPath": "$.finalText"
+  }
+}

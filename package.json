@@ -1,14 +1,8 @@
 {
-  "name": "droid-acp-adapter",
-  "version": "0.0.1",
+  "name": "acp-evals-playoffs",
+  "description": "Evaluate agents (Claude Code, Gemini, Droid, Codex) with different web search tools",
+  "version": "0.1.0",
   "type": "module",
-  "main": "./src/main.ts",
-  "bin": {
-    "droid-acp": "./src/main.ts"
-  },
-  "exports": {
-    ".": "./src/main.ts"
-  },
   "scripts": {
     "check": "bun run format:check && bun run lint && bun run typecheck",
     "check:write": "bun run format && bun run lint:fix && bun run format:package",
@@ -17,9 +11,14 @@
     "format:package": "format-package --write",
     "lint": "biome lint .",
     "lint:fix": "biome lint --write .",
-    "test": "bun test ./src/test",
+    "test": "bun test",
     "typecheck": "tsc --noEmit",
-    "prepare": "git config core.hooksPath .hooks"
+    "prepare": "git config core.hooksPath .hooks",
+    "generate-mcp": "bun scripts/generate-mcp-config.ts",
+    "run-pairing": "bun scripts/run-pairing.ts",
+    "compare": "bun scripts/compare-results.ts",
+    "playoffs": "docker compose up --build",
+    "clean": "rm -rf data/results/*/*.jsonl"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx,json,md}": [
@@ -31,8 +30,8 @@
     ]
   },
   "dependencies": {
-    "@agentclientprotocol/sdk": "^0.13.0",
-    "@plaited/acp-harness": "^0.4.0"
+    "@plaited/acp-harness": "^0.4.0",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",

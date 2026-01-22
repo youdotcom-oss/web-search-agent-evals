@@ -91,6 +91,9 @@ Examples:
  */
 const compare = (fileA: string, fileB: string, toolA: string, toolB: string, outputPath: string): Promise<void> => {
   return new Promise((resolve, reject) => {
+    // Use absolute path for grader so harness can resolve it
+    const graderPath = join(process.cwd(), 'scripts', 'comparison-grader.ts')
+
     const child = spawn(
       'bunx',
       [
@@ -98,7 +101,7 @@ const compare = (fileA: string, fileB: string, toolA: string, toolB: string, out
         'compare',
         '--run', `${toolA}:${fileA}`,
         '--run', `${toolB}:${fileB}`,
-        '--grader', './scripts/comparison-grader.ts',
+        '--grader', graderPath,
         '-o', outputPath,
         '--progress'
       ],

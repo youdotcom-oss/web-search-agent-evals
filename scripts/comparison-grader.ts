@@ -3,35 +3,72 @@ import type { ComparisonGrader } from '@plaited/agent-eval-harness/pipeline'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 
 /**
- * Hybrid comparison grader: Deterministic facts + LLM quality judgment
+ * MCP indicators - signs that You.com MCP was used
+ */
+const MCP_INDICATORS = [
+  'feels like',           // Temperature detail
+  'mph',                  // Wind speed
+  'air quality',          // Air quality info
+  'uv index',             // UV index
+  'precipitation',        // Precipitation detail
+  'as of',                // Timestamp format
+  'pm pst',               // Specific time format
+  'am pst',               // Specific time format
+  'pm est',
+  'am est',
+]
+
+/**
+ * Check if output likely came from MCP server
+ */
+const hasMcpIndicators = (output: string): boolean => {
+  const lowerOutput = output.toLowerCase()
+  const matchCount = MCP_INDICATORS.filter(indicator =>
+    lowerOutput.includes(indicator)
+  ).length
+  return matchCount >= 3
+}
+
+/**
+ * Check if run label suggests MCP usage
+ */
+const isMcpRun = (label: string): boolean => {
+  const lower = label.toLowerCase()
+  return lower.includes('you') || lower.includes('mcp') || lower.includes('ydc')
+}
+
+/**
+ * Hybrid comparison grader: Deterministic facts + LLM quality judgment + MCP validation
  *
  * Deterministic (60 points max):
- * - Completion (40 pts): Did it produce output?
+ * - Completion (30 pts): Did it produce output?
  * - Tool usage (20 pts): Did it use web search?
+ * - MCP validation (10 pts): If MCP run, does output show MCP indicators?
  *
  * LLM Quality (40 points max):
- * - Accuracy: Is the answer correct?
- * - Relevance: Does it address the query?
+ * - Accuracy: Is the information correct?
+ * - Relevance: Does it answer the query?
  * - Completeness: Are all aspects covered?
  *
  * @remarks
  * Falls back to deterministic-only scoring if GEMINI_API_KEY is not available.
+ * Validates MCP runs show different data patterns than builtin.
  *
  * @public
  */
 export const grade: ComparisonGrader = async ({ id, input, hint, runs }) => {
-  const scores: Record<string, { deterministic: number; llm: number; total: number }> = {}
+  const scores: Record<string, { deterministic: number; llm: number; mcpStatus?: string; total: number }> = {}
 
   // Phase 1: Deterministic scoring (fast, objective)
   for (const [label, result] of Object.entries(runs)) {
     let deterministicScore = 0
 
-    // Completion check
+    // Completion check (30 pts)
     if (result.output && result.output.length > 0) {
-      deterministicScore += 40
+      deterministicScore += 30
     }
 
-    // Tool usage check
+    // Tool usage check (20 pts)
     const usedWebSearch = result.trajectory?.some(
       step => step.type === 'tool_call' &&
               (step.name?.toLowerCase().includes('search') ||
@@ -41,7 +78,20 @@ export const grade: ComparisonGrader = async ({ id, input, hint, runs }) => {
       deterministicScore += 20
     }
 
-    scores[label] = { deterministic: deterministicScore, llm: 0, total: 0 }
+    // MCP validation (10 pts)
+    let mcpStatus: string | undefined
+    if (isMcpRun(label)) {
+      const hasMcp = hasMcpIndicators(result.output)
+      if (hasMcp) {
+        deterministicScore += 10
+        mcpStatus = 'verified'
+      } else {
+        deterministicScore += 0
+        mcpStatus = 'not_detected'
+      }
+    }
+
+    scores[label] = { deterministic: deterministicScore, llm: 0, mcpStatus, total: 0 }
   }
 
   // Phase 2: LLM quality judgment (slower, nuanced)
@@ -114,12 +164,14 @@ Return ONLY valid JSON with this structure:
       score: scoreBreakdown.total / 100, // Normalize to 0-1
       metadata: {
         deterministic: scoreBreakdown.deterministic,
-        llm: scoreBreakdown.llm
+        llm: scoreBreakdown.llm,
+        ...(scoreBreakdown.mcpStatus && { mcpStatus: scoreBreakdown.mcpStatus })
       }
     }))
 
   const best = rankings[0]
-  const reasoning = `${best.run} ranked #1 (score: ${best.score.toFixed(2)}, deterministic: ${best.metadata.deterministic}, llm: ${best.metadata.llm})`
+  const mcpInfo = best.metadata.mcpStatus ? `, mcp: ${best.metadata.mcpStatus}` : ''
+  const reasoning = `${best.run} ranked #1 (score: ${best.score.toFixed(2)}, deterministic: ${best.metadata.deterministic}, llm: ${best.metadata.llm}${mcpInfo})`
 
   return { rankings, reasoning }
 }

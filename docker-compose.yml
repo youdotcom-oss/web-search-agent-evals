@@ -50,9 +50,9 @@ services:
       - bunx
       - "@plaited/agent-eval-harness"
       - capture
-      - /eval/data/prompts/search-test-mcp.jsonl
+      - /eval/data/prompts/search-test.jsonl
       - --schema
-      - /eval/agent-schemas/gemini.json
+      - /eval/agent-schemas/gemini-mcp.json
       - --cwd
       - /workspace
       - -o
@@ -178,9 +178,9 @@ services:
       - bunx
       - "@plaited/agent-eval-harness"
       - capture
-      - /eval/data/prompts/search-test-mcp.jsonl
+      - /eval/data/prompts/search-test.jsonl
       - --schema
-      - /eval/agent-schemas/droid.json
+      - /eval/agent-schemas/droid-mcp.json
       - --cwd
       - /workspace
       - -o
@@ -240,9 +240,9 @@ services:
       - bunx
       - "@plaited/agent-eval-harness"
       - capture
-      - /eval/data/prompts/search-test-mcp.jsonl
+      - /eval/data/prompts/search-test.jsonl
       - --schema
-      - /eval/agent-schemas/codex.json
+      - /eval/agent-schemas/codex-mcp.json
       - --cwd
       - /workspace
       - --timeout

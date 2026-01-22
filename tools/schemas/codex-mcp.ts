@@ -10,32 +10,32 @@
  * @public
  */
 
-import { z } from 'zod'
+import { z } from "zod";
 
 /**
  * Codex MCP server configuration schema
  */
 export const CodexMcpServerSchema = z.object({
-  type: z.literal('http'),
+  type: z.literal("http"),
   url: z.string().url(),
   headers: z.record(z.string()).optional(),
   env: z.record(z.string()).optional(),
-})
+});
 
 /**
  * Codex MCP configuration schema (for reference, not written to file)
  */
 export const CodexMcpConfigSchema = z.object({
   servers: z.record(CodexMcpServerSchema),
-})
+});
 
-export type CodexMcpConfig = z.infer<typeof CodexMcpConfigSchema>
-export type CodexMcpServer = z.infer<typeof CodexMcpServerSchema>
+export type CodexMcpConfig = z.infer<typeof CodexMcpConfigSchema>;
+export type CodexMcpServer = z.infer<typeof CodexMcpServerSchema>;
 
 /**
  * Codex doesn't use a config file - it uses CLI commands
  */
-export const CODEX_CONFIG_PATH = null
+export const CODEX_CONFIG_PATH = null;
 
 /**
  * Generate Codex MCP CLI commands from unified server list
@@ -50,26 +50,26 @@ export const generateCodexConfig = (
   servers: Record<string, { name: string; url: string; auth?: { envVar: string } }>,
   env: Record<string, string | undefined>,
 ): string[] => {
-  const commands: string[] = []
+  const commands: string[] = [];
 
   for (const [key, server] of Object.entries(servers)) {
-    const envVars: string[] = []
+    const envVars: string[] = [];
 
     if (server.auth?.envVar) {
-      const token = env[server.auth.envVar]
-      if (!token) {
-        console.warn(`Warning: ${server.auth.envVar} not set for ${key}`)
+      const token = env[server.auth.envVar];
+      if (token) {
+        envVars.push(`--env ${server.auth.envVar}=${token}`);
       } else {
-        envVars.push(`--env ${server.auth.envVar}=${token}`)
+        console.warn(`Warning: ${server.auth.envVar} not set for ${key}`);
       }
     }
 
     // Codex MCP command format:
     // codex mcp add <name> --env VAR=VALUE -- <command>
     // For HTTP servers, we need to use an HTTP MCP client command
-    const command = `codex mcp add ${server.name} ${envVars.join(' ')} -- http-mcp-client ${server.url}`
-    commands.push(command)
+    const command = `codex mcp add ${server.name} ${envVars.join(" ")} -- http-mcp-client ${server.url}`;
+    commands.push(command);
   }
 
-  return commands
-}
+  return commands;
+};

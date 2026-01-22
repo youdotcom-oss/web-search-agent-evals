@@ -73,6 +73,16 @@
           }
         }
       }
+    },
+    {
+      "include": ["scripts/**/*.ts", "tools/**/*.ts"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noConsole": "off"
+          }
+        }
+      }
     }
   ],
   "organizeImports": {

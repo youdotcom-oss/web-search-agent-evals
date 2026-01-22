@@ -10,12 +10,7 @@
     "flag": "--output-format",
     "value": "stream-json"
   },
-  "autoApprove": [
-    "--dangerously-skip-permissions",
-    "--verbose",
-    "--mcp-config",
-    "/workspace/.mcp.json"
-  ],
+  "autoApprove": ["--dangerously-skip-permissions", "--verbose", "--mcp-config", "/workspace/.mcp.json"],
   "resume": {
     "flag": "--resume",
     "sessionIdPath": "$.session_id"

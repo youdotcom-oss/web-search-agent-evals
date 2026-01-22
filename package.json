@@ -18,13 +18,8 @@
     "clean": "rm -rf data/results/*/*.jsonl"
   },
   "lint-staged": {
-    "*.{ts,tsx,js,jsx,json,md}": [
-      "biome format --write",
-      "biome lint --write"
-    ],
-    "package.json": [
-      "format-package -w"
-    ]
+    "*.{ts,tsx,js,jsx,json,md}": ["biome format --write", "biome lint --write"],
+    "package.json": ["format-package -w"]
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

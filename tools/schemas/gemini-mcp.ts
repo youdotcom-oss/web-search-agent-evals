@@ -9,31 +9,31 @@
  * @public
  */
 
-import { z } from 'zod'
+import { z } from "zod";
 
 /**
  * Gemini MCP server configuration schema (same as Claude)
  */
 export const GeminiMcpServerSchema = z.object({
-  type: z.literal('http'),
+  type: z.literal("http"),
   url: z.string().url(),
   headers: z.record(z.string()).optional(),
-})
+});
 
 /**
  * Gemini MCP configuration schema
  */
 export const GeminiMcpConfigSchema = z.object({
   mcpServers: z.record(GeminiMcpServerSchema),
-})
+});
 
-export type GeminiMcpConfig = z.infer<typeof GeminiMcpConfigSchema>
-export type GeminiMcpServer = z.infer<typeof GeminiMcpServerSchema>
+export type GeminiMcpConfig = z.infer<typeof GeminiMcpConfigSchema>;
+export type GeminiMcpServer = z.infer<typeof GeminiMcpServerSchema>;
 
 /**
  * Path where Gemini expects MCP config
  */
-export const GEMINI_CONFIG_PATH = '.gemini/settings.json'
+export const GEMINI_CONFIG_PATH = ".gemini/settings.json";
 
 /**
  * Generate Gemini MCP config from unified server list
@@ -48,26 +48,26 @@ export const generateGeminiConfig = (
   servers: Record<string, { name: string; url: string; auth?: { envVar: string } }>,
   env: Record<string, string | undefined>,
 ): GeminiMcpConfig => {
-  const mcpServers: Record<string, GeminiMcpServer> = {}
+  const mcpServers: Record<string, GeminiMcpServer> = {};
 
   for (const [key, server] of Object.entries(servers)) {
-    const headers: Record<string, string> = {}
+    const headers: Record<string, string> = {};
 
     if (server.auth?.envVar) {
-      const token = env[server.auth.envVar]
-      if (!token) {
-        console.warn(`Warning: ${server.auth.envVar} not set for ${key}`)
+      const token = env[server.auth.envVar];
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
       } else {
-        headers.Authorization = `Bearer ${token}`
+        console.warn(`Warning: ${server.auth.envVar} not set for ${key}`);
       }
     }
 
     mcpServers[server.name] = {
-      type: 'http',
+      type: "http",
       url: server.url,
       ...(Object.keys(headers).length > 0 && { headers }),
-    }
+    };
   }
 
-  return { mcpServers }
-}
+  return { mcpServers };
+};

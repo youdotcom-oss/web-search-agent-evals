@@ -1,5 +1,5 @@
-import { test, expect, mock } from 'bun:test'
-import type { ComparisonGraderContext } from '@plaited/agent-eval-harness/pipeline'
+import { test, expect } from "bun:test";
+import type { ComparisonGraderContext } from "@plaited/agent-eval-harness/pipeline";
 
 /**
  * Tests for hybrid comparison grader
@@ -8,223 +8,223 @@ import type { ComparisonGraderContext } from '@plaited/agent-eval-harness/pipeli
  * Tests deterministic scoring, LLM integration, and fallback behavior
  */
 
-test('deterministic scoring: completion only', async () => {
+test("deterministic scoring: completion only", async () => {
   // Mock Gemini to test deterministic fallback
-  const mockEnv = { GEMINI_API_KEY: undefined }
+  const _mockEnv = { GEMINI_API_KEY: undefined };
 
   const context: ComparisonGraderContext = {
-    id: 'test-1',
-    input: 'Test query',
+    id: "test-1",
+    input: "Test query",
     hint: undefined,
     runs: {
-      'agent-a': {
-        output: 'Some output',
-        trajectory: []
+      "agent-a": {
+        output: "Some output",
+        trajectory: [],
       },
-      'agent-b': {
-        output: '',
-        trajectory: []
-      }
-    }
-  }
+      "agent-b": {
+        output: "",
+        trajectory: [],
+      },
+    },
+  };
 
   // Import with mocked env
-  const originalEnv = process.env.GEMINI_API_KEY
-  delete process.env.GEMINI_API_KEY
+  const originalEnv = process.env.GEMINI_API_KEY;
+  process.env.GEMINI_API_KEY = undefined;
 
   // Dynamically import to get fresh module
-  const { grade } = await import('./comparison-grader.ts')
+  const { grade } = await import("./comparison-grader.ts");
 
-  const result = await grade(context)
+  const result = await grade(context);
 
   // Restore env
-  if (originalEnv) process.env.GEMINI_API_KEY = originalEnv
+  if (originalEnv) process.env.GEMINI_API_KEY = originalEnv;
 
-  expect(result.rankings).toHaveLength(2)
-  expect(result.rankings[0].run).toBe('agent-a')
-  expect(result.rankings[0].score).toBe(0.4) // 40pts completion only
-  expect(result.rankings[1].run).toBe('agent-b')
-  expect(result.rankings[1].score).toBe(0) // No output
-})
+  expect(result.rankings).toHaveLength(2);
+  expect(result.rankings[0].run).toBe("agent-a");
+  expect(result.rankings[0].score).toBe(0.4); // 40pts completion only
+  expect(result.rankings[1].run).toBe("agent-b");
+  expect(result.rankings[1].score).toBe(0); // No output
+});
 
-test('deterministic scoring: completion + tool usage', async () => {
+test("deterministic scoring: completion + tool usage", async () => {
   const context: ComparisonGraderContext = {
-    id: 'test-2',
-    input: 'Test query',
+    id: "test-2",
+    input: "Test query",
     hint: undefined,
     runs: {
-      'agent-a': {
-        output: 'Result from search',
+      "agent-a": {
+        output: "Result from search",
         trajectory: [
           {
-            type: 'tool_call',
-            name: 'WebSearch',
-            status: 'completed',
-            timestamp: 100
-          }
-        ]
+            type: "tool_call",
+            name: "WebSearch",
+            status: "completed",
+            timestamp: 100,
+          },
+        ],
       },
-      'agent-b': {
-        output: 'Result without search',
-        trajectory: []
-      }
-    }
-  }
+      "agent-b": {
+        output: "Result without search",
+        trajectory: [],
+      },
+    },
+  };
 
-  delete process.env.GEMINI_API_KEY
-  const { grade } = await import('./comparison-grader.ts')
+  process.env.GEMINI_API_KEY = undefined;
+  const { grade } = await import("./comparison-grader.ts");
 
-  const result = await grade(context)
+  const result = await grade(context);
 
-  expect(result.rankings[0].run).toBe('agent-a')
-  expect(result.rankings[0].score).toBe(0.6) // 40pts completion + 20pts tool
-  expect(result.rankings[1].run).toBe('agent-b')
-  expect(result.rankings[1].score).toBe(0.4) // 40pts completion only
-})
+  expect(result.rankings[0].run).toBe("agent-a");
+  expect(result.rankings[0].score).toBe(0.6); // 40pts completion + 20pts tool
+  expect(result.rankings[1].run).toBe("agent-b");
+  expect(result.rankings[1].score).toBe(0.4); // 40pts completion only
+});
 
-test('tool usage detection: case insensitive', async () => {
+test("tool usage detection: case insensitive", async () => {
   const context: ComparisonGraderContext = {
-    id: 'test-3',
-    input: 'Test query',
+    id: "test-3",
+    input: "Test query",
     hint: undefined,
     runs: {
-      'agent-a': {
-        output: 'Result',
+      "agent-a": {
+        output: "Result",
         trajectory: [
           {
-            type: 'tool_call',
-            name: 'search_web',
-            status: 'completed',
-            timestamp: 100
-          }
-        ]
+            type: "tool_call",
+            name: "search_web",
+            status: "completed",
+            timestamp: 100,
+          },
+        ],
       },
-      'agent-b': {
-        output: 'Result',
+      "agent-b": {
+        output: "Result",
         trajectory: [
           {
-            type: 'tool_call',
-            name: 'WebSearchTool',
-            status: 'completed',
-            timestamp: 100
-          }
-        ]
-      }
-    }
-  }
+            type: "tool_call",
+            name: "WebSearchTool",
+            status: "completed",
+            timestamp: 100,
+          },
+        ],
+      },
+    },
+  };
 
-  delete process.env.GEMINI_API_KEY
-  const { grade } = await import('./comparison-grader.ts')
+  process.env.GEMINI_API_KEY = undefined;
+  const { grade } = await import("./comparison-grader.ts");
 
-  const result = await grade(context)
+  const result = await grade(context);
 
   // Both should get tool usage points
-  expect(result.rankings[0].score).toBe(0.6)
-  expect(result.rankings[1].score).toBe(0.6)
-})
+  expect(result.rankings[0].score).toBe(0.6);
+  expect(result.rankings[1].score).toBe(0.6);
+});
 
-test('rankings sorted by score descending', async () => {
+test("rankings sorted by score descending", async () => {
   const context: ComparisonGraderContext = {
-    id: 'test-4',
-    input: 'Test query',
+    id: "test-4",
+    input: "Test query",
     hint: undefined,
     runs: {
-      'low-score': {
-        output: '',
-        trajectory: []
+      "low-score": {
+        output: "",
+        trajectory: [],
       },
-      'high-score': {
-        output: 'Complete answer',
+      "high-score": {
+        output: "Complete answer",
         trajectory: [
           {
-            type: 'tool_call',
-            name: 'WebSearch',
-            status: 'completed',
-            timestamp: 100
-          }
-        ]
+            type: "tool_call",
+            name: "WebSearch",
+            status: "completed",
+            timestamp: 100,
+          },
+        ],
       },
-      'mid-score': {
-        output: 'Partial answer',
-        trajectory: []
-      }
-    }
-  }
+      "mid-score": {
+        output: "Partial answer",
+        trajectory: [],
+      },
+    },
+  };
 
-  delete process.env.GEMINI_API_KEY
-  const { grade } = await import('./comparison-grader.ts')
+  process.env.GEMINI_API_KEY = undefined;
+  const { grade } = await import("./comparison-grader.ts");
 
-  const result = await grade(context)
+  const result = await grade(context);
 
-  expect(result.rankings[0].run).toBe('high-score')
-  expect(result.rankings[0].rank).toBe(1)
-  expect(result.rankings[1].run).toBe('mid-score')
-  expect(result.rankings[1].rank).toBe(2)
-  expect(result.rankings[2].run).toBe('low-score')
-  expect(result.rankings[2].rank).toBe(3)
-})
+  expect(result.rankings[0].run).toBe("high-score");
+  expect(result.rankings[0].rank).toBe(1);
+  expect(result.rankings[1].run).toBe("mid-score");
+  expect(result.rankings[1].rank).toBe(2);
+  expect(result.rankings[2].run).toBe("low-score");
+  expect(result.rankings[2].rank).toBe(3);
+});
 
-test('metadata includes score breakdown', async () => {
+test("metadata includes score breakdown", async () => {
   const context: ComparisonGraderContext = {
-    id: 'test-5',
-    input: 'Test query',
+    id: "test-5",
+    input: "Test query",
     hint: undefined,
     runs: {
-      'agent-a': {
-        output: 'Output',
+      "agent-a": {
+        output: "Output",
         trajectory: [
           {
-            type: 'tool_call',
-            name: 'search',
-            status: 'completed',
-            timestamp: 100
-          }
-        ]
-      }
-    }
-  }
+            type: "tool_call",
+            name: "search",
+            status: "completed",
+            timestamp: 100,
+          },
+        ],
+      },
+    },
+  };
 
-  delete process.env.GEMINI_API_KEY
-  const { grade } = await import('./comparison-grader.ts')
+  process.env.GEMINI_API_KEY = undefined;
+  const { grade } = await import("./comparison-grader.ts");
 
-  const result = await grade(context)
+  const result = await grade(context);
 
-  expect(result.rankings[0].metadata).toBeDefined()
-  expect(result.rankings[0].metadata?.deterministic).toBe(60) // 40 + 20
-  expect(result.rankings[0].metadata?.llm).toBe(0) // No LLM when key missing
-})
+  expect(result.rankings[0].metadata).toBeDefined();
+  expect(result.rankings[0].metadata?.deterministic).toBe(60); // 40 + 20
+  expect(result.rankings[0].metadata?.llm).toBe(0); // No LLM when key missing
+});
 
-test('reasoning includes winner and score', async () => {
+test("reasoning includes winner and score", async () => {
   const context: ComparisonGraderContext = {
-    id: 'test-6',
-    input: 'Test query',
+    id: "test-6",
+    input: "Test query",
     hint: undefined,
     runs: {
-      'winner': {
-        output: 'Best output',
+      winner: {
+        output: "Best output",
         trajectory: [
           {
-            type: 'tool_call',
-            name: 'WebSearch',
-            status: 'completed',
-            timestamp: 100
-          }
-        ]
+            type: "tool_call",
+            name: "WebSearch",
+            status: "completed",
+            timestamp: 100,
+          },
+        ],
       },
-      'loser': {
-        output: '',
-        trajectory: []
-      }
-    }
-  }
+      loser: {
+        output: "",
+        trajectory: [],
+      },
+    },
+  };
 
-  delete process.env.GEMINI_API_KEY
-  const { grade } = await import('./comparison-grader.ts')
+  process.env.GEMINI_API_KEY = undefined;
+  const { grade } = await import("./comparison-grader.ts");
 
-  const result = await grade(context)
+  const result = await grade(context);
 
-  expect(result.reasoning).toContain('winner')
-  expect(result.reasoning).toContain('ranked #1')
-  expect(result.reasoning).toContain('0.60') // Score
-  expect(result.reasoning).toContain('deterministic: 60')
-})
+  expect(result.reasoning).toContain("winner");
+  expect(result.reasoning).toContain("ranked #1");
+  expect(result.reasoning).toContain("0.60"); // Score
+  expect(result.reasoning).toContain("deterministic: 60");
+});

@@ -9,32 +9,32 @@
  * @public
  */
 
-import { z } from 'zod'
+import { z } from "zod";
 
 /**
  * Droid MCP server configuration schema
  */
 export const DroidMcpServerSchema = z.object({
-  type: z.literal('http'),
+  type: z.literal("http"),
   url: z.string().url(),
   headers: z.record(z.string()).optional(),
   env: z.record(z.string()).optional(),
-})
+});
 
 /**
  * Droid MCP configuration schema
  */
 export const DroidMcpConfigSchema = z.object({
   servers: z.record(DroidMcpServerSchema),
-})
+});
 
-export type DroidMcpConfig = z.infer<typeof DroidMcpConfigSchema>
-export type DroidMcpServer = z.infer<typeof DroidMcpServerSchema>
+export type DroidMcpConfig = z.infer<typeof DroidMcpConfigSchema>;
+export type DroidMcpServer = z.infer<typeof DroidMcpServerSchema>;
 
 /**
  * Path where Droid expects MCP config
  */
-export const DROID_CONFIG_PATH = '.factory/mcp.json'
+export const DROID_CONFIG_PATH = ".factory/mcp.json";
 
 /**
  * Generate Droid MCP config from unified server list
@@ -49,26 +49,26 @@ export const generateDroidConfig = (
   servers: Record<string, { name: string; url: string; auth?: { envVar: string } }>,
   env: Record<string, string | undefined>,
 ): DroidMcpConfig => {
-  const droidServers: Record<string, DroidMcpServer> = {}
+  const droidServers: Record<string, DroidMcpServer> = {};
 
   for (const [key, server] of Object.entries(servers)) {
-    const headers: Record<string, string> = {}
+    const headers: Record<string, string> = {};
 
     if (server.auth?.envVar) {
-      const token = env[server.auth.envVar]
-      if (!token) {
-        console.warn(`Warning: ${server.auth.envVar} not set for ${key}`)
+      const token = env[server.auth.envVar];
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
       } else {
-        headers.Authorization = `Bearer ${token}`
+        console.warn(`Warning: ${server.auth.envVar} not set for ${key}`);
       }
     }
 
     droidServers[server.name] = {
-      type: 'http',
+      type: "http",
       url: server.url,
       ...(Object.keys(headers).length > 0 && { headers }),
-    }
+    };
   }
 
-  return { servers: droidServers }
-}
+  return { servers: droidServers };
+};

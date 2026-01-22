@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "name": "codex-headless",
+  "command": ["codex", "exec", "--json", "--skip-git-repo-check", "--dangerously-bypass-approvals-and-sandbox", "-"],
+  "sessionMode": "iterative",
+  "prompt": {
+    "stdin": true
+  },
+  "output": {
+    "flag": "",
+    "value": ""
+  },
+  "outputEvents": [
+    {
+      "match": { "path": "$.item.type", "value": "agent_message" },
+      "emitAs": "message",
+      "extract": { "content": "$.item.text" }
+    }
+  ],
+  "result": {
+    "matchPath": "$.type",
+    "matchValue": "turn.completed",
+    "contentPath": "$.usage.output_tokens"
+  }
+}

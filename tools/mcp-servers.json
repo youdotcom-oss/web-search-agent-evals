@@ -1,0 +1,13 @@
+{
+  "servers": {
+    "you": {
+      "name": "ydc-server",
+      "type": "http",
+      "url": "https://api.you.com/mcp",
+      "auth": {
+        "type": "bearer",
+        "envVar": "YOU_API_KEY"
+      }
+    }
+  }
+}

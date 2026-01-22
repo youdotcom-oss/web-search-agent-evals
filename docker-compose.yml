@@ -1,0 +1,253 @@
+services:
+  # Gemini + builtin search
+  gemini-builtin:
+    build:
+      context: .
+      dockerfile: docker/gemini.Dockerfile
+    image: acp-evals-gemini:latest
+    env_file: .env
+    environment:
+      - MCP_TOOL=builtin
+      - AGENT=gemini
+    volumes:
+      - ./data:/eval/data:ro
+      - ./agent-schemas:/eval/agent-schemas:ro
+      - ./tools:/eval/tools:ro
+      - ./scripts:/eval/scripts:ro
+      - ./data/results:/eval/data/results:rw
+    working_dir: /workspace
+    command:
+      - bunx
+      - "@plaited/agent-eval-harness"
+      - capture
+      - /eval/data/prompts/test.jsonl
+      - --schema
+      - /eval/agent-schemas/gemini.json
+      - --cwd
+      - /workspace
+      - -o
+      - /eval/data/results/gemini/builtin.jsonl
+      - --progress
+
+  # Gemini + You.com MCP
+  gemini-you:
+    build:
+      context: .
+      dockerfile: docker/gemini.Dockerfile
+    image: acp-evals-gemini:latest
+    env_file: .env
+    environment:
+      - MCP_TOOL=you
+      - AGENT=gemini
+    volumes:
+      - ./data:/eval/data:ro
+      - ./agent-schemas:/eval/agent-schemas:ro
+      - ./tools:/eval/tools:ro
+      - ./scripts:/eval/scripts:ro
+      - ./data/results:/eval/data/results:rw
+    working_dir: /workspace
+    command:
+      - bunx
+      - "@plaited/agent-eval-harness"
+      - capture
+      - /eval/data/prompts/test.jsonl
+      - --schema
+      - /eval/agent-schemas/gemini-mcp.json
+      - --cwd
+      - /workspace
+      - -o
+      - /eval/data/results/gemini/you.jsonl
+      - --progress
+
+  # Claude Code + builtin search
+  claude-code-builtin:
+    build:
+      context: .
+      dockerfile: docker/claude-code.Dockerfile
+    image: acp-evals-claude-code:latest
+    env_file: .env
+    environment:
+      - MCP_TOOL=builtin
+      - AGENT=claude-code
+    volumes:
+      - ./data:/eval/data:ro
+      - ./agent-schemas:/eval/agent-schemas:ro
+      - ./tools:/eval/tools:ro
+      - ./scripts:/eval/scripts:ro
+      - ./data/results:/eval/data/results:rw
+    working_dir: /workspace
+    command:
+      - bunx
+      - "@plaited/agent-eval-harness"
+      - capture
+      - /eval/data/prompts/test.jsonl
+      - --schema
+      - /eval/agent-schemas/claude-code.json
+      - --cwd
+      - /workspace
+      - --timeout
+      - "90000"
+      - -o
+      - /eval/data/results/claude-code/builtin.jsonl
+      - --progress
+
+  # Claude Code + You.com MCP
+  claude-code-you:
+    build:
+      context: .
+      dockerfile: docker/claude-code.Dockerfile
+    image: acp-evals-claude-code:latest
+    env_file: .env
+    environment:
+      - MCP_TOOL=you
+      - AGENT=claude-code
+    volumes:
+      - ./data:/eval/data:ro
+      - ./agent-schemas:/eval/agent-schemas:ro
+      - ./tools:/eval/tools:ro
+      - ./scripts:/eval/scripts:ro
+      - ./data/results:/eval/data/results:rw
+    working_dir: /workspace
+    command:
+      - bunx
+      - "@plaited/agent-eval-harness"
+      - capture
+      - /eval/data/prompts/test.jsonl
+      - --schema
+      - /eval/agent-schemas/claude-code-mcp.json
+      - --cwd
+      - /workspace
+      - --timeout
+      - "90000"
+      - -o
+      - /eval/data/results/claude-code/you.jsonl
+      - --progress
+
+  # Droid + builtin search
+  droid-builtin:
+    build:
+      context: .
+      dockerfile: docker/droid.Dockerfile
+    image: acp-evals-droid:latest
+    env_file: .env
+    environment:
+      - MCP_TOOL=builtin
+      - AGENT=droid
+    volumes:
+      - ./data:/eval/data:ro
+      - ./agent-schemas:/eval/agent-schemas:ro
+      - ./tools:/eval/tools:ro
+      - ./scripts:/eval/scripts:ro
+      - ./data/results:/eval/data/results:rw
+    working_dir: /workspace
+    command:
+      - bunx
+      - "@plaited/agent-eval-harness"
+      - capture
+      - /eval/data/prompts/test.jsonl
+      - --schema
+      - /eval/agent-schemas/droid.json
+      - --cwd
+      - /workspace
+      - -o
+      - /eval/data/results/droid/builtin.jsonl
+      - --progress
+
+  # Droid + You.com MCP
+  droid-you:
+    build:
+      context: .
+      dockerfile: docker/droid.Dockerfile
+    image: acp-evals-droid:latest
+    env_file: .env
+    environment:
+      - MCP_TOOL=you
+      - AGENT=droid
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+    volumes:
+      - ./data:/eval/data:ro
+      - ./agent-schemas:/eval/agent-schemas:ro
+      - ./tools:/eval/tools:ro
+      - ./scripts:/eval/scripts:ro
+      - ./data/results:/eval/data/results:rw
+    working_dir: /workspace
+    command:
+      - bunx
+      - "@plaited/agent-eval-harness"
+      - capture
+      - /eval/data/prompts/test.jsonl
+      - --schema
+      - /eval/agent-schemas/droid-mcp.json
+      - --cwd
+      - /workspace
+      - -o
+      - /eval/data/results/droid/you.jsonl
+      - --progress
+
+  # Codex + builtin search
+  codex-builtin:
+    build:
+      context: .
+      dockerfile: docker/codex.Dockerfile
+    image: acp-evals-codex:latest
+    env_file: .env
+    environment:
+      - MCP_TOOL=builtin
+      - AGENT=codex
+    volumes:
+      - ./data:/eval/data:ro
+      - ./agent-schemas:/eval/agent-schemas:ro
+      - ./tools:/eval/tools:ro
+      - ./scripts:/eval/scripts:ro
+      - ./data/results:/eval/data/results:rw
+    working_dir: /workspace
+    command:
+      - bunx
+      - "@plaited/agent-eval-harness"
+      - capture
+      - /eval/data/prompts/test.jsonl
+      - --schema
+      - /eval/agent-schemas/codex.json
+      - --cwd
+      - /workspace
+      - --timeout
+      - "180000"
+      - -o
+      - /eval/data/results/codex/builtin.jsonl
+      - --progress
+
+  # Codex + You.com MCP
+  codex-you:
+    build:
+      context: .
+      dockerfile: docker/codex.Dockerfile
+    image: acp-evals-codex:latest
+    env_file: .env
+    environment:
+      - MCP_TOOL=you
+      - AGENT=codex
+    volumes:
+      - ./data:/eval/data:ro
+      - ./agent-schemas:/eval/agent-schemas:ro
+      - ./tools:/eval/tools:ro
+      - ./scripts:/eval/scripts:ro
+      - ./data/results:/eval/data/results:rw
+    working_dir: /workspace
+    command:
+      - bunx
+      - "@plaited/agent-eval-harness"
+      - capture
+      - /eval/data/prompts/test.jsonl
+      - --schema
+      - /eval/agent-schemas/codex-mcp.json
+      - --cwd
+      - /workspace
+      - --timeout
+      - "180000"
+      - -o
+      - /eval/data/results/codex/you.jsonl
+      - --progress
+

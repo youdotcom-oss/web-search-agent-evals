@@ -1,0 +1,24 @@
+# Code Owners for Agentic Web Search Playoffs
+#
+# These owners will be requested for review when someone opens a pull request.
+# Order is important; the last matching pattern takes precedence.
+
+# Default owners for everything in the repo
+* @edwardirby @zairahms
+
+# Agent schemas and evaluation infrastructure
+/agent-schemas/ @edwardirby
+/docker/ @edwardirby
+/scripts/ @edwardirby
+/tools/ @edwardirby
+
+# Results and data analysis
+/data/results/ @zairahms
+/data/prompts/ @edwardirby @zairahms
+
+# Documentation
+*.md @edwardirby @zairahms
+/AGENTS.md @edwardirby
+
+# CI/CD workflows
+/.github/workflows/ @edwardirby

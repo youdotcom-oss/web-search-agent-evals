@@ -24,43 +24,6 @@ flowchart TD
     Harness --> Results[data/results/agent/tool.jsonl]
 ```
 
-## Cost & Time Estimates
-
-### Test Workflow (5 prompts)
-**Purpose:** Quick validation of setup and changes
-
-| Mode | Time | Cost | Use Case |
-|------|------|------|----------|
-| All agents (8 runs) | ~5 minutes | ~$2-5 | PR validation, testing changes |
-| Single agent | ~30 seconds | ~$0.25-0.50 | Quick checks |
-
-### Full Workflow (1,254 prompts)
-**Purpose:** Complete evaluation for production data
-
-| Mode | Time | Cost | Use Case |
-|------|------|------|----------|
-| **Parallel** (8 concurrent) | **~4 hours** | **~$130-260** | Fast results, high API quota |
-| **Sequential** (1 at a time) | **~24 hours** | **~$130-260** | Standard quota, safer |
-
-**Cost Breakdown (Full Workflow):**
-- Anthropic Claude Code: $50-100
-- Google Gemini: $20-40
-- Factory Droid: $20-40
-- OpenAI Codex: $30-60
-- You.com MCP: $10-20
-- **Total:** ~$130-260
-
-**API Requests:**
-- 10,032 total requests (1,254 prompts × 8 agent+tool combinations)
-- Parallel mode: Up to 8 concurrent requests
-- Sequential mode: 1 request at a time
-
-**Recommendations:**
-- ✅ Run **test workflow first** to validate setup (~$3)
-- ✅ Use **sequential mode** if on standard API quotas
-- ✅ Use **parallel mode** if you need results quickly and have high quotas
-- ✅ Consider **monthly** full evaluations instead of weekly (~$150/month vs ~$600/month)
-
 ## Quick Start
 
 ### 1. Install Dependencies
@@ -175,6 +138,279 @@ cat data/results/claude-code/builtin.jsonl | \
   jq -r '.trajectory[] | select(.type == "tool_call") | .name' | \
   sort | uniq -c
 ```
+
+## Running Evaluations Locally
+
+This section provides detailed guidance for running evaluations on your local machine.
+
+### Prerequisites
+
+- **Bun** >= 1.2.9 (package manager and runtime)
+- **Docker** (for isolated agent execution)
+- **API Keys** (see Quick Start section above)
+- **Agent CLI** (Claude Code, Cursor, or similar recommended for development)
+
+### Test vs Full Evaluations
+
+The project includes two prompt sets:
+
+| Prompt Set | Count | Purpose | Time (all agents) |
+|------------|-------|---------|-------------------|
+| **test.jsonl** / **test-mcp.jsonl** | 5 | Quick validation, PR checks | ~5 minutes |
+| **full.jsonl** / **full-mcp.jsonl** | 1,254 | Production data, complete analysis | ~24-32 hours |
+
+### Running Test Evaluations
+
+**Single agent+tool pairing:**
+```bash
+# Test with builtin search
+docker compose run --rm claude-code-builtin
+
+# Test with MCP search
+docker compose run --rm claude-code-you
+```
+
+**All agents (using workflow script):**
+```bash
+./run-full-workflow.sh
+```
+
+### Running Full Evaluations
+
+Full evaluations run 1,254 prompts per agent. This takes significant time and API quota.
+
+**Step 1: Switch to full prompts**
+
+Edit `docker-compose.yml` and update the volume mounts:
+
+```yaml
+# For builtin services, change FROM:
+volumes:
+  - ./data/prompts/test.jsonl:/eval/data/prompts/test.jsonl:ro
+
+# Change TO:
+volumes:
+  - ./data/prompts/full.jsonl:/eval/data/prompts/test.jsonl:ro
+
+# For MCP services, change FROM:
+volumes:
+  - ./data/prompts/test-mcp.jsonl:/eval/data/prompts/test.jsonl:ro
+
+# Change TO:
+volumes:
+  - ./data/prompts/full-mcp.jsonl:/eval/data/prompts/test.jsonl:ro
+```
+
+**Why this approach:** The container always reads from `/eval/data/prompts/test.jsonl`, but you control which host file gets mounted to that path. This avoids changing command arguments.
+
+**Quick switch using sed:**
+```bash
+# Switch to full prompts
+sed -i.bak 's|/test\.jsonl:|/full.jsonl:|g' docker-compose.yml
+sed -i.bak 's|/test-mcp\.jsonl:|/full-mcp.jsonl:|g' docker-compose.yml
+
+# Verify changes
+grep "prompts/" docker-compose.yml
+```
+
+**Step 2: Run workflow**
+```bash
+./run-full-workflow.sh
+```
+
+**Step 3: Restore test prompts when done**
+```bash
+# Restore from backup
+mv docker-compose.yml.bak docker-compose.yml
+
+# Or switch back manually
+sed -i.bak 's|/full\.jsonl:|/test.jsonl:|g' docker-compose.yml
+sed -i.bak 's|/full-mcp\.jsonl:|/test-mcp.jsonl:|g' docker-compose.yml
+```
+
+### Comparing Results
+
+After running evaluations, compare agent performance:
+
+```bash
+# Compare builtin vs MCP for same agent
+bun run compare -- -a claude-code --toolA builtin --toolB you
+
+# View comparison output
+cat data/results/claude-code/builtin-vs-you.jsonl | jq .
+```
+
+### Pass@k Analysis
+
+The harness supports **pass@k** and **pass^k** analysis for measuring agent reliability:
+
+- **pass@k**: Capability metric - "Can the agent complete this task in at least one of k attempts?"
+- **pass^k**: Reliability metric - "Will the agent complete this task successfully every time?"
+
+**Running pass@k analysis:**
+
+```bash
+# Run each prompt 5 times with inline grading
+bunx @plaited/agent-eval-harness trials \
+  data/prompts/test.jsonl \
+  --schema agent-schemas/claude-code.json \
+  -k 5 \
+  --grader ./scripts/my-grader.ts \
+  -o data/results/trials.jsonl
+
+# View pass@k metrics
+cat data/results/trials.jsonl | jq '.passAtK, .passExpK'
+```
+
+**Note:** This project doesn't run pass@k analysis automatically. Use the `trials` command manually when you need reliability metrics.
+
+## Grading & Validation
+
+Grading is a core part of evaluation - it provides the pass/fail logic that measures agent success. This project supports two grading patterns:
+
+### Grader Types
+
+| Type | Use Case | When to Use |
+|------|----------|-------------|
+| **Single-run grader** | Pass/fail scoring for one agent run | Inline evaluation with `--grader` flag |
+| **Comparison grader** | Ranking multiple runs for the same prompt | Post-hoc comparison with `compare` script |
+
+### Built-in Comparison Grader
+
+The project includes a comparison grader at `scripts/comparison-grader.ts` that:
+
+- **Deterministic scoring** (60 pts): Completion, tool usage, MCP validation
+- **LLM quality judgment** (40 pts): Accuracy, relevance, completeness via Gemini
+- **Fallback logic**: Uses deterministic-only if `GEMINI_API_KEY` unavailable
+
+**Usage:**
+```bash
+bun run compare -- -a claude-code --toolA builtin --toolB you
+```
+
+### Writing Custom Single-Run Graders
+
+For inline evaluation (pass/fail on each prompt), create a single-run grader:
+
+**TypeScript example:**
+```typescript
+// scripts/my-grader.ts
+import type { Grader } from '@plaited/agent-eval-harness/schemas'
+
+export const grade: Grader = async ({ input, output, hint, trajectory }) => {
+  // Check if output contains expected content
+  const pass = output.toLowerCase().includes(hint?.toLowerCase() ?? '')
+  
+  return {
+    pass,
+    score: pass ? 1 : 0,
+    reasoning: pass ? 'Contains expected content' : 'Missing expected content'
+  }
+}
+```
+
+**Python example:**
+```python
+#!/usr/bin/env python3
+# scripts/my-grader.py
+import json
+import sys
+
+data = json.load(sys.stdin)
+output = data.get("output", "").lower()
+hint = (data.get("hint") or "").lower()
+
+pass_result = hint in output if hint else True
+print(json.dumps({
+    "pass": pass_result,
+    "score": 1.0 if pass_result else 0.0,
+    "reasoning": "Contains hint" if pass_result else "Missing hint"
+}))
+```
+
+### Using Custom Graders
+
+**With capture command (inline grading):**
+```bash
+bunx @plaited/agent-eval-harness capture \
+  data/prompts/test.jsonl \
+  --schema agent-schemas/claude-code.json \
+  --grader ./scripts/my-grader.ts \
+  -o data/results/graded.jsonl
+```
+
+**With trials command (pass@k analysis):**
+```bash
+bunx @plaited/agent-eval-harness trials \
+  data/prompts/test.jsonl \
+  --schema agent-schemas/claude-code.json \
+  -k 5 \
+  --grader ./scripts/my-grader.ts \
+  -o data/results/trials.jsonl
+```
+
+### Grader Validation Workflow
+
+Before trusting your grader, validate it against reference solutions:
+
+**Step 1: Create reference prompts**
+```bash
+echo '{"id":"test-1","input":"Find the CEO of Anthropic","reference":"Dario Amodei","hint":"Dario Amodei"}' > test-refs.jsonl
+```
+
+**Step 2: Validate grader**
+```bash
+bunx @plaited/agent-eval-harness validate-refs \
+  test-refs.jsonl \
+  --grader ./scripts/my-grader.ts \
+  -o validation.jsonl
+```
+
+**Step 3: Check for failures**
+```bash
+# If your reference solutions fail, you have a grader bug
+cat validation.jsonl | jq 'select(.pass == false)'
+```
+
+### Grader Calibration
+
+**Why calibrate:** Graders can be too strict (rejecting valid solutions) or too lenient (accepting invalid ones). Calibration catches:
+
+- **Grader bugs** - Rejecting valid solutions
+- **Task definition issues** - Ambiguous requirements
+- **Agent vs grader failures** - Distinguishing real failures from grader mistakes
+
+**Calibration workflow:**
+
+```bash
+# 1. Run evaluation with grading
+bunx @plaited/agent-eval-harness capture \
+  data/prompts/test.jsonl \
+  --schema agent-schemas/claude-code.json \
+  --grader ./scripts/my-grader.ts \
+  -o results.jsonl
+
+# 2. Sample failures for human review
+bunx @plaited/agent-eval-harness calibrate \
+  results.jsonl \
+  --sample 10 \
+  -o calibration.md
+
+# 3. Review calibration.md manually
+# 4. Fix grader bugs or clarify task definitions
+# 5. Re-run validation and evaluation
+```
+
+### Best Practices
+
+**From Anthropic's eval guide:**
+- ✅ **Validate first**: Test grader against reference solutions before evaluating agents
+- ✅ **Read transcripts**: Manually review failures to catch unfair grading
+- ✅ **Calibrate regularly**: Compare grader scores against human judgment
+- ✅ **Provide escape hatch**: LLM judges should have "Unknown" option to avoid hallucinations
+- ✅ **Balance test sets**: Include both positive (should succeed) and negative (should fail) cases
+
+**See also:** [Anthropic's eval guide](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents) for comprehensive evaluation best practices.
 
 ## Architecture
 

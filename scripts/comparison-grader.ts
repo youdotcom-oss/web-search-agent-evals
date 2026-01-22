@@ -49,6 +49,14 @@ const isMcpRun = (label: string): boolean => {
  * - Completeness: Are all aspects covered?
  *
  * @remarks
+ * **Calibration Required:** This LLM-based grader should be calibrated against human judgment.
+ * Use the `calibrate` command to sample failures and validate grader accuracy.
+ *
+ * **LLM Hallucination Risk:** The LLM judge may hallucinate facts. Always:
+ * - Review sampled transcripts manually
+ * - Validate grader against reference solutions
+ * - Check for systematic biases in scoring
+ *
  * Falls back to deterministic-only scoring if GEMINI_API_KEY is not available.
  * Validates MCP runs show different data patterns than builtin.
  *
@@ -89,7 +97,12 @@ export const grade: ComparisonGrader = async ({ id: _id, input, hint, runs }) =>
       }
     }
 
-    scores[label] = { deterministic: deterministicScore, llm: 0, mcpStatus, total: 0 };
+    scores[label] = {
+      deterministic: deterministicScore,
+      llm: 0,
+      mcpStatus,
+      total: 0,
+    };
   }
 
   // Phase 2: LLM quality judgment (slower, nuanced)
@@ -117,6 +130,8 @@ Rate each output on a scale of 0-40 based on:
 - Relevance: Does it answer the query?
 - Completeness: Are all aspects addressed?
 
+**IMPORTANT:** If you cannot confidently judge accuracy (e.g., you don't have access to current facts), return a score of 0 for that output and explain why in the reasoning. Do not hallucinate facts or make up information.
+
 Return ONLY valid JSON with this structure:
 {
   "scores": {
@@ -133,7 +148,10 @@ Return ONLY valid JSON with this structure:
       // Extract JSON from response (handle markdown code blocks)
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
-        const llmResult = JSON.parse(jsonMatch[0]) as { scores: Record<string, number>; reasoning?: string };
+        const llmResult = JSON.parse(jsonMatch[0]) as {
+          scores: Record<string, number>;
+          reasoning?: string;
+        };
 
         // Combine deterministic + LLM scores (fallback to deterministic for missing labels)
         for (const label of Object.keys(scores)) {
@@ -188,7 +206,9 @@ Return ONLY valid JSON with this structure:
       metadata: {
         deterministic: scoreBreakdown.deterministic,
         llm: scoreBreakdown.llm,
-        ...(scoreBreakdown.mcpStatus && { mcpStatus: scoreBreakdown.mcpStatus }),
+        ...(scoreBreakdown.mcpStatus && {
+          mcpStatus: scoreBreakdown.mcpStatus,
+        }),
       },
     }));
 
@@ -198,7 +218,9 @@ Return ONLY valid JSON with this structure:
   }
 
   const mcpInfo = best.metadata.mcpStatus ? `, mcp: ${best.metadata.mcpStatus}` : "";
-  const reasoning = `${best.run} ranked #1 (score: ${best.score.toFixed(2)}, deterministic: ${best.metadata.deterministic}, llm: ${best.metadata.llm}${mcpInfo})`;
+  const reasoning = `${best.run} ranked #1 (score: ${best.score.toFixed(
+    2,
+  )}, deterministic: ${best.metadata.deterministic}, llm: ${best.metadata.llm}${mcpInfo})`;
 
   return { rankings, reasoning };
 };

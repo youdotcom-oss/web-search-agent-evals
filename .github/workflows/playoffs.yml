@@ -5,15 +5,15 @@ on:
   workflow_dispatch:
     inputs:
       prompt_set:
-        description: 'Prompt set to use'
+        description: "Prompt set to use"
         required: true
-        default: 'test'
+        default: "test"
         type: choice
         options:
           - test
           - full
       parallel:
-        description: 'Run agents in parallel (faster but may hit rate limits)'
+        description: "Run agents in parallel (faster but may hit rate limits)"
         required: true
         default: false
         type: boolean
@@ -68,12 +68,12 @@ jobs:
           retention-days: 30
 
   # Full run with 1,254 prompts (manual trigger only)
-  # Sequential: ~24 hours (safe for rate limits)
-  # Parallel: ~4 hours (may hit rate limits)
+  # Sequential (max-parallel: 1): ~24 hours (safe for rate limits)
+  # Parallel (max-parallel: 8): ~4-6 hours (may hit rate limits, limited by slowest agent)
   full:
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.prompt_set == 'full'
     runs-on: ubuntu-latest
-    timeout-minutes: 360  # 6 hours max per agent (Codex can be slow)
+    timeout-minutes: 360 # 6 hours max per agent (Codex can be slow)
     strategy:
       fail-fast: false
       # Parallel mode: faster but may hit API rate limits

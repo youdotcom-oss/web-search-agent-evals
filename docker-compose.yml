@@ -26,7 +26,7 @@ services:
       - --cwd
       - /workspace
       - -o
-      - /eval/data/results/gemini/builtin.jsonl
+      - /eval/data/results/gemini/builtin-test.jsonl
       - --progress
 
   # Gemini + You.com MCP
@@ -50,13 +50,15 @@ services:
       - bunx
       - "@plaited/agent-eval-harness"
       - capture
-      - /eval/data/prompts/test.jsonl
+      - /eval/data/prompts/test-mcp.jsonl
       - --schema
       - /eval/agent-schemas/gemini-mcp.json
+      - --grader
+      - /eval/scripts/inline-grader.ts
       - --cwd
       - /workspace
       - -o
-      - /eval/data/results/gemini/you.jsonl
+      - /eval/data/results/gemini/you-test.jsonl
       - --progress
 
   # Claude Code + builtin search
@@ -88,7 +90,7 @@ services:
       - --timeout
       - "90000"
       - -o
-      - /eval/data/results/claude-code/builtin.jsonl
+      - /eval/data/results/claude-code/builtin-test.jsonl
       - --progress
 
   # Claude Code + You.com MCP
@@ -112,15 +114,17 @@ services:
       - bunx
       - "@plaited/agent-eval-harness"
       - capture
-      - /eval/data/prompts/test.jsonl
+      - /eval/data/prompts/test-mcp.jsonl
       - --schema
       - /eval/agent-schemas/claude-code-mcp.json
+      - --grader
+      - /eval/scripts/inline-grader.ts
       - --cwd
       - /workspace
       - --timeout
       - "90000"
       - -o
-      - /eval/data/results/claude-code/you.jsonl
+      - /eval/data/results/claude-code/you-test.jsonl
       - --progress
 
   # Droid + builtin search
@@ -150,7 +154,7 @@ services:
       - --cwd
       - /workspace
       - -o
-      - /eval/data/results/droid/builtin.jsonl
+      - /eval/data/results/droid/builtin-test.jsonl
       - --progress
 
   # Droid + You.com MCP
@@ -178,13 +182,15 @@ services:
       - bunx
       - "@plaited/agent-eval-harness"
       - capture
-      - /eval/data/prompts/test.jsonl
+      - /eval/data/prompts/test-mcp.jsonl
       - --schema
       - /eval/agent-schemas/droid-mcp.json
+      - --grader
+      - /eval/scripts/inline-grader.ts
       - --cwd
       - /workspace
       - -o
-      - /eval/data/results/droid/you.jsonl
+      - /eval/data/results/droid/you-test.jsonl
       - --progress
 
   # Codex + builtin search
@@ -216,7 +222,7 @@ services:
       - --timeout
       - "180000"
       - -o
-      - /eval/data/results/codex/builtin.jsonl
+      - /eval/data/results/codex/builtin-test.jsonl
       - --progress
 
   # Codex + You.com MCP
@@ -240,14 +246,16 @@ services:
       - bunx
       - "@plaited/agent-eval-harness"
       - capture
-      - /eval/data/prompts/test.jsonl
+      - /eval/data/prompts/test-mcp.jsonl
       - --schema
       - /eval/agent-schemas/codex-mcp.json
+      - --grader
+      - /eval/scripts/inline-grader.ts
       - --cwd
       - /workspace
       - --timeout
       - "180000"
       - -o
-      - /eval/data/results/codex/you.jsonl
+      - /eval/data/results/codex/you-test.jsonl
       - --progress
 

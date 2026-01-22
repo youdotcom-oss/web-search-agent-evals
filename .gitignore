@@ -37,3 +37,6 @@ report.*.json
 # Only ignore temporary/debug files
 data/results/**/*-debug.jsonl
 data/results/**/*-temp.jsonl
+
+# backup files
+*.bak

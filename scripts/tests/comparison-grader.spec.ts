@@ -35,7 +35,7 @@ test("deterministic scoring: completion only", async () => {
   process.env.GEMINI_API_KEY = undefined;
 
   // Dynamically import to get fresh module
-  const { grade } = await import("./comparison-grader.ts");
+  const { grade } = await import("../comparison-grader.ts");
 
   const result = await grade(context);
 
@@ -74,7 +74,7 @@ test("deterministic scoring: completion + tool usage", async () => {
   };
 
   process.env.GEMINI_API_KEY = undefined;
-  const { grade } = await import("./comparison-grader.ts");
+  const { grade } = await import("../comparison-grader.ts");
 
   const result = await grade(context);
 
@@ -116,7 +116,7 @@ test("tool usage detection: case insensitive", async () => {
   };
 
   process.env.GEMINI_API_KEY = undefined;
-  const { grade } = await import("./comparison-grader.ts");
+  const { grade } = await import("../comparison-grader.ts");
 
   const result = await grade(context);
 
@@ -154,7 +154,7 @@ test("rankings sorted by score descending", async () => {
   };
 
   process.env.GEMINI_API_KEY = undefined;
-  const { grade } = await import("./comparison-grader.ts");
+  const { grade } = await import("../comparison-grader.ts");
 
   const result = await grade(context);
 
@@ -187,7 +187,7 @@ test("metadata includes score breakdown", async () => {
   };
 
   process.env.GEMINI_API_KEY = undefined;
-  const { grade } = await import("./comparison-grader.ts");
+  const { grade } = await import("../comparison-grader.ts");
 
   const result = await grade(context);
 
@@ -223,7 +223,7 @@ test("reasoning includes winner and score", async () => {
   };
 
   process.env.GEMINI_API_KEY = undefined;
-  const { grade } = await import("./comparison-grader.ts");
+  const { grade } = await import("../comparison-grader.ts");
 
   const result = await grade(context);
 
@@ -246,7 +246,7 @@ test("handles undefined output in MCP runs", async () => {
   };
 
   process.env.GEMINI_API_KEY = undefined;
-  const { grade } = await import("./comparison-grader.ts");
+  const { grade } = await import("../comparison-grader.ts");
 
   // Should not throw when output is undefined
   const result = await grade(context);

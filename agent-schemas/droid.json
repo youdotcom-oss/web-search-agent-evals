@@ -20,6 +20,16 @@
       "match": { "path": "$.type", "value": "message", "role": "assistant" },
       "emitAs": "message",
       "extract": { "content": "$.text" }
+    },
+    {
+      "match": { "path": "$.type", "value": "tool_call" },
+      "emitAs": "tool_call",
+      "extract": { "title": "$.toolName", "status": "'pending'" }
+    },
+    {
+      "match": { "path": "$.type", "value": "tool_result" },
+      "emitAs": "tool_call",
+      "extract": { "title": "$.id", "status": "'completed'" }
     }
   ],
   "result": {

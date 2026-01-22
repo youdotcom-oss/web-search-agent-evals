@@ -13,6 +13,7 @@ coverage
 # logs
 logs
 *.log
+report.*.json
 
 # dotenv environment variable files
 .env

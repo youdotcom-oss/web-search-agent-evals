@@ -129,7 +129,7 @@ Total successful evaluations: **27/40** pairings
 1. **✅ RESOLVED: Trajectory capture issue** - Root cause identified and PR submitted
    - **Problem**: Claude Code emits tool calls inside `$.message.content[]` arrays, not at root level
    - **Current parser limitation**: Can only check single JSONPath locations, no array iteration
-   - **PR created**: https://github.com/plaited/acp-harness/pull/14
+   - **PR created**: https://github.com/plaited/agent-eval-harness/pull/14
    - **Solution**: Added `[*]` wildcard syntax to `jsonPath()` for array iteration in outputEvents
    - **Next**: Wait for PR merge, then update Claude schema to use `$.message.content[*].type` paths
 

@@ -3,7 +3,7 @@
  * Compare results across different tools for same agent
  *
  * @remarks
- * Uses acp-harness summarize to generate comparison markdown.
+ * Uses agent-eval-harness summarize to generate comparison markdown.
  *
  * Usage:
  *   bun scripts/compare-results.ts -a claude-code --toolA builtin --toolB you
@@ -87,13 +87,13 @@ Examples:
 }
 
 /**
- * Run acp-harness summarize
+ * Run agent-eval-harness summarize
  */
 const summarize = (inputPath: string, outputPath: string): Promise<void> => {
   return new Promise((resolve, reject) => {
     const child = spawn(
       'bunx',
-      ['@plaited/acp-harness', 'summarize', inputPath, '--markdown', '-o', outputPath],
+      ['@plaited/agent-eval-harness', 'summarize', inputPath, '--markdown', '-o', outputPath],
       {
         stdio: 'inherit',
       },
@@ -103,12 +103,12 @@ const summarize = (inputPath: string, outputPath: string): Promise<void> => {
       if (code === 0) {
         resolve()
       } else {
-        reject(new Error(`acp-harness summarize exited with code ${code}`))
+        reject(new Error(`agent-eval-harness summarize exited with code ${code}`))
       }
     })
 
     child.on('error', (error) => {
-      reject(new Error(`Failed to run acp-harness: ${error.message}`))
+      reject(new Error(`Failed to run agent-eval-harness: ${error.message}`))
     })
   })
 }

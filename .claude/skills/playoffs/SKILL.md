@@ -163,8 +163,8 @@ docker compose run --rm claude-code-builtin bash
 
 1. **Test schema compliance**
    ```bash
-   bunx @plaited/acp-harness adapter:check -- \
-     bunx @plaited/acp-harness headless --schema agent-schemas/<agent>.json
+   bunx @plaited/agent-eval-harness adapter:check -- \
+     bunx @plaited/agent-eval-harness headless --schema agent-schemas/<agent>.json
    ```
 
 2. **Capture raw CLI output**

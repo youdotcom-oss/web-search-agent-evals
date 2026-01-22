@@ -11,28 +11,23 @@ services:
       - AGENT=gemini
     volumes:
       - ./data:/eval/data:ro
-      - /tmp/acp-harness:/acp-harness:ro
       - ./agent-schemas:/eval/agent-schemas:ro
       - ./tools:/eval/tools:ro
       - ./scripts:/eval/scripts:ro
       - ./data/results:/eval/data/results:rw
     working_dir: /workspace
     command:
-      - bun
-      - /acp-harness/bin/cli.ts
+      - bunx
+      - "@plaited/agent-eval-harness"
       - capture
       - /eval/data/prompts/search-test.jsonl
+      - --schema
+      - /eval/agent-schemas/gemini.json
       - --cwd
       - /workspace
       - -o
       - /eval/data/results/gemini/builtin.jsonl
       - --progress
-      - --
-      - bun
-      - /acp-harness/bin/cli.ts
-      - headless
-      - --schema
-      - /eval/agent-schemas/gemini.json
 
   # Gemini + You.com MCP
   gemini-you:
@@ -46,28 +41,23 @@ services:
       - AGENT=gemini
     volumes:
       - ./data:/eval/data:ro
-      - /tmp/acp-harness:/acp-harness:ro
       - ./agent-schemas:/eval/agent-schemas:ro
       - ./tools:/eval/tools:ro
       - ./scripts:/eval/scripts:ro
       - ./data/results:/eval/data/results:rw
     working_dir: /workspace
     command:
-      - bun
-      - /acp-harness/bin/cli.ts
+      - bunx
+      - "@plaited/agent-eval-harness"
       - capture
-      - /eval/data/prompts/search-test.jsonl
+      - /eval/data/prompts/search-test-mcp.jsonl
+      - --schema
+      - /eval/agent-schemas/gemini.json
       - --cwd
       - /workspace
       - -o
       - /eval/data/results/gemini/you.jsonl
       - --progress
-      - --
-      - bun
-      - /acp-harness/bin/cli.ts
-      - headless
-      - --schema
-      - /eval/agent-schemas/gemini.json
 
   # Claude Code + builtin search
   claude-code-builtin:
@@ -81,30 +71,25 @@ services:
       - AGENT=claude-code
     volumes:
       - ./data:/eval/data:ro
-      - /tmp/acp-harness:/acp-harness:ro
       - ./agent-schemas:/eval/agent-schemas:ro
       - ./tools:/eval/tools:ro
       - ./scripts:/eval/scripts:ro
       - ./data/results:/eval/data/results:rw
     working_dir: /workspace
     command:
-      - bun
-      - /acp-harness/bin/cli.ts
+      - bunx
+      - "@plaited/agent-eval-harness"
       - capture
       - /eval/data/prompts/search-test.jsonl
-      - --cwd
-      - /workspace
-      - -o
-      - /eval/data/results/claude-code/builtin.jsonl
-      - --timeout
-      - "90000"
-      - --progress
-      - --
-      - bun
-      - /acp-harness/bin/cli.ts
-      - headless
       - --schema
       - /eval/agent-schemas/claude-code.json
+      - --cwd
+      - /workspace
+      - --timeout
+      - "90000"
+      - -o
+      - /eval/data/results/claude-code/builtin.jsonl
+      - --progress
 
   # Claude Code + You.com MCP
   claude-code-you:
@@ -118,30 +103,25 @@ services:
       - AGENT=claude-code
     volumes:
       - ./data:/eval/data:ro
-      - /tmp/acp-harness:/acp-harness:ro
       - ./agent-schemas:/eval/agent-schemas:ro
       - ./tools:/eval/tools:ro
       - ./scripts:/eval/scripts:ro
       - ./data/results:/eval/data/results:rw
     working_dir: /workspace
     command:
-      - bun
-      - /acp-harness/bin/cli.ts
+      - bunx
+      - "@plaited/agent-eval-harness"
       - capture
       - /eval/data/prompts/search-test-mcp.jsonl
-      - --cwd
-      - /workspace
-      - -o
-      - /eval/data/results/claude-code/you.jsonl
-      - --timeout
-      - "90000"
-      - --progress
-      - --
-      - bun
-      - /acp-harness/bin/cli.ts
-      - headless
       - --schema
       - /eval/agent-schemas/claude-code.json
+      - --cwd
+      - /workspace
+      - --timeout
+      - "90000"
+      - -o
+      - /eval/data/results/claude-code/you.jsonl
+      - --progress
 
   # Droid + builtin search
   droid-builtin:
@@ -155,28 +135,23 @@ services:
       - AGENT=droid
     volumes:
       - ./data:/eval/data:ro
-      - /tmp/acp-harness:/acp-harness:ro
       - ./agent-schemas:/eval/agent-schemas:ro
       - ./tools:/eval/tools:ro
       - ./scripts:/eval/scripts:ro
       - ./data/results:/eval/data/results:rw
     working_dir: /workspace
     command:
-      - bun
-      - /acp-harness/bin/cli.ts
+      - bunx
+      - "@plaited/agent-eval-harness"
       - capture
       - /eval/data/prompts/search-test.jsonl
+      - --schema
+      - /eval/agent-schemas/droid.json
       - --cwd
       - /workspace
       - -o
       - /eval/data/results/droid/builtin.jsonl
       - --progress
-      - --
-      - bun
-      - /acp-harness/bin/cli.ts
-      - headless
-      - --schema
-      - /eval/agent-schemas/droid.json
 
   # Droid + You.com MCP
   droid-you:
@@ -194,28 +169,23 @@ services:
           memory: 4G
     volumes:
       - ./data:/eval/data:ro
-      - /tmp/acp-harness:/acp-harness:ro
       - ./agent-schemas:/eval/agent-schemas:ro
       - ./tools:/eval/tools:ro
       - ./scripts:/eval/scripts:ro
       - ./data/results:/eval/data/results:rw
     working_dir: /workspace
     command:
-      - bun
-      - /acp-harness/bin/cli.ts
+      - bunx
+      - "@plaited/agent-eval-harness"
       - capture
-      - /eval/data/prompts/search-test.jsonl
+      - /eval/data/prompts/search-test-mcp.jsonl
+      - --schema
+      - /eval/agent-schemas/droid.json
       - --cwd
       - /workspace
       - -o
       - /eval/data/results/droid/you.jsonl
       - --progress
-      - --
-      - bun
-      - /acp-harness/bin/cli.ts
-      - headless
-      - --schema
-      - /eval/agent-schemas/droid.json
 
   # Codex + builtin search
   codex-builtin:
@@ -227,20 +197,20 @@ services:
     environment:
       - MCP_TOOL=builtin
       - AGENT=codex
-      - NODE_PATH=/acp-harness/node_modules
     volumes:
       - ./data:/eval/data:ro
-      - /tmp/acp-harness:/acp-harness:ro
       - ./agent-schemas:/eval/agent-schemas:ro
       - ./tools:/eval/tools:ro
       - ./scripts:/eval/scripts:ro
       - ./data/results:/eval/data/results:rw
     working_dir: /workspace
     command:
-      - bun
-      - /acp-harness/bin/cli.ts
+      - bunx
+      - "@plaited/agent-eval-harness"
       - capture
       - /eval/data/prompts/search-test.jsonl
+      - --schema
+      - /eval/agent-schemas/codex.json
       - --cwd
       - /workspace
       - --timeout
@@ -248,12 +218,6 @@ services:
       - -o
       - /eval/data/results/codex/builtin.jsonl
       - --progress
-      - --
-      - bun
-      - /acp-harness/bin/cli.ts
-      - headless
-      - --schema
-      - /eval/agent-schemas/codex.json
 
   # Codex + You.com MCP
   codex-you:
@@ -267,25 +231,22 @@ services:
       - AGENT=codex
     volumes:
       - ./data:/eval/data:ro
-      - /tmp/acp-harness:/acp-harness:ro
       - ./agent-schemas:/eval/agent-schemas:ro
       - ./tools:/eval/tools:ro
       - ./scripts:/eval/scripts:ro
       - ./data/results:/eval/data/results:rw
     working_dir: /workspace
     command:
-      - bun
-      - /acp-harness/bin/cli.ts
+      - bunx
+      - "@plaited/agent-eval-harness"
       - capture
-      - /eval/data/prompts/search-test.jsonl
+      - /eval/data/prompts/search-test-mcp.jsonl
+      - --schema
+      - /eval/agent-schemas/codex.json
       - --cwd
       - /workspace
+      - --timeout
+      - "120000"
       - -o
       - /eval/data/results/codex/you.jsonl
       - --progress
-      - --
-      - bun
-      - /acp-harness/bin/cli.ts
-      - headless
-      - --schema
-      - /eval/agent-schemas/codex.json

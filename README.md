@@ -7,7 +7,7 @@ Evaluate multiple agents (Claude Code, Gemini, Droid, Codex) with different web 
 The **playoffs** system runs a matrix evaluation: 4 agents × 2 tools = 8 pairings, capturing full trajectories for comparison.
 
 **Key Features:**
-- **Headless adapters** - No custom code, just JSON schemas ([@plaited/acp-harness](https://www.npmjs.com/package/@plaited/acp-harness))
+- **Headless adapters** - No custom code, just JSON schemas ([@plaited/agent-eval-harness](https://www.npmjs.com/package/@plaited/agent-eval-harness))
 - **Type-safe configs** - Zod schemas ensure MCP configs are correct
 - **Single source of truth** - `tools/mcp-servers.json` drives all MCP config generation
 - **Isolated execution** - Each pairing runs in its own Docker container
@@ -15,7 +15,7 @@ The **playoffs** system runs a matrix evaluation: 4 agents × 2 tools = 8 pairin
 
 ```mermaid
 flowchart TD
-    Prompts[prompts.jsonl] --> Harness[acp-harness]
+    Prompts[prompts.jsonl] --> Harness[agent-eval-harness]
     Schemas[agent-schemas/*.json] --> Harness
     MCP[tools/mcp-servers.json] --> Generate[generate-mcp-config]
     Generate --> ClaudeConfig[.mcp.json]
@@ -183,8 +183,8 @@ docker compose run --rm claude-code-builtin bash
 
 ```bash
 # Generate summary
-bunx @plaited/acp-harness summarize data/results/claude-code/builtin.jsonl -o summary.jsonl
-bunx @plaited/acp-harness summarize data/results/claude-code/you.jsonl --markdown -o summary.md
+bunx @plaited/agent-eval-harness summarize data/results/claude-code/builtin.jsonl -o summary.jsonl
+bunx @plaited/agent-eval-harness summarize data/results/claude-code/you.jsonl --markdown -o summary.md
 
 # Count tool usage
 cat data/results/claude-code/builtin.jsonl | jq -r '.trajectory[] | select(.type == "tool_call") | .name' | sort | uniq -c
@@ -198,7 +198,7 @@ cat data/results/gemini/you.jsonl | jq 'select(.toolErrors == true)'
 1. **Create adapter schema** (`agent-schemas/<agent>.json`)
    - Test CLI: `<agent> --help`
    - Map JSON events to ACP
-   - Test: `bunx @plaited/acp-harness adapter:check -- bunx @plaited/acp-harness headless --schema agent-schemas/<agent>.json`
+   - Test: `bunx @plaited/agent-eval-harness adapter:check -- bunx @plaited/agent-eval-harness headless --schema agent-schemas/<agent>.json`
 
 2. **Create MCP schema** (`tools/schemas/<agent>-mcp.ts`)
    - Research config location
@@ -279,8 +279,8 @@ See `.claude/skills/playoffs/SKILL.md` for detailed scaffolding guide.
 
 2. **Test adapter compliance**
    ```bash
-   bunx @plaited/acp-harness adapter:check -- \
-     bunx @plaited/acp-harness headless --schema agent-schemas/<agent>.json
+   bunx @plaited/agent-eval-harness adapter:check -- \
+     bunx @plaited/agent-eval-harness headless --schema agent-schemas/<agent>.json
    ```
 
 ### Docker Build Failures
@@ -361,13 +361,13 @@ This project uses [AgentSkills](https://agentskills.io) for agent-first developm
 
 - **playoffs** (`.claude/skills/playoffs/`) - Development assistant for extending playoffs
 - **acp-adapters** - Schema creation and adapter testing
-- **acp-harness** - Capture, trials, and analysis commands
+- **agent-eval-harness** - Capture, trials, and analysis commands
 
 See [@AGENTS.md](AGENTS.md) for development rules and conventions.
 
 ## Built With
 
-- **[@plaited/acp-harness](https://www.npmjs.com/package/@plaited/acp-harness)** - Trajectory capture framework
+- **[@plaited/agent-eval-harness](https://www.npmjs.com/package/@plaited/agent-eval-harness)** - Trajectory capture framework
 - **[Zod](https://zod.dev)** - TypeScript-first schema validation
 - **[Bun](https://bun.sh)** - Fast TypeScript runtime
 - **[Docker](https://www.docker.com)** - Isolated execution

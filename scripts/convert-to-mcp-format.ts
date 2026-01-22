@@ -7,7 +7,6 @@
  */
 
 import { parseArgs } from "node:util";
-import { join } from "node:path";
 
 type Prompt = {
   id: string;
@@ -27,10 +26,7 @@ const convertToMcpFormat = (prompt: Prompt): Prompt => {
   }
 
   // Add mcp-server="ydc-server" attribute to <web-search> tags
-  const mcpInput = prompt.input.replace(
-    /<web-search>/g,
-    '<web-search mcp-server="ydc-server">',
-  );
+  const mcpInput = prompt.input.replace(/<web-search>/g, '<web-search mcp-server="ydc-server">');
 
   return {
     ...prompt,

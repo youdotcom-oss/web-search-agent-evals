@@ -66,20 +66,31 @@ const similarity = (a: string, b: string): number => {
         if (i === 0) {
           costs[j] = j;
         } else if (j > 0) {
-          let newValue = costs[j - 1];
+          const prevCost = costs[j - 1];
+          if (prevCost === undefined) continue;
+
+          let newValue = prevCost;
           if (s1.charAt(i - 1) !== s2.charAt(j - 1)) {
-            newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
+            const currentCost = costs[j];
+            if (currentCost !== undefined) {
+              newValue = Math.min(Math.min(newValue, lastValue), currentCost) + 1;
+            }
           }
           costs[j - 1] = lastValue;
           lastValue = newValue;
         }
       }
-      if (i > 0) costs[s2.length] = lastValue;
+      if (i > 0) {
+        costs[s2.length] = lastValue;
+      }
     }
-    return costs[s2.length];
+    const finalCost = costs[s2.length];
+    if (finalCost === undefined) return 0;
+    return finalCost;
   };
 
-  return (longer.length - editDistance(longer, shorter)) / longer.length;
+  const distance = editDistance(longer, shorter);
+  return (longer.length - distance) / longer.length;
 };
 
 /**
@@ -184,6 +195,8 @@ const main = async () => {
   for (let i = 0; i < Math.min(builtinResults.length, mcpResults.length); i++) {
     const builtin = builtinResults[i];
     const mcp = mcpResults[i];
+
+    if (!builtin || !mcp) continue;
 
     if (builtin.id !== mcp.id) {
       console.error(`⚠ Warning: ID mismatch at index ${i}: "${builtin.id}" vs "${mcp.id}"`);

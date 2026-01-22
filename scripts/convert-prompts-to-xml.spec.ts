@@ -192,9 +192,9 @@ test("batch conversion maintains order", () => {
 
   const results = prompts.map(convertPrompt);
 
-  expect(results[0].id).toBe("a");
-  expect(results[1].id).toBe("b");
-  expect(results[2].id).toBe("c");
+  expect(results[0]?.id).toBe("a");
+  expect(results[1]?.id).toBe("b");
+  expect(results[2]?.id).toBe("c");
 });
 
 test("handles special characters in query", () => {

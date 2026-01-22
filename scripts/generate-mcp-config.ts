@@ -105,9 +105,10 @@ const main = async () => {
   const servers = mcpServersData.servers;
 
   // Filter to requested tool
-  const filteredServers: Record<string, any> = {};
+  type ServerConfig = { name: string; url: string; auth?: { envVar: string } };
+  const filteredServers: Record<string, ServerConfig> = {};
   if (servers[tool]) {
-    filteredServers[tool] = servers[tool];
+    filteredServers[tool] = servers[tool] as ServerConfig;
   } else {
     console.error(`Error: Tool "${tool}" not found in mcp-servers.json`);
     process.exit(1);
@@ -115,7 +116,7 @@ const main = async () => {
 
   // Generate agent-specific config
   const env = process.env as Record<string, string | undefined>;
-  let config: any;
+  let config: unknown;
   let configPath: string | null;
   let configDir: string | undefined;
 

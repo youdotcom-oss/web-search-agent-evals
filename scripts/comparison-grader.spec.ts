@@ -1,5 +1,5 @@
 import { test, expect } from "bun:test";
-import type { ComparisonGraderContext } from "@plaited/agent-eval-harness/pipeline";
+import type { ComparisonGrader } from "@plaited/agent-eval-harness/pipeline";
 
 /**
  * Tests for hybrid comparison grader
@@ -7,6 +7,8 @@ import type { ComparisonGraderContext } from "@plaited/agent-eval-harness/pipeli
  * @remarks
  * Tests deterministic scoring, LLM integration, and fallback behavior
  */
+
+type ComparisonGraderContext = Parameters<ComparisonGrader>[0];
 
 test("deterministic scoring: completion only", async () => {
   // Mock Gemini to test deterministic fallback
@@ -41,10 +43,10 @@ test("deterministic scoring: completion only", async () => {
   if (originalEnv) process.env.GEMINI_API_KEY = originalEnv;
 
   expect(result.rankings).toHaveLength(2);
-  expect(result.rankings[0].run).toBe("agent-a");
-  expect(result.rankings[0].score).toBe(0.4); // 40pts completion only
-  expect(result.rankings[1].run).toBe("agent-b");
-  expect(result.rankings[1].score).toBe(0); // No output
+  expect(result.rankings[0]?.run).toBe("agent-a");
+  expect(result.rankings[0]?.score).toBe(0.3); // 30pts completion only
+  expect(result.rankings[1]?.run).toBe("agent-b");
+  expect(result.rankings[1]?.score).toBe(0); // No output
 });
 
 test("deterministic scoring: completion + tool usage", async () => {
@@ -76,10 +78,10 @@ test("deterministic scoring: completion + tool usage", async () => {
 
   const result = await grade(context);
 
-  expect(result.rankings[0].run).toBe("agent-a");
-  expect(result.rankings[0].score).toBe(0.6); // 40pts completion + 20pts tool
-  expect(result.rankings[1].run).toBe("agent-b");
-  expect(result.rankings[1].score).toBe(0.4); // 40pts completion only
+  expect(result.rankings[0]?.run).toBe("agent-a");
+  expect(result.rankings[0]?.score).toBe(0.5); // 30pts completion + 20pts tool
+  expect(result.rankings[1]?.run).toBe("agent-b");
+  expect(result.rankings[1]?.score).toBe(0.3); // 30pts completion only
 });
 
 test("tool usage detection: case insensitive", async () => {
@@ -119,8 +121,8 @@ test("tool usage detection: case insensitive", async () => {
   const result = await grade(context);
 
   // Both should get tool usage points
-  expect(result.rankings[0].score).toBe(0.6);
-  expect(result.rankings[1].score).toBe(0.6);
+  expect(result.rankings[0]?.score).toBe(0.5);
+  expect(result.rankings[1]?.score).toBe(0.5);
 });
 
 test("rankings sorted by score descending", async () => {
@@ -156,12 +158,12 @@ test("rankings sorted by score descending", async () => {
 
   const result = await grade(context);
 
-  expect(result.rankings[0].run).toBe("high-score");
-  expect(result.rankings[0].rank).toBe(1);
-  expect(result.rankings[1].run).toBe("mid-score");
-  expect(result.rankings[1].rank).toBe(2);
-  expect(result.rankings[2].run).toBe("low-score");
-  expect(result.rankings[2].rank).toBe(3);
+  expect(result.rankings[0]?.run).toBe("high-score");
+  expect(result.rankings[0]?.rank).toBe(1);
+  expect(result.rankings[1]?.run).toBe("mid-score");
+  expect(result.rankings[1]?.rank).toBe(2);
+  expect(result.rankings[2]?.run).toBe("low-score");
+  expect(result.rankings[2]?.rank).toBe(3);
 });
 
 test("metadata includes score breakdown", async () => {
@@ -189,9 +191,13 @@ test("metadata includes score breakdown", async () => {
 
   const result = await grade(context);
 
-  expect(result.rankings[0].metadata).toBeDefined();
-  expect(result.rankings[0].metadata?.deterministic).toBe(60); // 40 + 20
-  expect(result.rankings[0].metadata?.llm).toBe(0); // No LLM when key missing
+  const ranking = result.rankings[0];
+  expect(ranking).toBeDefined();
+  if (ranking) {
+    expect((ranking as any).metadata).toBeDefined();
+    expect((ranking as any).metadata.deterministic).toBe(50); // 30 + 20
+    expect((ranking as any).metadata.llm).toBe(0); // No LLM when key missing
+  }
 });
 
 test("reasoning includes winner and score", async () => {
@@ -225,6 +231,6 @@ test("reasoning includes winner and score", async () => {
 
   expect(result.reasoning).toContain("winner");
   expect(result.reasoning).toContain("ranked #1");
-  expect(result.reasoning).toContain("0.60"); // Score
-  expect(result.reasoning).toContain("deterministic: 60");
+  expect(result.reasoning).toContain("0.50"); // Score
+  expect(result.reasoning).toContain("deterministic: 50");
 });

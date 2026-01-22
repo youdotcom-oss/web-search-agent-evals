@@ -122,13 +122,15 @@ Service: ${serviceName}
     await runDockerService(serviceName);
     console.log("\n✓ Pairing completed successfully");
     console.log(`Results: data/results/${agent}/${tool}.jsonl`);
-  } catch (error) {
-    console.error(`\n✗ Pairing failed: ${error.message}`);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`\n✗ Pairing failed: ${message}`);
     process.exit(1);
   }
 };
 
-main().catch((error) => {
-  console.error("Error:", error.message);
+main().catch((error: unknown) => {
+  const message = error instanceof Error ? error.message : String(error);
+  console.error("Error:", message);
   process.exit(1);
 });

@@ -143,17 +143,23 @@ Return ONLY valid JSON with this structure:
           }
         }
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("LLM grading failed, using deterministic only:", error);
       // Fallback: use only deterministic scores
       for (const label of Object.keys(scores)) {
-        scores[label].total = scores[label].deterministic;
+        const score = scores[label];
+        if (score) {
+          score.total = score.deterministic;
+        }
       }
     }
   } else {
     // No API key: use only deterministic scores
     for (const label of Object.keys(scores)) {
-      scores[label].total = scores[label].deterministic;
+      const score = scores[label];
+      if (score) {
+        score.total = score.deterministic;
+      }
     }
   }
 
@@ -172,6 +178,10 @@ Return ONLY valid JSON with this structure:
     }));
 
   const best = rankings[0];
+  if (!best) {
+    throw new Error("No rankings generated");
+  }
+
   const mcpInfo = best.metadata.mcpStatus ? `, mcp: ${best.metadata.mcpStatus}` : "";
   const reasoning = `${best.run} ranked #1 (score: ${best.score.toFixed(2)}, deterministic: ${best.metadata.deterministic}, llm: ${best.metadata.llm}${mcpInfo})`;
 

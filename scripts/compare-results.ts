@@ -179,13 +179,15 @@ Tool B: ${toolB}
     console.log("\nView results:");
     console.log(`  cat ${comparisonFile} | jq .`);
     console.log(`  cat ${comparisonFile} | jq -r '.rankings[] | "\\(.run): rank \\(.rank) (score: \\(.score))"'`);
-  } catch (error) {
-    console.error(`\n✗ Comparison failed: ${error.message}`);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`\n✗ Comparison failed: ${message}`);
     process.exit(1);
   }
 };
 
-main().catch((error) => {
-  console.error("Error:", error.message);
+main().catch((error: unknown) => {
+  const message = error instanceof Error ? error.message : String(error);
+  console.error("Error:", message);
   process.exit(1);
 });

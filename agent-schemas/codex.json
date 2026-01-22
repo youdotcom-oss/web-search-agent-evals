@@ -15,11 +15,16 @@
       "match": { "path": "$.item.type", "value": "agent_message" },
       "emitAs": "message",
       "extract": { "content": "$.item.text" }
+    },
+    {
+      "match": { "path": "$.item.type", "value": "command_execution" },
+      "emitAs": "tool_call",
+      "extract": { "title": "$.item.id", "status": "$.item.status" }
     }
   ],
   "result": {
     "matchPath": "$.type",
     "matchValue": "turn.completed",
-    "contentPath": "$.usage.output_tokens"
+    "contentPath": "$"
   }
 }

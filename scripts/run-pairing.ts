@@ -27,7 +27,6 @@ const parseCliArgs = () => {
     options: {
       agent: { type: "string", short: "a" },
       tool: { type: "string", short: "t" },
-      prompts: { type: "string", short: "p", default: "data/prompts/search-test.jsonl" },
       help: { type: "boolean", short: "h" },
     },
   });
@@ -37,17 +36,20 @@ const parseCliArgs = () => {
 Run single agent×tool pairing via Docker Compose
 
 Usage:
-  bun scripts/run-pairing.ts -a <agent> -t <tool> [-p <prompts>]
+  bun scripts/run-pairing.ts -a <agent> -t <tool>
 
 Options:
   -a, --agent <name>     Agent name: ${AGENTS.join(", ")}
   -t, --tool <name>      Tool name: ${TOOLS.join(", ")}
-  -p, --prompts <path>   Prompts file (default: data/prompts/search-test.jsonl)
   -h, --help             Show this help
+
+Note:
+  Prompt files are configured in docker-compose.yml per service.
+  To use different prompts, modify the service definition.
 
 Examples:
   bun scripts/run-pairing.ts -a claude-code -t you
-  bun scripts/run-pairing.ts -a gemini -t builtin -p data/prompts/full.jsonl
+  bun scripts/run-pairing.ts -a gemini -t builtin
 `);
     process.exit(0);
   }
@@ -71,7 +73,7 @@ Examples:
     process.exit(1);
   }
 
-  return { agent, tool, prompts: values.prompts as string };
+  return { agent, tool };
 };
 
 /**
@@ -104,7 +106,7 @@ const runDockerService = (serviceName: string): Promise<void> => {
  * Main execution
  */
 const main = async () => {
-  const { agent, tool, prompts } = parseCliArgs();
+  const { agent, tool } = parseCliArgs();
 
   // Service name follows pattern: <agent>-<tool>
   const serviceName = `${agent}-${tool}`;
@@ -114,7 +116,6 @@ Playoffs Pairing
 ================
 Agent:   ${agent}
 Tool:    ${tool}
-Prompts: ${prompts}
 Service: ${serviceName}
 `);
 

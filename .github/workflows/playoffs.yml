@@ -134,6 +134,7 @@ jobs:
           merge-multiple: true
 
       - name: Create results branch
+        id: create-results-branch
         run: |
           BRANCH_NAME="results/full-workflow-$(date +%Y%m%d-%H%M%S)"
           git config user.name "github-actions[bot]"
@@ -157,7 +158,7 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:
-          branch: ${{ steps.commit-results.outputs.branch_name }}
+          branch: ${{ steps.create-results-branch.outputs.branch_name }}
           title: "Results: Full workflow evaluation"
           body: |
             ## Full Workflow Results

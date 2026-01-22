@@ -344,10 +344,8 @@ acp-evals/
 
 ## Related Documentation
 
-- [Agent Schemas README](../../../agent-schemas/README.md)
-- [MCP Tools README](../../../tools/README.md)
-- [Prompts README](../../../data/prompts/README.md)
+- [Agent Schemas](../../../agent-schemas/AGENTS.md)
+- [MCP Tools](../../../tools/AGENTS.md)
+- [Prompts](../../../data/prompts/AGENTS.md)
 - [Main README](../../../README.md)
 - [MCP Variant Analysis](../../../data/MCP-VARIANT-ANALYSIS.md)
-- [Final Results](../../../FINAL-RESULTS.md)
-- [Plan Completion](../../../PLAN-COMPLETION-SUMMARY.md)

@@ -135,11 +135,26 @@ Return ONLY valid JSON with this structure:
       if (jsonMatch) {
         const llmResult = JSON.parse(jsonMatch[0]) as { scores: Record<string, number>; reasoning?: string };
 
-        // Combine deterministic + LLM scores
-        for (const [label, llmScore] of Object.entries(llmResult.scores)) {
-          if (scores[label]) {
-            scores[label].llm = llmScore;
-            scores[label].total = scores[label].deterministic + llmScore;
+        // Combine deterministic + LLM scores (fallback to deterministic for missing labels)
+        for (const label of Object.keys(scores)) {
+          const score = scores[label];
+          if (!score) continue;
+
+          const llmScore = llmResult.scores?.[label];
+          if (typeof llmScore === "number") {
+            score.llm = llmScore;
+            score.total = score.deterministic + llmScore;
+          } else {
+            // LLM didn't score this label - use deterministic only
+            score.total = score.deterministic;
+          }
+        }
+      } else {
+        // No JSON found - fall back to deterministic scores
+        for (const label of Object.keys(scores)) {
+          const score = scores[label];
+          if (score) {
+            score.total = score.deterministic;
           }
         }
       }

@@ -43,8 +43,8 @@ const convertPrompt = (prompt: Prompt): Prompt => {
     }
   }
 
-  // Wrap in XML
-  const xmlInput = `<web-search>${question}</web-search>`;
+  // Wrap in XML (escape special characters to prevent invalid XML)
+  const xmlInput = `<web-search>${Bun.escapeHTML(question)}</web-search>`;
 
   return {
     ...prompt,

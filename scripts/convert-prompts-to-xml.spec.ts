@@ -39,7 +39,8 @@ const convertPrompt = (prompt: Prompt): Prompt => {
     }
   }
 
-  const xmlInput = `<web-search>${question}</web-search>`;
+  // Wrap in XML (escape special characters to prevent invalid XML)
+  const xmlInput = `<web-search>${Bun.escapeHTML(question)}</web-search>`;
 
   return {
     ...prompt,
@@ -197,7 +198,7 @@ test("batch conversion maintains order", () => {
   expect(results[2]?.id).toBe("c");
 });
 
-test("handles special characters in query", () => {
+test("escapes special XML characters in query", () => {
   const prompt: Prompt = {
     id: "test-11",
     input: "C++ templates & STL containers",
@@ -205,7 +206,22 @@ test("handles special characters in query", () => {
 
   const result = convertPrompt(prompt);
 
-  expect(result.input).toContain("C++ templates & STL containers");
+  // Should escape & to &amp; for valid XML
+  expect(result.input).toContain("&amp;");
+  expect(result.input).toStartWith("<web-search>");
+  expect(result.input).toEndWith("</web-search>");
+});
+
+test("escapes angle brackets in query", () => {
+  const prompt: Prompt = {
+    id: "test-12",
+    input: "How to use <Component> in React?",
+  };
+
+  const result = convertPrompt(prompt);
+
+  // Should escape < and > for valid XML
+  expect(result.input).toContain("&lt;Component&gt;");
   expect(result.input).toStartWith("<web-search>");
   expect(result.input).toEndWith("</web-search>");
 });

@@ -4,7 +4,7 @@ Step-by-step workflow for creating headless adapter schemas for CLI coding agent
 
 ## Overview
 
-The headless adapter transforms any CLI agent with JSON output into an ACP-compatible adapter. You just need a schema file describing how to interact with the CLI.
+The headless adapter transforms any CLI agent with JSON output into a protocol-compatible adapter. You just need a schema file describing how to interact with the CLI.
 
 ## Workflow
 
@@ -14,8 +14,7 @@ flowchart TD
     B --> C["3. Capture Sample Output"]
     C --> D["4. Map JSONPath Patterns"]
     D --> E["5. Create Schema File"]
-    E --> F["6. Test with Headless"]
-    F --> G["7. Validate with adapter:check"]
+    E --> F["6. Test with Debug Mode"]
 ```
 
 ### Step 1: Explore CLI Help
@@ -82,7 +81,7 @@ AGENT_API_KEY=... <agent> exec -o stream-json "Say hello" | jq -c '.'
 
 Analyze the output to create event mappings:
 
-| JSON Event | ACP Event Type | Extract Fields |
+| JSON Event | Event Type | Extract Fields |
 |------------|---------------|----------------|
 | `{"type": "message", ...}` | `message` | `$.content` |
 | `{"type": "tool_use", ...}` | `tool_call` | `$.name` (title), `"pending"` (status) |
@@ -104,7 +103,7 @@ Use an existing schema as a template:
 
 ```bash
 # Copy from tested schema
-cp .claude/skills/acp-adapters/schemas/claude-headless.json ./my-agent-headless.json
+cp .claude/skills/headless-adapters/schemas/claude-headless.json ./my-agent-headless.json
 ```
 
 Modify for your agent:
@@ -151,25 +150,21 @@ Run the headless adapter with your schema:
 
 ```bash
 # Test the adapter
-AGENT_API_KEY=... bunx @plaited/acp-harness headless --schema ./my-agent-headless.json
+AGENT_API_KEY=... bunx @plaited/agent-eval-harness headless --schema ./my-agent-headless.json
 ```
 
-### Step 7: Validate with adapter:check
+### Step 6: Test with Debug Mode
 
-Verify ACP compliance:
+Use debug mode to verify JSONPath extraction:
 
 ```bash
-bunx @plaited/acp-harness adapter:check \
-  bunx @plaited/acp-harness headless --schema ./my-agent-headless.json
+AGENT_API_KEY=... bunx @plaited/agent-eval-harness headless --schema ./my-agent-headless.json --debug
 ```
 
-All 6 checks should pass:
-- `spawn` - Adapter launches
-- `initialize` - Protocol handshake works
-- `session/new` - Session creation works
-- `session/prompt` - Prompt handling works
-- `session/cancel` - Cancel is acknowledged
-- `framing` - Valid JSON-RPC framing
+Debug mode shows:
+- Raw CLI output lines
+- JSONPath match attempts
+- Extracted values for each event
 
 ## Schema Field Reference
 
@@ -218,7 +213,7 @@ All 6 checks should pass:
 
 **Not yet compatible:** [Copilot CLI](https://docs.github.com/en/copilot/concepts/agents/about-copilot-cli) (no JSON output)
 
-> **Note:** For detailed ACP protocol questions during schema creation, use the `agent-client-protocol-docs` MCP server. See SKILL.md for configuration.
+> **Note:** For detailed protocol questions during schema creation, use the `agent-client-protocol-docs` MCP server. See SKILL.md for configuration.
 
 ## Troubleshooting
 
@@ -246,7 +241,7 @@ cat raw-output.jsonl | jq '.'
 ```bash
 # Test initialize and session creation
 printf '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":1}}\n{"jsonrpc":"2.0","id":2,"method":"session/new","params":{}}\n' | \
-  bun src/headless-cli.ts --schema ./my-schema.json 2>&1
+  bunx @plaited/agent-eval-harness headless --schema ./my-schema.json 2>&1
 ```
 
 **3. Common JSONPath issues:**
@@ -271,6 +266,6 @@ Once your schema is working:
 
 1. Run the integration test suite with your schema
 2. Submit a PR to add it to the `schemas/` directory
-3. Include the integration test file as `integration_tests/acp-<agent>.spec.ts`
+3. Include the integration test file as `integration_tests/<agent>.spec.ts`
 
 Only schemas with passing integration tests are included in the official distribution.

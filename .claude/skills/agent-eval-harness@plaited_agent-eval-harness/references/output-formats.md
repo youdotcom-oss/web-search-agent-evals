@@ -7,27 +7,31 @@ The harness uses a "capture once, derive many views" approach. The `capture` com
 The `capture` command always outputs full trajectory JSONL:
 
 ```bash
-acp-harness capture prompts.jsonl bunx claude-code-acp -o results.jsonl
+agent-eval-harness capture prompts.jsonl bunx claude-code-acp -o results.jsonl
 ```
 
 ### Schema
 
 ```typescript
 type CaptureResult = {
-  id: string                    // Prompt identifier
-  input: string                 // Original prompt text
-  output: string                // Final agent response
-  hint?: string                 // Grader context (if provided in prompt)
-  trajectory: TrajectoryStep[]  // Full execution trajectory
+  id: string                      // Prompt identifier
+  input: string | string[]        // Single prompt or multi-turn conversation
+  output: string                  // Final agent response
+  hint?: string                   // Grader context (if provided in prompt)
+  trajectory: TrajectoryStep[]    // Full execution trajectory
   metadata: Record<string, unknown>  // Prompt metadata
   timing: {
-    start: number               // Unix timestamp (ms)
-    end: number                 // Unix timestamp (ms)
-    firstResponse?: number      // Time to first response (ms)
+    start: number                 // Unix timestamp (ms)
+    end: number                   // Unix timestamp (ms)
+    firstResponse?: number        // Time to first response (ms)
+    sessionCreation: number       // Time to create session (ms)
+    total: number                 // Total duration (end - start, ms)
+    inputTokens?: number          // Input tokens consumed (if available)
+    outputTokens?: number         // Output tokens generated (if available)
   }
-  toolErrors: boolean           // Whether any tool calls failed
-  errors?: string[]             // Error messages (if any)
-  score?: GraderResult          // Grader score (if grader was provided)
+  toolErrors: boolean             // Whether any tool calls failed
+  errors?: string[]               // Error messages (if any)
+  score?: GraderResult            // Grader score (if grader was provided)
 }
 
 type TrajectoryStep =
@@ -35,7 +39,7 @@ type TrajectoryStep =
   | { type: 'message'; content: string; timestamp: number; stepId?: string }
   | {
       type: 'tool_call'
-      name: string              // Tool title from ACP SDK
+      name: string              // Tool title
       status: string            // pending, in_progress, completed, failed
       input?: unknown           // Raw input parameters
       output?: unknown          // Raw output
@@ -63,7 +67,7 @@ type GraderResult = {
 The `summarize` command derives compact JSONL from full trajectory:
 
 ```bash
-acp-harness summarize results.jsonl -o summary.jsonl
+agent-eval-harness summarize results.jsonl -o summary.jsonl
 ```
 
 ### Schema
@@ -103,7 +107,7 @@ cat summary.jsonl | jq 'select(.output | contains("error"))'
 The `summarize` command can also produce markdown for LLM-as-judge workflows:
 
 ```bash
-acp-harness summarize results.jsonl --markdown -o results.md
+agent-eval-harness summarize results.jsonl --markdown -o results.md
 ```
 
 ### Structure
@@ -147,7 +151,7 @@ acp-harness summarize results.jsonl --markdown -o results.md
 The `trials` command produces per-prompt trial results:
 
 ```bash
-acp-harness trials prompts.jsonl bunx claude-code-acp -k 5 --grader ./grader.ts -o trials.jsonl
+agent-eval-harness trials prompts.jsonl bunx claude-code-acp -k 5 --grader ./grader.ts -o trials.jsonl
 ```
 
 ### Schema
@@ -224,7 +228,7 @@ The `toolErrors` field indicates whether any tool calls failed during execution:
 **Note:** `toolErrors` only indicates tool-level failures. For semantic pass/fail (did the agent accomplish the task?), use a grader:
 
 ```bash
-acp-harness capture prompts.jsonl bunx claude-code-acp --grader ./grader.ts -o results.jsonl
+agent-eval-harness capture prompts.jsonl bunx claude-code-acp --grader ./grader.ts -o results.jsonl
 ```
 
 ## Input Format
@@ -250,7 +254,7 @@ All commands stream output line-by-line as results complete:
 
 ```bash
 # Watch results in real-time
-acp-harness capture prompts.jsonl bunx claude-code-acp --progress -o results.jsonl &
+agent-eval-harness capture prompts.jsonl bunx claude-code-acp --progress -o results.jsonl &
 tail -f results.jsonl
 ```
 

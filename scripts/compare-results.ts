@@ -3,7 +3,7 @@
  * Compare results across different tools for same agent
  *
  * @remarks
- * Uses agent-eval-harness summarize to generate comparison markdown.
+ * Uses agent-eval-harness compare command with hybrid grader (deterministic + LLM).
  *
  * Usage:
  *   bun scripts/compare-results.ts -a claude-code --toolA builtin --toolB you
@@ -87,23 +87,32 @@ Examples:
 }
 
 /**
- * Run agent-eval-harness summarize
+ * Run agent-eval-harness compare with hybrid grader
  */
-const summarize = (inputPath: string, outputPath: string): Promise<void> => {
+const compare = (fileA: string, fileB: string, toolA: string, toolB: string, outputPath: string): Promise<void> => {
   return new Promise((resolve, reject) => {
     const child = spawn(
       'bunx',
-      ['@plaited/agent-eval-harness', 'summarize', inputPath, '--markdown', '-o', outputPath],
+      [
+        '@plaited/agent-eval-harness',
+        'compare',
+        '--run', `${toolA}:${fileA}`,
+        '--run', `${toolB}:${fileB}`,
+        '--grader', './scripts/comparison-grader.ts',
+        '-o', outputPath,
+        '--progress'
+      ],
       {
         stdio: 'inherit',
-      },
+        env: { ...process.env, GEMINI_API_KEY: process.env.GEMINI_API_KEY }
+      }
     )
 
     child.on('close', (code) => {
       if (code === 0) {
         resolve()
       } else {
-        reject(new Error(`agent-eval-harness summarize exited with code ${code}`))
+        reject(new Error(`agent-eval-harness compare exited with code ${code}`))
       }
     })
 
@@ -122,8 +131,7 @@ const main = async () => {
   const resultsDir = join('data', 'results', agent)
   const fileA = join(resultsDir, `${toolA}.jsonl`)
   const fileB = join(resultsDir, `${toolB}.jsonl`)
-  const summaryA = join(resultsDir, `${toolA}-summary.md`)
-  const summaryB = join(resultsDir, `${toolB}-summary.md`)
+  const comparisonFile = join(resultsDir, `${toolA}-vs-${toolB}.jsonl`)
 
   console.log(`
 Comparison
@@ -149,20 +157,21 @@ Tool B: ${toolB}
     process.exit(1)
   }
 
+  // Check GEMINI_API_KEY for hybrid grader
+  if (!process.env.GEMINI_API_KEY) {
+    console.error('✗ GEMINI_API_KEY environment variable is required for hybrid grader')
+    console.error('  Set it in .env file or export it in your shell')
+    process.exit(1)
+  }
+
   try {
-    console.log(`Generating summary for ${toolA}...`)
-    await summarize(fileA, summaryA)
+    console.log(`Comparing ${toolA} vs ${toolB} with hybrid grader...`)
+    await compare(fileA, fileB, toolA, toolB, comparisonFile)
 
-    console.log(`Generating summary for ${toolB}...`)
-    await summarize(fileB, summaryB)
-
-    console.log(`\n✓ Summaries generated:`)
-    console.log(`  ${summaryA}`)
-    console.log(`  ${summaryB}`)
-    console.log(`\nTo compare, use:`)
-    console.log(`  diff ${summaryA} ${summaryB}`)
-    console.log(`  or`)
-    console.log(`  code --diff ${summaryA} ${summaryB}`)
+    console.log(`\n✓ Comparison complete: ${comparisonFile}`)
+    console.log(`\nView results:`)
+    console.log(`  cat ${comparisonFile} | jq .`)
+    console.log(`  cat ${comparisonFile} | jq -r '.rankings[] | "\\(.run): rank \\(.rank) (score: \\(.score))"'`)
   } catch (error) {
     console.error(`\n✗ Comparison failed: ${error.message}`)
     process.exit(1)

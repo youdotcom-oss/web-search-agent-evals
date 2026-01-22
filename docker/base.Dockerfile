@@ -15,9 +15,6 @@ RUN curl -fsSL https://deb.nodesource.com/setup_24.x | bash - && \
 # Create non-root user (Claude CLI blocks root)
 RUN useradd -m -s /bin/bash evaluser
 
-# Install acp-harness globally
-RUN npm install -g @plaited/acp-harness@^0.4.4
-
 USER evaluser
 WORKDIR /workspace
 

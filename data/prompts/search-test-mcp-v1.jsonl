@@ -1,0 +1,3 @@
+{"id":"mcp-v1-1","input":"<web-search tool=\"ydc-server\">What is the weather in San Francisco right now?</web-search>","metadata":{"variant":"tool","mcp_tool":"ydc-server"}}
+{"id":"mcp-v1-2","input":"<web-search tool=\"ydc-server\">Latest Claude API features January 2025</web-search>","metadata":{"variant":"tool","mcp_tool":"ydc-server"}}
+{"id":"mcp-v1-3","input":"<web-search tool=\"ydc-server\">Compare Anthropic vs OpenAI pricing 2025</web-search>","metadata":{"variant":"tool","mcp_tool":"ydc-server"}}

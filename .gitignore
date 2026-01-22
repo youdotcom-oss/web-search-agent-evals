@@ -33,7 +33,7 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 # Finder (MacOS) folder config
 .DS_Store
 
-# Evaluation results
-data/results/*.jsonl
-data/results/**/*.jsonl
-data/results/**/*-summary.md
+# Evaluation results - committed for downstream data science analysis
+# Only ignore temporary/debug files
+data/results/**/*-debug.jsonl
+data/results/**/*-temp.jsonl

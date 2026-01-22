@@ -34,27 +34,109 @@ bun install
 
 ### 2. Set API Keys
 
+#### Option A: Local Development (.env file)
+
 ```bash
+# Copy example and edit with your keys
 cp .env.example .env
-# Edit .env and add:
-# - ANTHROPIC_API_KEY
-# - GEMINI_API_KEY
-# - FACTORY_API_KEY
-# - YOU_API_KEY
+
+# Required API keys:
+# - ANTHROPIC_API_KEY=sk-ant-...     # For Claude Code agent
+# - GEMINI_API_KEY=...                # For Gemini agent
+# - FACTORY_API_KEY=fk-...            # For Droid agent
+# - OPENAI_API_KEY=sk-...             # For Codex agent
+# - YOU_API_KEY=...                   # For You.com MCP tool
+
+# Edit .env:
+nano .env
 ```
+
+**Security:**
+- `.env` is gitignored and never committed
+- API keys are injected at runtime via Docker environment
+
+#### Option B: CI/Server Environment Variables
+
+For GitHub Actions, set secrets in repo settings:
+
+```
+Settings → Secrets and variables → Actions → New repository secret
+```
+
+Add each API key as a separate secret:
+- `ANTHROPIC_API_KEY`
+- `GEMINI_API_KEY`
+- `FACTORY_API_KEY`
+- `OPENAI_API_KEY`
+- `YOU_API_KEY`
+
+For other servers (AWS, GCP, etc.), use their secrets management:
+- AWS: Secrets Manager or Parameter Store
+- GCP: Secret Manager
+- Docker: `docker run --env-file .env.production`
 
 ### 3. Run Evaluations
 
+#### Test Workflow (5 prompts, ~5 minutes)
+
 ```bash
-# Run all pairings (requires Docker)
-bun run playoffs
+# Run all agents with builtin search
+docker compose run --rm claude-code-builtin
+docker compose run --rm gemini-builtin
+docker compose run --rm droid-builtin
+docker compose run --rm codex-builtin
 
-# Run single pairing
-bun run run-pairing -- -a claude-code -t builtin
-bun run run-pairing -- -a gemini -t you
+# Run all agents with MCP search
+docker compose run --rm claude-code-you
+docker compose run --rm gemini-you
+docker compose run --rm droid-you
+docker compose run --rm codex-you
+```
 
-# Compare results
+#### Full Workflow (1,254 prompts, ~24-32 hours)
+
+**Run automated script:**
+
+```bash
+# Interactive script with progress tracking
+./run-full-workflow.sh
+
+# This will:
+# 1. Verify docker-compose.yml uses full prompts
+# 2. Run all 8 evaluations sequentially
+# 3. Track elapsed time
+# 4. Optionally commit results to new branch
+```
+
+**Or run individual pairings:**
+
+```bash
+# Update docker-compose.yml first
+sed -i.bak 's|test.jsonl|full.jsonl|g' docker-compose.yml
+sed -i.bak 's|test-mcp.jsonl|full-mcp.jsonl|g' docker-compose.yml
+
+# Run specific agent+tool
+docker compose run --rm claude-code-builtin
+docker compose run --rm gemini-you
+
+# Restore test prompts
+mv docker-compose.yml.bak docker-compose.yml
+```
+
+### 4. Analyze Results
+
+```bash
+# Compare builtin vs MCP for same agent
 bun run compare -- -a claude-code --toolA builtin --toolB you
+
+# Generate summary
+bunx @plaited/agent-eval-harness summarize \
+  data/results/claude-code/builtin.jsonl -o summary.jsonl
+
+# Extract tool usage statistics
+cat data/results/claude-code/builtin.jsonl | \
+  jq -r '.trajectory[] | select(.type == "tool_call") | .name' | \
+  sort | uniq -c
 ```
 
 ## Architecture
@@ -192,6 +274,120 @@ cat data/results/claude-code/builtin.jsonl | jq -r '.trajectory[] | select(.type
 # Check for tool errors
 cat data/results/gemini/you.jsonl | jq 'select(.toolErrors == true)'
 ```
+
+## Deployment Options
+
+### Local Development (Recommended for Testing)
+
+**Test workflow (5 prompts, ~5 minutes):**
+```bash
+# Run all agents sequentially
+docker compose run --rm claude-code-builtin
+docker compose run --rm gemini-builtin
+docker compose run --rm droid-builtin
+docker compose run --rm codex-builtin
+```
+
+**Full workflow (1,254 prompts, 4-24 hours):**
+```bash
+# Run automated script (handles everything)
+./run-full-workflow.sh
+```
+
+**Timing:**
+- Sequential: ~24 hours (safest for API rate limits)
+- Parallel: ~4 hours (may hit rate limits)
+
+### GitHub Actions CI
+
+Automatically run evaluations on code changes:
+
+```bash
+# Workflows defined in .github/workflows/playoffs.yml
+
+# Test prompts: Runs on every PR/push
+#   - 8 parallel jobs
+#   - ~5 minutes total
+#   - Validates changes work
+
+# Full prompts: Manual trigger or main branch only
+#   - Choose sequential (24h) or parallel (4h)
+#   - Results auto-committed to new branch
+#   - Creates PR for data science team
+```
+
+**Manual trigger:**
+```
+Actions → Playoffs Evaluation → Run workflow
+  - Prompt set: full
+  - Parallel: true (4h) or false (24h)
+```
+
+**Required secrets** (Settings → Secrets and variables → Actions):
+- `ANTHROPIC_API_KEY`
+- `GEMINI_API_KEY`
+- `FACTORY_API_KEY`
+- `OPENAI_API_KEY`
+- `YOU_API_KEY`
+
+### Cloud Servers (AWS, GCP, Azure)
+
+**Option A: Long-running VM**
+
+```bash
+# Launch VM with Docker
+aws ec2 run-instances --image-id ami-xxx --instance-type t3.large
+
+# SSH and clone repo
+git clone https://github.com/your-org/acp-evals.git
+cd acp-evals
+
+# Set API keys
+export ANTHROPIC_API_KEY=...
+export GEMINI_API_KEY=...
+export FACTORY_API_KEY=...
+export OPENAI_API_KEY=...
+export YOU_API_KEY=...
+
+# Run full workflow
+./run-full-workflow.sh
+```
+
+**Option B: Container Service (ECS, Cloud Run, GKE)**
+
+```bash
+# Build and push Docker image
+docker build -t acp-evals -f docker/base.Dockerfile .
+docker tag acp-evals:latest your-registry/acp-evals:latest
+docker push your-registry/acp-evals:latest
+
+# Deploy with secrets from secrets manager
+# Results are committed back to repo automatically
+```
+
+### Recommendations
+
+| Environment | Prompt Set | Mode | Time | Best For |
+|-------------|------------|------|------|----------|
+| **Local Dev** | test | - | 5 min | Validating changes |
+| **Local Dev** | full | sequential | 24h | First full run, debugging |
+| **GitHub Actions** | test | parallel | 5 min | PR validation (automated) |
+| **GitHub Actions** | full | parallel | 4h | Quick results, sufficient API quota |
+| **Cloud Server** | full | sequential | 24h | Cost-effective, limited quota |
+| **Cloud Server** | full | parallel | 4h | Fast results, high quota |
+
+**API Rate Limit Considerations:**
+- **Parallel (4h):** Requires high API quota, 8 concurrent requests
+- **Sequential (24h):** Works with standard quotas, 1 request at a time
+
+**Cost Estimates (approximate):**
+- API calls: ~10,000 requests total (1,254 prompts × 8 runs)
+- Anthropic Claude: $50-100
+- Google Gemini: $20-40
+- OpenAI Codex: $30-60
+- Factory Droid: $20-40
+- You.com MCP: $10-20
+- **Total:** ~$130-260 per full evaluation
 
 ## Adding Agents
 

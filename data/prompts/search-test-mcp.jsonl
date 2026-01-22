@@ -1,5 +1,0 @@
-{"id":"search-1","input":"<web-search mcp-server=\"ydc-server\">What is the weather in San Francisco right now?</web-search>","metadata":{"category":"Current_Info","requires_search":true}}
-{"id":"search-2","input":"<web-search mcp-server=\"ydc-server\">What are the latest features announced for Claude in January 2025?</web-search>","metadata":{"category":"Recent_News","requires_search":true}}
-{"id":"search-3","input":"<web-search mcp-server=\"ydc-server\">Compare the current pricing of Anthropic's Claude API vs OpenAI's GPT-4 API in 2025</web-search>","metadata":{"category":"Current_Pricing","requires_search":true}}
-{"id":"search-4","input":"<web-search mcp-server=\"ydc-server\">What were the major AI announcements at CES 2025?</web-search>","metadata":{"category":"Recent_Events","requires_search":true}}
-{"id":"search-5","input":"<web-search mcp-server=\"ydc-server\">Find the latest documentation for the Model Context Protocol as of January 2025</web-search>","metadata":{"category":"Current_Docs","requires_search":true}}

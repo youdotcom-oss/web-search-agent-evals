@@ -102,7 +102,7 @@ Created MCP-enabled schemas for all 4 agents:
 - **Claude Code**: 5/5 success, MCP verified (different outputs)
 - **Gemini**: 5/5 success, MCP verified (saw "Server 'ydc-server' supports tool updates")
 - **Droid**: 5/5 success, MCP verified
-- **Codex**: Not yet tested
+- **Codex**: 2/5 success (worse than builtin's 3/5), MCP verified (different outputs, minimal quality)
 
 ### Claude Code MCP Fix ✅
 

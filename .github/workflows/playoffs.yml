@@ -1,7 +1,7 @@
 name: Playoffs Evaluation
 
 on:
-  # Manual trigger for full workflow
+  # Manual trigger only - no automated runs
   workflow_dispatch:
     inputs:
       prompt_set:
@@ -18,52 +18,10 @@ on:
         default: false
         type: boolean
 
-  # Automated tests on changes
-  push:
-    branches: [main, 'feat/**', 'fix/**']
-    paths:
-      - 'agent-schemas/**'
-      - 'data/prompts/**'
-      - 'docker/**'
-      - 'scripts/**'
-      - 'tools/**'
-      - 'docker-compose.yml'
-
-  pull_request:
-    paths:
-      - 'agent-schemas/**'
-      - 'data/prompts/**'
-      - 'docker/**'
-      - 'scripts/**'
-      - 'tools/**'
-      - 'docker-compose.yml'
-
 jobs:
-  # Path filtering to determine what changed
-  changes:
-    runs-on: ubuntu-latest
-    outputs:
-      schemas: ${{ steps.filter.outputs.schemas }}
-      prompts: ${{ steps.filter.outputs.prompts }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v3
-        id: filter
-        with:
-          filters: |
-            schemas:
-              - 'agent-schemas/**'
-              - 'docker/**'
-            prompts:
-              - 'data/prompts/**'
-
   # Test run with 5 prompts (fast validation)
   test:
-    needs: changes
-    if: |
-      github.event_name == 'pull_request' ||
-      (github.event_name == 'workflow_dispatch' && github.event.inputs.prompt_set == 'test') ||
-      (github.event_name == 'push' && (needs.changes.outputs.schemas == 'true' || needs.changes.outputs.prompts == 'true'))
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.prompt_set == 'test'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
@@ -105,13 +63,11 @@ jobs:
           path: data/results/${{ matrix.agent }}/${{ matrix.tool }}.jsonl
           retention-days: 30
 
-  # Full run with 1,254 prompts (only on main or manual trigger)
+  # Full run with 1,254 prompts (manual trigger only)
   # Sequential: ~24 hours (safe for rate limits)
   # Parallel: ~4 hours (may hit rate limits)
   full:
-    if: |
-      (github.event_name == 'workflow_dispatch' && github.event.inputs.prompt_set == 'full') ||
-      (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.prompt_set == 'full'
     runs-on: ubuntu-latest
     timeout-minutes: 360  # 6 hours max per agent (Codex can be slow)
     strategy:

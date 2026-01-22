@@ -24,6 +24,43 @@ flowchart TD
     Harness --> Results[data/results/agent/tool.jsonl]
 ```
 
+## Cost & Time Estimates
+
+### Test Workflow (5 prompts)
+**Purpose:** Quick validation of setup and changes
+
+| Mode | Time | Cost | Use Case |
+|------|------|------|----------|
+| All agents (8 runs) | ~5 minutes | ~$2-5 | PR validation, testing changes |
+| Single agent | ~30 seconds | ~$0.25-0.50 | Quick checks |
+
+### Full Workflow (1,254 prompts)
+**Purpose:** Complete evaluation for production data
+
+| Mode | Time | Cost | Use Case |
+|------|------|------|----------|
+| **Parallel** (8 concurrent) | **~4 hours** | **~$130-260** | Fast results, high API quota |
+| **Sequential** (1 at a time) | **~24 hours** | **~$130-260** | Standard quota, safer |
+
+**Cost Breakdown (Full Workflow):**
+- Anthropic Claude Code: $50-100
+- Google Gemini: $20-40
+- Factory Droid: $20-40
+- OpenAI Codex: $30-60
+- You.com MCP: $10-20
+- **Total:** ~$130-260
+
+**API Requests:**
+- 10,032 total requests (1,254 prompts × 8 agent+tool combinations)
+- Parallel mode: Up to 8 concurrent requests
+- Sequential mode: 1 request at a time
+
+**Recommendations:**
+- ✅ Run **test workflow first** to validate setup (~$3)
+- ✅ Use **sequential mode** if on standard API quotas
+- ✅ Use **parallel mode** if you need results quickly and have high quotas
+- ✅ Consider **monthly** full evaluations instead of weekly (~$150/month vs ~$600/month)
+
 ## Quick Start
 
 ### 1. Install Dependencies

@@ -20,7 +20,7 @@ services:
       - bunx
       - "@plaited/agent-eval-harness"
       - capture
-      - /eval/data/prompts/search-test.jsonl
+      - /eval/data/prompts/test.jsonl
       - --schema
       - /eval/agent-schemas/gemini.json
       - --cwd
@@ -50,7 +50,7 @@ services:
       - bunx
       - "@plaited/agent-eval-harness"
       - capture
-      - /eval/data/prompts/search-test.jsonl
+      - /eval/data/prompts/test.jsonl
       - --schema
       - /eval/agent-schemas/gemini-mcp.json
       - --cwd
@@ -80,7 +80,7 @@ services:
       - bunx
       - "@plaited/agent-eval-harness"
       - capture
-      - /eval/data/prompts/search-test.jsonl
+      - /eval/data/prompts/test.jsonl
       - --schema
       - /eval/agent-schemas/claude-code.json
       - --cwd
@@ -112,7 +112,7 @@ services:
       - bunx
       - "@plaited/agent-eval-harness"
       - capture
-      - /eval/data/prompts/search-test.jsonl
+      - /eval/data/prompts/test.jsonl
       - --schema
       - /eval/agent-schemas/claude-code-mcp.json
       - --cwd
@@ -144,7 +144,7 @@ services:
       - bunx
       - "@plaited/agent-eval-harness"
       - capture
-      - /eval/data/prompts/search-test.jsonl
+      - /eval/data/prompts/test.jsonl
       - --schema
       - /eval/agent-schemas/droid.json
       - --cwd
@@ -178,7 +178,7 @@ services:
       - bunx
       - "@plaited/agent-eval-harness"
       - capture
-      - /eval/data/prompts/search-test.jsonl
+      - /eval/data/prompts/test.jsonl
       - --schema
       - /eval/agent-schemas/droid-mcp.json
       - --cwd
@@ -208,7 +208,7 @@ services:
       - bunx
       - "@plaited/agent-eval-harness"
       - capture
-      - /eval/data/prompts/search-test.jsonl
+      - /eval/data/prompts/test.jsonl
       - --schema
       - /eval/agent-schemas/codex.json
       - --cwd
@@ -240,7 +240,7 @@ services:
       - bunx
       - "@plaited/agent-eval-harness"
       - capture
-      - /eval/data/prompts/search-test.jsonl
+      - /eval/data/prompts/test.jsonl
       - --schema
       - /eval/agent-schemas/codex-mcp.json
       - --cwd

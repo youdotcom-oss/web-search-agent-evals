@@ -112,9 +112,9 @@ services:
       - bunx
       - "@plaited/agent-eval-harness"
       - capture
-      - /eval/data/prompts/search-test-mcp.jsonl
+      - /eval/data/prompts/search-test.jsonl
       - --schema
-      - /eval/agent-schemas/claude-code.json
+      - /eval/agent-schemas/claude-code-mcp.json
       - --cwd
       - /workspace
       - --timeout
@@ -263,7 +263,7 @@ services:
       - capture
       - /eval/data/prompts/search-test-mcp-v1.jsonl
       - --schema
-      - /eval/agent-schemas/claude-code.json
+      - /eval/agent-schemas/claude-code-mcp.json
       - --cwd
       - /workspace
       - --timeout
@@ -281,7 +281,7 @@ services:
       - capture
       - /eval/data/prompts/search-test-mcp-v2.jsonl
       - --schema
-      - /eval/agent-schemas/claude-code.json
+      - /eval/agent-schemas/claude-code-mcp.json
       - --cwd
       - /workspace
       - --timeout
@@ -299,7 +299,7 @@ services:
       - capture
       - /eval/data/prompts/search-test-mcp-v3.jsonl
       - --schema
-      - /eval/agent-schemas/claude-code.json
+      - /eval/agent-schemas/claude-code-mcp.json
       - --cwd
       - /workspace
       - --timeout

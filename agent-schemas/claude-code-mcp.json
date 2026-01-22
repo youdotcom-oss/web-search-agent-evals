@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "name": "claude-headless-mcp",
+  "command": ["claude"],
+  "sessionMode": "stream",
+  "prompt": {
+    "flag": "-p"
+  },
+  "output": {
+    "flag": "--output-format",
+    "value": "stream-json"
+  },
+  "autoApprove": [
+    "--dangerously-skip-permissions",
+    "--verbose",
+    "--mcp-config",
+    "/workspace/.mcp.json"
+  ],
+  "resume": {
+    "flag": "--resume",
+    "sessionIdPath": "$.session_id"
+  },
+  "outputEvents": [
+    {
+      "match": { "path": "$.type", "value": "assistant" },
+      "emitAs": "message",
+      "extract": { "content": "$.message.content[0].text" }
+    },
+    {
+      "match": { "path": "$.message.content[*].type", "value": "tool_use" },
+      "emitAs": "tool_call",
+      "extract": { "title": "$.name", "status": "'pending'" }
+    },
+    {
+      "match": { "path": "$.message.content[*].type", "value": "tool_result" },
+      "emitAs": "tool_call",
+      "extract": { "title": "$.tool_use_id", "status": "'completed'" }
+    }
+  ],
+  "result": {
+    "matchPath": "$.type",
+    "matchValue": "result",
+    "contentPath": "$.result"
+  }
+}

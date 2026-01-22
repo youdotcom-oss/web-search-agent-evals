@@ -79,7 +79,7 @@ export const grade: ComparisonGrader = async ({ id: _id, input, hint, runs }) =>
     // MCP validation (10 pts)
     let mcpStatus: string | undefined;
     if (isMcpRun(label)) {
-      const hasMcp = hasMcpIndicators(result.output);
+      const hasMcp = hasMcpIndicators(result.output ?? "");
       if (hasMcp) {
         deterministicScore += 10;
         mcpStatus = "verified";

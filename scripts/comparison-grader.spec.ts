@@ -232,3 +232,26 @@ test("reasoning includes winner and score", async () => {
   expect(result.reasoning).toContain("0.50"); // Score
   expect(result.reasoning).toContain("deterministic: 50");
 });
+test("handles undefined output in MCP runs", async () => {
+  const context: ComparisonGraderContext = {
+    id: "test-7",
+    input: "Test query",
+    hint: undefined,
+    runs: {
+      "agent-a": {
+        output: undefined as unknown as string, // Simulate missing output
+        trajectory: [],
+      },
+    },
+  };
+
+  process.env.GEMINI_API_KEY = undefined;
+  const { grade } = await import("./comparison-grader.ts");
+
+  // Should not throw when output is undefined
+  const result = await grade(context);
+
+  expect(result.rankings).toHaveLength(1);
+  expect(result.rankings[0]?.run).toBe("agent-a");
+  expect(result.rankings[0]?.score).toBe(0); // No output = 0 score
+});

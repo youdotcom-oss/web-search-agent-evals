@@ -214,7 +214,7 @@ services:
       - --cwd
       - /workspace
       - --timeout
-      - "120000"
+      - "180000"
       - -o
       - /eval/data/results/codex/builtin.jsonl
       - --progress
@@ -246,7 +246,7 @@ services:
       - --cwd
       - /workspace
       - --timeout
-      - "120000"
+      - "180000"
       - -o
       - /eval/data/results/codex/you.jsonl
       - --progress

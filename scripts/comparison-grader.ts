@@ -2,14 +2,6 @@
 import type { ComparisonGrader } from '@plaited/agent-eval-harness/pipeline'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 
-const apiKey = process.env.GEMINI_API_KEY
-if (!apiKey) {
-  throw new Error('GEMINI_API_KEY environment variable is required')
-}
-
-const genai = new GoogleGenerativeAI(apiKey)
-const model = genai.getGenerativeModel({ model: 'gemini-2.0-flash-exp' })
-
 /**
  * Hybrid comparison grader: Deterministic facts + LLM quality judgment
  *
@@ -21,6 +13,9 @@ const model = genai.getGenerativeModel({ model: 'gemini-2.0-flash-exp' })
  * - Accuracy: Is the answer correct?
  * - Relevance: Does it address the query?
  * - Completeness: Are all aspects covered?
+ *
+ * @remarks
+ * Falls back to deterministic-only scoring if GEMINI_API_KEY is not available.
  *
  * @public
  */
@@ -50,7 +45,13 @@ export const grade: ComparisonGrader = async ({ id, input, hint, runs }) => {
   }
 
   // Phase 2: LLM quality judgment (slower, nuanced)
-  const prompt = `Compare these agent outputs for the query: "${input}"
+  const apiKey = process.env.GEMINI_API_KEY
+  if (apiKey) {
+    try {
+      const genai = new GoogleGenerativeAI(apiKey)
+      const model = genai.getGenerativeModel({ model: 'gemini-2.0-flash-exp' })
+
+      const prompt = `Compare these agent outputs for the query: "${input}"
 ${hint ? `\nExpected content: ${hint}` : ''}
 
 Outputs to compare:
@@ -74,26 +75,31 @@ Return ONLY valid JSON with this structure:
 }
 `
 
-  try {
-    const response = await model.generateContent(prompt)
-    const text = response.response.text()
+      const response = await model.generateContent(prompt)
+      const text = response.response.text()
 
-    // Extract JSON from response (handle markdown code blocks)
-    const jsonMatch = text.match(/\{[\s\S]*\}/)
-    if (jsonMatch) {
-      const llmResult = JSON.parse(jsonMatch[0]) as { scores: Record<string, number>; reasoning?: string }
+      // Extract JSON from response (handle markdown code blocks)
+      const jsonMatch = text.match(/\{[\s\S]*\}/)
+      if (jsonMatch) {
+        const llmResult = JSON.parse(jsonMatch[0]) as { scores: Record<string, number>; reasoning?: string }
 
-      // Combine deterministic + LLM scores
-      for (const [label, llmScore] of Object.entries(llmResult.scores)) {
-        if (scores[label]) {
-          scores[label].llm = llmScore
-          scores[label].total = scores[label].deterministic + llmScore
+        // Combine deterministic + LLM scores
+        for (const [label, llmScore] of Object.entries(llmResult.scores)) {
+          if (scores[label]) {
+            scores[label].llm = llmScore
+            scores[label].total = scores[label].deterministic + llmScore
+          }
         }
       }
+    } catch (error) {
+      console.error('LLM grading failed, using deterministic only:', error)
+      // Fallback: use only deterministic scores
+      for (const label of Object.keys(scores)) {
+        scores[label].total = scores[label].deterministic
+      }
     }
-  } catch (error) {
-    console.error('LLM grading failed, using deterministic only:', error)
-    // Fallback: use only deterministic scores
+  } else {
+    // No API key: use only deterministic scores
     for (const label of Object.keys(scores)) {
       scores[label].total = scores[label].deterministic
     }

@@ -193,11 +193,9 @@ test("metadata includes score breakdown", async () => {
 
   const ranking = result.rankings[0];
   expect(ranking).toBeDefined();
-  if (ranking) {
-    expect((ranking as any).metadata).toBeDefined();
-    expect((ranking as any).metadata.deterministic).toBe(50); // 30 + 20
-    expect((ranking as any).metadata.llm).toBe(0); // No LLM when key missing
-  }
+  expect((ranking as any).metadata).toBeDefined();
+  expect((ranking as any).metadata.deterministic).toBe(50); // 30 + 20
+  expect((ranking as any).metadata.llm).toBe(0); // No LLM when key missing
 });
 
 test("reasoning includes winner and score", async () => {

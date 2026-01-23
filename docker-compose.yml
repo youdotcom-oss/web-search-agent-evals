@@ -14,7 +14,6 @@ services:
     volumes:
       - ./data:/eval/data:ro
       - ./agent-schemas:/eval/agent-schemas:ro
-      - ./tools:/eval/tools:ro
       - ./scripts:/eval/scripts:ro
       - ./data/results:/eval/data/results:rw
     working_dir: /workspace
@@ -34,7 +33,6 @@ services:
     volumes:
       - ./data:/eval/data:ro
       - ./agent-schemas:/eval/agent-schemas:ro
-      - ./tools:/eval/tools:ro
       - ./scripts:/eval/scripts:ro
       - ./data/results:/eval/data/results:rw
     working_dir: /workspace
@@ -58,7 +56,6 @@ services:
     volumes:
       - ./data:/eval/data:ro
       - ./agent-schemas:/eval/agent-schemas:ro
-      - ./tools:/eval/tools:ro
       - ./scripts:/eval/scripts:ro
       - ./data/results:/eval/data/results:rw
     working_dir: /workspace
@@ -78,7 +75,6 @@ services:
     volumes:
       - ./data:/eval/data:ro
       - ./agent-schemas:/eval/agent-schemas:ro
-      - ./tools:/eval/tools:ro
       - ./scripts:/eval/scripts:ro
       - ./data/results:/eval/data/results:rw
     working_dir: /workspace

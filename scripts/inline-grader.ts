@@ -5,12 +5,11 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
  * Hybrid inline grader: Deterministic scoring + LLM quality judgment
  *
  * @remarks
- * **MCP Detection:** Uses explicit tool name indicators from trajectory (see FINDINGS-MCP-RAW-OUTPUT.md):
- * - **Claude Code**: tool names with `mcp__` prefix (e.g., `mcp__ydc-server__you-search`)
- * - **Codex**: trajectory steps with `mcpServer` field
- * - **DROID**: tool names with `___` separator (e.g., `ydc-server___you-search`)
- * - **GEMINI**: tool name `you-search` (vs builtin `google_web_search`)
- * - Schemas extract these fields from raw CLI output for authoritative detection
+ * **MCP Detection:** Uses metadata-driven detection (prompt metadata specifies expected MCP server):
+ * - Agent schemas extract tool names from CLI output
+ * - Grader checks if expected MCP server tools were called
+ * - Supports all agents: Claude Code, Codex, DROID, GEMINI
+ * - Detection patterns documented in `detectMcpFromTrajectory()` function below
  *
  * **Hybrid Scoring:**
  * - **Deterministic (60 pts):** Completion (30), tool usage (20), quality bonus (10)
@@ -286,12 +285,11 @@ Return ONLY valid JSON with this structure:
  * Inline grader with hybrid scoring
  *
  * @remarks
- * **MCP Detection (Authoritative):** Uses explicit indicators from trajectory:
- * - **Claude Code**: Checks for `mcp__` prefix in tool names
- * - **Codex**: Checks for `mcpServer` field in trajectory steps
- * - **DROID**: Checks for `___` separator in tool names
- * - **GEMINI**: Checks for `you-search` tool name
- * - Schemas extract these fields from raw CLI output (see FINDINGS-MCP-RAW-OUTPUT.md)
+ * **MCP Detection:** Uses metadata from prompts to verify expected MCP tool usage:
+ * - Prompt metadata specifies `mcp_server` and `expected_tools`
+ * - Agent schemas extract tool names from CLI output
+ * - Grader checks if any expected tool was actually called
+ * - Works across all agent types (Claude Code, Codex, DROID, GEMINI)
  *
  * **Hybrid Scoring:**
  * - Deterministic: 60 pts (completion, tool usage, quality bonus)

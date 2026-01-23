@@ -26,7 +26,9 @@ const parseArgs = (args: string[]): RunOptions => {
     if (args[i] === "--agent" && i + 1 < args.length) {
       const agent = args[i + 1];
       if (!ALL_AGENTS.includes(agent as Agent)) {
-        throw new Error(`Invalid agent: ${agent}. Must be one of: ${ALL_AGENTS.join(", ")}`);
+        throw new Error(
+          `Invalid agent: ${agent}. Must be one of: ${ALL_AGENTS.join(", ")}`
+        );
       }
       agents.push(agent as Agent);
       i++;
@@ -40,7 +42,9 @@ const parseArgs = (args: string[]): RunOptions => {
     } else if (args[i] === "--mcp" && i + 1 < args.length) {
       const tool = args[i + 1];
       if (tool !== "builtin" && tool !== "you") {
-        throw new Error(`Invalid MCP tool: ${tool}. Must be "builtin" or "you"`);
+        throw new Error(
+          `Invalid MCP tool: ${tool}. Must be "builtin" or "you"`
+        );
       }
       mcp = tool;
       i++;
@@ -62,13 +66,18 @@ const detectCurrentMode = async (): Promise<Mode> => {
   const entrypointFile = join(process.cwd(), "docker", "entrypoint");
   const content = await readFile(entrypointFile, "utf-8");
 
-  const datasetMatch = content.match(/const DATASET = process\.env\.DATASET \|\| "(\w+)"/);
-  if (datasetMatch && datasetMatch[1]) {
+  const datasetMatch = content.match(
+    /const DATASET = process\.env\.DATASET \|\| "(\w+)"/
+  );
+  if (datasetMatch?.[1]) {
     return datasetMatch[1] as Mode;
   }
 
   // Fallback: check for test or full patterns in prompt paths
-  if (content.includes("/eval/data/prompts/${DATASET}.jsonl") || content.includes("prompts/test.jsonl")) {
+  if (
+    content.includes("/eval/data/prompts/${DATASET}.jsonl") ||
+    content.includes("prompts/test.jsonl")
+  ) {
     return "test";
   }
   if (content.includes("prompts/full.jsonl")) {
@@ -92,36 +101,53 @@ const runService = (
     console.log(`${label} - STARTING`);
     console.log(`${"=".repeat(80)}\n`);
 
-    const proc = spawn("docker", [
-      "compose",
-      "run",
-      "--rm",
-      "-e",
-      `MCP_TOOL=${mcpTool}`,
-      "-e",
-      `DATASET=${dataset}`,
-      agent,
-    ], {
-      stdio: "pipe", // Capture output instead of inherit
-    });
+    const proc = spawn(
+      "docker",
+      [
+        "compose",
+        "run",
+        "--rm",
+        "-e",
+        `MCP_TOOL=${mcpTool}`,
+        "-e",
+        `DATASET=${dataset}`,
+        agent,
+      ],
+      {
+        stdio: "pipe", // Capture output instead of inherit
+      }
+    );
 
-    let lastLine = "";
+    let currentPrompt = "";
+    let hasError = false;
 
     // Show progress lines that matter
     proc.stdout?.on("data", (data) => {
       const lines = data.toString().split("\n");
       for (const line of lines) {
+        // Track current prompt for context
+        const promptMatch = line.match(/\[(\d+)\/(\d+)\]/);
+        if (promptMatch) {
+          currentPrompt = `${promptMatch[1]}/${promptMatch[2]}`;
+        }
+
         // Only show important progress indicators
         if (
-          line.includes("[") && line.includes("/") && line.includes("]") || // [1/5] progress
+          (line.includes("[") && line.includes("/") && line.includes("]")) || // [1/5] progress
           line.includes("Done!") ||
           line.includes("TIMEOUT") ||
           line.includes("ERROR") ||
           line.includes("Failed") ||
-          line.match(/✓|✗|!/)
+          line.match(/✓|✗|!/) !== null
         ) {
-          console.log(`  ${label}: ${line.trim()}`);
-          lastLine = line;
+          const elapsed = ((Date.now() - startTime) / 1000).toFixed(0);
+          const prefix = currentPrompt ? `[${currentPrompt}] ` : "";
+          console.log(`  ${label} ${prefix}(${elapsed}s): ${line.trim()}`);
+
+          // Track if there are errors
+          if (line.includes("ERROR") || line.includes("Failed")) {
+            hasError = true;
+          }
         }
       }
     });
@@ -129,8 +155,15 @@ const runService = (
     proc.stderr?.on("data", (data) => {
       const lines = data.toString().split("\n");
       for (const line of lines) {
-        if (line.includes("ERROR") || line.includes("WARN")) {
-          console.error(`  ${label}: ${line.trim()}`);
+        if (line.includes("ERROR") && !line.includes("MCP ERROR")) {
+          // Fatal errors (non-MCP)
+          const elapsed = ((Date.now() - startTime) / 1000).toFixed(0);
+          console.error(`  ${label} (${elapsed}s): ⚠️  FATAL: ${line.trim()}`);
+          hasError = true;
+        } else if (line.includes("MCP ERROR")) {
+          // MCP errors are often warnings (tool may continue)
+          const elapsed = ((Date.now() - startTime) / 1000).toFixed(0);
+          console.warn(`  ${label} (${elapsed}s): ⚠️  WARNING: ${line.trim()}`);
         }
       }
     });
@@ -138,9 +171,12 @@ const runService = (
     proc.on("close", (code) => {
       const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
       const status = code === 0 ? "✓ COMPLETED" : "✗ FAILED";
+      const errorNote = hasError && code === 0 ? " (had warnings)" : "";
 
       console.log(`\n${"=".repeat(80)}`);
-      console.log(`${label} - ${status} (${elapsed}s, exit code: ${code})`);
+      console.log(
+        `${label} - ${status}${errorNote} (${elapsed}s, exit code: ${code})`
+      );
       console.log(`${"=".repeat(80)}\n`);
 
       resolve(code ?? 1);
@@ -170,11 +206,15 @@ const main = async () => {
     // Determine dataset mode (use override if provided, otherwise detect from entrypoint default)
     const currentMode = options.mode || (await detectCurrentMode());
 
-    console.log(`${options.dryRun ? "[DRY RUN] " : ""}Running in ${currentMode} mode`);
+    console.log(
+      `${options.dryRun ? "[DRY RUN] " : ""}Running in ${currentMode} mode`
+    );
     console.log(`Agents: ${options.agents.join(", ")}`);
 
     // Determine which MCP tools to test
-    const mcpTools: McpTool[] = options.mcp ? [options.mcp] : ["builtin", "you"];
+    const mcpTools: McpTool[] = options.mcp
+      ? [options.mcp]
+      : ["builtin", "you"];
     console.log(`MCP tools: ${mcpTools.join(", ")}`);
     console.log("");
 
@@ -187,25 +227,71 @@ const main = async () => {
       }
     }
 
-    console.log(`${options.dryRun ? "[DRY RUN] Would run" : "Running"} ${runs.length} scenarios in parallel\n`);
+    console.log(
+      `${options.dryRun ? "[DRY RUN] Would run" : "Running"} ${
+        runs.length
+      } scenarios in parallel\n`
+    );
 
     if (options.dryRun) {
       console.log("[DRY RUN] Execution plan:");
       for (let i = 0; i < runs.length; i++) {
         const run = runs[i];
         if (!run) continue;
-        console.log(`  [${i + 1}/${runs.length}] ${run.agent}-${run.mcpTool}: docker compose run --rm -e MCP_TOOL=${run.mcpTool} -e DATASET=${currentMode} ${run.agent}`);
+        console.log(
+          `  [${i + 1}/${runs.length}] ${run.agent}-${
+            run.mcpTool
+          }: docker compose run --rm -e MCP_TOOL=${
+            run.mcpTool
+          } -e DATASET=${currentMode} ${run.agent}`
+        );
       }
       console.log("\n[DRY RUN] No services were executed.");
       process.exit(0);
     }
 
+    // Track completion status
+    const completed = new Set<number>();
+    const startTime = Date.now();
+
+    // Status heartbeat every 30 seconds
+    const statusInterval = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      const inProgress = runs.length - completed.size;
+
+      if (inProgress > 0) {
+        console.log(`\n⏱️  Status update (${elapsed}s elapsed):`);
+        console.log(`   Completed: ${completed.size}/${runs.length}`);
+        console.log(`   In progress: ${inProgress}`);
+
+        const stillRunning = runs
+          .map((run, index) =>
+            !completed.has(index + 1)
+              ? `[${index + 1}/${runs.length}] ${run.agent}-${run.mcpTool}`
+              : null
+          )
+          .filter((x) => x !== null);
+
+        if (stillRunning.length > 0) {
+          console.log(`   Still running: ${stillRunning.join(", ")}`);
+        }
+        console.log("");
+      }
+    }, 30000);
+
     // Run all scenarios in parallel
     const results = await Promise.all(
       runs.map(({ agent, mcpTool }, index) =>
-        runService(agent, mcpTool, currentMode, index + 1, runs.length)
+        runService(agent, mcpTool, currentMode, index + 1, runs.length).then(
+          (result) => {
+            completed.add(index + 1);
+            return result;
+          }
+        )
       )
     );
+
+    clearInterval(statusInterval);
 
     // Report results summary
     console.log(`\n${"=".repeat(80)}`);
@@ -218,7 +304,9 @@ const main = async () => {
     for (let i = 0; i < runs.length; i++) {
       const run = runs[i];
       const exitCode = results[i];
-      if (run === undefined || exitCode === undefined) {
+
+      // Skip if run or result is missing (should never happen, but TypeScript requires the check)
+      if (!run || exitCode === undefined) {
         continue;
       }
 
@@ -241,10 +329,13 @@ const main = async () => {
     if (failures.length > 0) {
       console.error(`\n⚠️  Failed scenarios (${failures.length}):`);
       failures.forEach(({ label, exitCode }) => {
-        const errorType = exitCode === 143 || exitCode === 124 ? "TIMEOUT" : "ERROR";
+        const errorType =
+          exitCode === 143 || exitCode === 124 ? "TIMEOUT" : "ERROR";
         console.error(`  - ${label}: ${errorType} (exit code ${exitCode})`);
       });
-      console.error("\n💡 Tip: Check output above for specific error details (tool errors, MCP issues, etc.)");
+      console.error(
+        "\n💡 Tip: Check output above for specific error details (tool errors, MCP issues, etc.)"
+      );
       process.exit(1);
     } else {
       console.log("\n✅ All scenarios completed successfully!");

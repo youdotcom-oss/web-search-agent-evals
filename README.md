@@ -139,7 +139,7 @@ cat data/results/trials/droid-test.jsonl | jq '{id, passRate, passAtK, passExpK}
 
 ### Agent Schemas (agent-schemas/)
 
-ACP headless adapter schemas - no custom code, just JSON configuration:
+Headless adapter schemas - no custom code, just JSON configuration:
 
 | Schema | Agent | Mode | Status |
 |--------|-------|------|--------|
@@ -319,8 +319,8 @@ docker run --rm test-<agent> <agent> --version
 ## Project Structure
 
 ```
-acp-evals/
-├── agent-schemas/          # ACP headless schemas
+evals/
+├── agent-schemas/          # Headless schemas
 │   ├── claude-code.json
 │   ├── gemini.json
 │   ├── droid.json

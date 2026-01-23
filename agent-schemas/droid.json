@@ -24,7 +24,11 @@
     {
       "match": { "path": "$.type", "value": "tool_call" },
       "emitAs": "tool_call",
-      "extract": { "title": "$.toolName", "status": "'pending'" }
+      "extract": {
+        "name": "$.toolName",
+        "title": "$.toolName",
+        "status": "'pending'"
+      }
     },
     {
       "match": { "path": "$.type", "value": "tool_result" },

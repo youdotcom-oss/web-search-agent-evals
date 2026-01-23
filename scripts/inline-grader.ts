@@ -2,22 +2,24 @@ import type { Grader } from "@plaited/agent-eval-harness/schemas";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 /**
- * Hybrid inline grader: Deterministic MCP validation + LLM quality judgment
+ * Hybrid inline grader: Deterministic scoring + LLM quality judgment
  *
  * @remarks
- * **Priority 1 (Deterministic):** MCP detection is strict. If MCP requested but not used, immediate fail (score 0).
+ * **MCP Detection:** Uses explicit tool name indicators from trajectory (see FINDINGS-MCP-RAW-OUTPUT.md):
+ * - **Claude Code**: tool names with `mcp__` prefix (e.g., `mcp__ydc-server__you-search`)
+ * - **Codex**: trajectory steps with `mcpServer` field
+ * - **DROID**: tool names with `___` separator (e.g., `ydc-server___you-search`)
+ * - **GEMINI**: message content with `mcp-server="..."` attribute
+ * - Schemas extract these fields from raw CLI output for authoritative detection
  *
- * **Priority 2 (Hybrid):** Output quality uses both deterministic (60%) and LLM (40%) scoring:
- * - **Deterministic (60 pts):** Completion (30), tool usage (20), MCP indicators (10)
+ * **Hybrid Scoring:**
+ * - **Deterministic (60 pts):** Completion (30), tool usage (20), quality bonus (10)
  * - **LLM (40 pts):** Accuracy, relevance, completeness via Gemini Flash 2.0
+ * - **Pass threshold:** 70/100 (0.7 normalized score)
  *
- * **Scoring breakdown:**
- * - Deterministic completion: 30 pts for substantial output (>50 chars)
- * - Deterministic tools: 20 pts for any tool usage
- * - Deterministic MCP: 10 pts for MCP indicators (3+ matches)
- * - LLM quality: 0-40 pts for accuracy, relevance, completeness
+ * **Execution Errors:** Timeout or tool failures result in immediate fail (score 0)
  *
- * **Pass threshold:** 70/100 (0.7 normalized score)
+ * **Fallback:** Works without GEMINI_API_KEY (deterministic-only mode, max score 60/100)
  *
  * **Calibration Required:** The LLM judge may hallucinate facts. Always:
  * - Review sampled failures manually before trusting scores
@@ -25,44 +27,26 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
  * - Check for systematic biases in LLM scoring
  * - Compare deterministic-only vs hybrid scoring distributions
  *
- * **Fallback:** Works without GEMINI_API_KEY (deterministic-only mode, max score 60/100)
- *
- * **MCP Detection:** Uses explicit tool name indicators from trajectory:
- * - Claude Code: tool names with `mcp__` prefix (e.g., `mcp__ydc-server__you-search`)
- * - Codex: trajectory steps with `mcpServer` field
- *
  * @public
  */
-
-/**
- * MCP-specific data indicators from You.com
- *
- * @remarks
- * These patterns appear in You.com MCP responses but not in builtin search.
- * Used to verify MCP server was actually called.
- */
-const MCP_INDICATORS = [
-  "feels like", // Temperature detail
-  "mph", // Wind speed
-  "air quality", // Air quality info
-  "uv index", // UV index
-  "precipitation", // Precipitation detail
-  "as of", // Timestamp format
-  "pm pst", // Specific time format
-  "am pst",
-  "pm est",
-  "am est",
-];
 
 /**
  * Detect MCP tool usage from trajectory
  *
  * @remarks
- * Uses explicit MCP indicators from CLI output:
- * - Claude Code: tool names starting with `mcp__` (e.g., `mcp__ydc-server__you-search`)
- * - Codex: trajectory steps with `mcpServer` field set
+ * Uses explicit MCP indicators extracted by adapter schemas from CLI output:
+ * - **Claude Code**: tool names starting with `mcp__` (e.g., `mcp__ydc-server__you-search`)
+ * - **Codex**: trajectory steps with `mcpServer` field set
+ * - **DROID**: tool names with `___` separator (e.g., `ydc-server___you-search`)
+ * - **GEMINI**: message content containing `mcp-server="..."` attribute
  *
- * This is the authoritative way to detect MCP usage, not heuristics.
+ * This is the authoritative way to detect MCP usage - no heuristics or output parsing needed.
+ * See FINDINGS-MCP-RAW-OUTPUT.md for investigation details.
+ *
+ * @param trajectory - Agent execution trajectory with tool calls and messages
+ * @returns True if any MCP tool usage detected
+ *
+ * @public
  */
 const detectMcpFromTrajectory = (
   trajectory?: Array<{
@@ -70,65 +54,37 @@ const detectMcpFromTrajectory = (
     toolName?: string;
     mcpServer?: string;
     name?: string;
+    title?: string;
+    content?: string;
   }>,
 ): boolean => {
   if (!trajectory) return false;
 
   return trajectory.some((step) => {
-    if (step.type !== "tool_call") return false;
-
-    // Claude Code: check for mcp__ prefix in toolName or name
-    const toolIdentifier = step.toolName || step.name || "";
+    // Claude Code: check for mcp__ prefix in name or toolName
+    const toolIdentifier = step.name || step.toolName || step.title || "";
     if (toolIdentifier.startsWith("mcp__")) return true;
 
     // Codex: check for mcpServer field
     if (step.mcpServer) return true;
 
+    // DROID: check for triple underscore pattern (e.g., ydc-server___you-search)
+    // Exclude false positives like toolu_ prefixes (Claude's internal tool IDs)
+    if (
+      step.type === "tool_call" &&
+      toolIdentifier.includes("___") &&
+      !toolIdentifier.startsWith("toolu_")
+    ) {
+      return true;
+    }
+
+    // GEMINI: check for mcp-server attribute in message content
+    if (step.type === "message" && step.content) {
+      if (step.content.includes('mcp-server=')) return true;
+    }
+
     return false;
   });
-};
-
-/**
- * Check if output contains evidence of search tool usage
- *
- * @remarks
- * Since we configure MCP via CLI before running, we know tools are available.
- * The question is: did the agent actually use them to produce useful output?
- *
- * Evidence of tool usage:
- * - URLs in output (http://, https://) - clear sign of web search
- * - Source citations
- * - Structured data (lists, tables)
- * - Timestamps, statistics
- *
- * This focuses on OUTPUT quality, not trajectory parsing (which varies by adapter).
- */
-const hasSearchResults = (output: string): boolean => {
-  if (!output || output.length < 50) return false;
-
-  // Check for URLs - strongest signal of web search
-  const hasUrls = /https?:\/\/[^\s]+/.test(output);
-  if (hasUrls) return true;
-
-  // Check for source indicators
-  const hasSourceCitations = /source[s]?:/i.test(output) || /according to/i.test(output) || /via /i.test(output);
-
-  return hasSourceCitations;
-};
-
-/**
- * Check if output contains MCP-specific data patterns
- *
- * @remarks
- * MCP (You.com) returns richer data than builtin search.
- * We require 3+ indicators to confirm MCP was used.
- *
- * NOTE: Current indicators are weather-specific and may not match all queries.
- * For reliable MCP detection, use metadata.agent field instead.
- */
-const hasMcpDataIndicators = (output: string): number => {
-  const lowerOutput = output.toLowerCase();
-  return MCP_INDICATORS.filter((indicator) => lowerOutput.includes(indicator)).length;
 };
 
 /**
@@ -156,9 +112,9 @@ const hasExecutionErrors = (
  *
  * @remarks
  * Deterministic scoring (60 pts):
- * - 30 pts: Completion (has substantial output, no errors/timeout)
- * - 20 pts: Tool usage (used search tools)
- * - 10 pts: MCP data (if MCP run, has MCP indicators)
+ * - 30 pts: Completion (has substantial output >50 chars)
+ * - 20 pts: Tool usage (any tool calls in trajectory)
+ * - 10 pts: Quality bonus (has content and no errors)
  *
  * LLM scoring (40 pts):
  * - Accuracy: Is the information correct?
@@ -172,13 +128,11 @@ const assessQuality = async ({
   output,
   hint,
   trajectory,
-  isMcpRun,
 }: {
   input: string;
   output: string;
   hint?: string;
   trajectory?: Array<{ type: string; name?: string; status?: string; content?: string }>;
-  isMcpRun: boolean;
 }): Promise<{
   deterministicScore: number;
   llmScore: number;
@@ -193,23 +147,16 @@ const assessQuality = async ({
     deterministicScore += 30;
   }
 
-  // 20 pts: Tool usage (produced search results)
-  const hasSearchTool = hasSearchResults(output);
-  if (hasSearchTool) {
+  // 20 pts: Tool usage (any tool calls in trajectory)
+  const usedTools = trajectory?.some((step) => step.type === "tool_call") ?? false;
+  if (usedTools) {
     deterministicScore += 20;
   }
 
-  // 10 pts: MCP validation (if MCP run, check indicators)
-  if (isMcpRun) {
-    const mcpIndicatorCount = hasMcpDataIndicators(output);
-    if (mcpIndicatorCount >= 3) {
-      deterministicScore += 10;
-    }
-  } else {
-    // For builtin runs, give 10 pts if they have content
-    if (hasContent) {
-      deterministicScore += 10;
-    }
+  // 10 pts: Quality bonus (has content and no execution errors)
+  const { hasErrors } = hasExecutionErrors(output, trajectory);
+  if (hasContent && !hasErrors) {
+    deterministicScore += 10;
   }
 
   // Phase 2: LLM quality judgment (40 pts max)
@@ -267,7 +214,7 @@ Return ONLY valid JSON with this structure:
     llmReasoning = "No GEMINI_API_KEY (deterministic-only mode)";
   }
 
-  const reasoning = `Deterministic: ${deterministicScore}/60 (content=${hasContent}, tools=${hasSearchTool}). LLM: ${llmScore}/40. ${llmReasoning}`;
+  const reasoning = `Deterministic: ${deterministicScore}/60 (content=${hasContent}, tools=${usedTools}). LLM: ${llmScore}/40. ${llmReasoning}`;
 
   return {
     deterministicScore,
@@ -280,16 +227,21 @@ Return ONLY valid JSON with this structure:
  * Inline grader with hybrid scoring
  *
  * @remarks
- * **MCP Gate (Priority 1):** If prompt requests MCP but MCP not used → immediate fail (score 0)
+ * **MCP Detection (Authoritative):** Uses explicit indicators from trajectory:
+ * - **Claude Code**: Checks for `mcp__` prefix in tool names
+ * - **Codex**: Checks for `mcpServer` field in trajectory steps
+ * - **DROID**: Checks for `___` separator in tool names
+ * - **GEMINI**: Checks for `mcp-server=` in message content
+ * - Schemas extract these fields from raw CLI output (see FINDINGS-MCP-RAW-OUTPUT.md)
  *
- * **Hybrid Scoring (Priority 2):**
- * - Deterministic: 60 pts (completion, tool usage, MCP indicators)
+ * **Hybrid Scoring:**
+ * - Deterministic: 60 pts (completion, tool usage, quality bonus)
  * - LLM: 40 pts (accuracy, relevance, completeness)
  * - Pass threshold: 70/100
  *
  * **Execution errors:** Timeout or tool failures → immediate fail (score 0)
  *
- * **Fallback:** Works without API key (deterministic-only, max 60 pts)
+ * **Fallback:** Works without GEMINI_API_KEY (deterministic-only, max 60 pts)
  *
  * @param input - The prompt (string or multi-turn array)
  * @param output - Agent's final output
@@ -302,10 +254,7 @@ export const grade: Grader = async ({ input, output, hint, trajectory }) => {
   // Normalize input to string
   const inputStr = Array.isArray(input) ? input.join(" ") : input;
 
-  // Detect if this is an MCP run (check prompt for MCP server specification)
-  const isMcpRun = inputStr.includes('mcp-server="ydc-server"');
-
-  // Check for execution errors
+  // Check for execution errors first
   const { hasErrors, hasTimeout } = hasExecutionErrors(output, trajectory);
 
   // Fail immediately on errors or timeout
@@ -315,22 +264,18 @@ export const grade: Grader = async ({ input, output, hint, trajectory }) => {
       score: 0,
       reasoning: hasTimeout ? "Execution timed out" : "Tool execution failed with errors",
       metadata: {
-        isMcpRun,
         mcpToolCalled: false,
-        mcpIndicatorCount: 0,
-        qualityPassed: false,
         hasErrors,
         hasTimeout,
       },
     };
   }
 
-  // Detect MCP usage from trajectory (authoritative)
+  // Detect MCP usage from trajectory (authoritative method)
   const mcpToolCalled = detectMcpFromTrajectory(trajectory);
 
-  // Analyze output quality
-  const hasResults = hasSearchResults(output);
-  const mcpIndicatorCount = hasMcpDataIndicators(output);
+  // Determine if MCP was expected from the input prompt
+  const expectedMcp = inputStr.includes('mcp-server=');
 
   // Hybrid quality assessment (deterministic 60% + LLM 40%)
   const quality = await assessQuality({
@@ -338,7 +283,6 @@ export const grade: Grader = async ({ input, output, hint, trajectory }) => {
     output,
     hint,
     trajectory,
-    isMcpRun,
   });
 
   // Combine scores
@@ -351,9 +295,8 @@ export const grade: Grader = async ({ input, output, hint, trajectory }) => {
     score: normalizedScore,
     reasoning: quality.reasoning,
     metadata: {
-      isMcpRun,
+      expectedMcp,
       mcpToolCalled,
-      mcpIndicatorCount,
       deterministicScore: quality.deterministicScore,
       llmScore: quality.llmScore,
       hasErrors: false,

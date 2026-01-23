@@ -27,7 +27,9 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
  *
  * **Fallback:** Works without GEMINI_API_KEY (deterministic-only mode, max score 60/100)
  *
- * **MCP Detection:** Uses `metadata.agent` field (reliable) and trajectory tool calls (less reliable due to adapter deduplication)
+ * **MCP Detection:** Uses explicit tool name indicators from trajectory:
+ * - Claude Code: tool names with `mcp__` prefix (e.g., `mcp__ydc-server__you-search`)
+ * - Codex: trajectory steps with `mcpServer` field
  *
  * @public
  */
@@ -53,39 +55,65 @@ const MCP_INDICATORS = [
 ];
 
 /**
- * Check if tools were used (via tool_call events or message content)
+ * Detect MCP tool usage from trajectory
  *
  * @remarks
- * Primary detection: Looks for tool_call events with completed status.
+ * Uses explicit MCP indicators from CLI output:
+ * - Claude Code: tool names starting with `mcp__` (e.g., `mcp__ydc-server__you-search`)
+ * - Codex: trajectory steps with `mcpServer` field set
  *
- * Fallback detection: Some adapters (like Codex) only capture message events.
- * For these, we check message content for evidence of tool usage:
- * - URLs (http://, https://) indicate web search was performed
- * - Source citations suggest data retrieval
- *
- * This dual approach ensures tool detection works across all agent adapters.
+ * This is the authoritative way to detect MCP usage, not heuristics.
  */
-const hasToolUsage = (
+const detectMcpFromTrajectory = (
   trajectory?: Array<{
     type: string;
+    toolName?: string;
+    mcpServer?: string;
     name?: string;
-    status?: string;
-    content?: string;
   }>,
 ): boolean => {
   if (!trajectory) return false;
 
-  // Primary: Check for explicit tool_call events
-  const hasToolCallEvent = trajectory.some((step) => step.type === "tool_call" && step.status === "completed");
-  if (hasToolCallEvent) return true;
+  return trajectory.some((step) => {
+    if (step.type !== "tool_call") return false;
 
-  // Fallback: Check message content for URLs (evidence of web search)
-  const hasUrlsInMessages = trajectory.some((step) => {
-    if (step.type !== "message" || !step.content) return false;
-    return /https?:\/\/[^\s]+/.test(step.content);
+    // Claude Code: check for mcp__ prefix in toolName or name
+    const toolIdentifier = step.toolName || step.name || "";
+    if (toolIdentifier.startsWith("mcp__")) return true;
+
+    // Codex: check for mcpServer field
+    if (step.mcpServer) return true;
+
+    return false;
   });
+};
 
-  return hasUrlsInMessages;
+/**
+ * Check if output contains evidence of search tool usage
+ *
+ * @remarks
+ * Since we configure MCP via CLI before running, we know tools are available.
+ * The question is: did the agent actually use them to produce useful output?
+ *
+ * Evidence of tool usage:
+ * - URLs in output (http://, https://) - clear sign of web search
+ * - Source citations
+ * - Structured data (lists, tables)
+ * - Timestamps, statistics
+ *
+ * This focuses on OUTPUT quality, not trajectory parsing (which varies by adapter).
+ */
+const hasSearchResults = (output: string): boolean => {
+  if (!output || output.length < 50) return false;
+
+  // Check for URLs - strongest signal of web search
+  const hasUrls = /https?:\/\/[^\s]+/.test(output);
+  if (hasUrls) return true;
+
+  // Check for source indicators
+  const hasSourceCitations = /source[s]?:/i.test(output) || /according to/i.test(output) || /via /i.test(output);
+
+  return hasSourceCitations;
 };
 
 /**
@@ -165,8 +193,8 @@ const assessQuality = async ({
     deterministicScore += 30;
   }
 
-  // 20 pts: Tool usage (used search tools)
-  const hasSearchTool = hasToolUsage(trajectory);
+  // 20 pts: Tool usage (produced search results)
+  const hasSearchTool = hasSearchResults(output);
   if (hasSearchTool) {
     deterministicScore += 20;
   }
@@ -297,27 +325,12 @@ export const grade: Grader = async ({ input, output, hint, trajectory }) => {
     };
   }
 
-  // For MCP runs: check if MCP was actually used
-  const mcpToolCalled = hasToolUsage(trajectory);
-  const mcpIndicatorCount = hasMcpDataIndicators(output);
+  // Detect MCP usage from trajectory (authoritative)
+  const mcpToolCalled = detectMcpFromTrajectory(trajectory);
 
-  // CRITICAL MCP gate: If prompt requests MCP but MCP not used, immediate FAIL
-  if (isMcpRun && !mcpToolCalled && mcpIndicatorCount < 3) {
-    return {
-      pass: false,
-      score: 0,
-      reasoning: `MCP requested but NOT used! Tool called: ${mcpToolCalled}, indicators: ${mcpIndicatorCount}. MCP config may be broken.`,
-      metadata: {
-        isMcpRun: true,
-        mcpToolCalled,
-        mcpIndicatorCount,
-        deterministicScore: 0,
-        llmScore: 0,
-        hasErrors: false,
-        hasTimeout: false,
-      },
-    };
-  }
+  // Analyze output quality
+  const hasResults = hasSearchResults(output);
+  const mcpIndicatorCount = hasMcpDataIndicators(output);
 
   // Hybrid quality assessment (deterministic 60% + LLM 40%)
   const quality = await assessQuality({

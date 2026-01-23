@@ -3,8 +3,8 @@
  * Droid MCP Configuration Schema
  *
  * @remarks
- * Droid expects MCP config at `.factory/mcp.json` in the working directory.
- * Format: { "servers": { [name]: { "type": "http", "url": string, "headers"?: {} } } }
+ * Droid expects MCP config at `~/.factory/mcp.json` in the home directory (NOT working directory).
+ * Format: { "mcpServers": { [name]: { "type": "http", "url": string, "headers"?: {}, "disabled": boolean } } }
  *
  * @public
  */
@@ -18,21 +18,21 @@ export const DroidMcpServerSchema = z.object({
   type: z.literal("http"),
   url: z.string().url(),
   headers: z.record(z.string()).optional(),
-  env: z.record(z.string()).optional(),
+  disabled: z.boolean(),
 });
 
 /**
  * Droid MCP configuration schema
  */
 export const DroidMcpConfigSchema = z.object({
-  servers: z.record(DroidMcpServerSchema),
+  mcpServers: z.record(DroidMcpServerSchema),
 });
 
 export type DroidMcpConfig = z.infer<typeof DroidMcpConfigSchema>;
 export type DroidMcpServer = z.infer<typeof DroidMcpServerSchema>;
 
 /**
- * Path where Droid expects MCP config
+ * Path where Droid expects MCP config (relative to home directory)
  */
 export const DROID_CONFIG_PATH = ".factory/mcp.json";
 
@@ -66,9 +66,10 @@ export const generateDroidConfig = (
     droidServers[server.name] = {
       type: "http",
       url: server.url,
+      disabled: false,
       ...(Object.keys(headers).length > 0 && { headers }),
     };
   }
 
-  return { servers: droidServers };
+  return { mcpServers: droidServers };
 };

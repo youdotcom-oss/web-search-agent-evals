@@ -63,20 +63,18 @@ const MCP_INDICATORS = [
  *
  * For reliable MCP detection, use metadata.agent field instead.
  */
-const hasMcpToolCall = (trajectory?: Array<{
-  type: string;
-  name?: string;
-  status?: string;
-}>): boolean => {
+const hasMcpToolCall = (
+  trajectory?: Array<{
+    type: string;
+    name?: string;
+    status?: string;
+  }>,
+): boolean => {
   if (!trajectory) return false;
 
   // Check for any completed tool calls
   // In MCP runs, these are likely MCP tool calls even if name shows ID
-  return trajectory.some(
-    (step) =>
-      step.type === "tool_call" &&
-      step.status === "completed"
-  );
+  return trajectory.some((step) => step.type === "tool_call" && step.status === "completed");
 };
 
 /**
@@ -91,9 +89,7 @@ const hasMcpToolCall = (trajectory?: Array<{
  */
 const hasMcpDataIndicators = (output: string): number => {
   const lowerOutput = output.toLowerCase();
-  return MCP_INDICATORS.filter((indicator) =>
-    lowerOutput.includes(indicator)
-  ).length;
+  return MCP_INDICATORS.filter((indicator) => lowerOutput.includes(indicator)).length;
 };
 
 /**
@@ -107,15 +103,10 @@ const hasExecutionErrors = (
   }>,
 ): { hasErrors: boolean; hasTimeout: boolean } => {
   const hasErrors =
-    trajectory?.some(
-      (step) =>
-        step.type === "tool_call" &&
-        (step.status === "failed" || step.status === "error"),
-    ) ?? false;
+    trajectory?.some((step) => step.type === "tool_call" && (step.status === "failed" || step.status === "error")) ??
+    false;
 
-  const hasTimeout =
-    output.toLowerCase().includes("timeout") ||
-    output.toLowerCase().includes("timed out");
+  const hasTimeout = output.toLowerCase().includes("timeout") || output.toLowerCase().includes("timed out");
 
   return { hasErrors, hasTimeout };
 };
@@ -163,12 +154,7 @@ const assessQuality = async ({
   }
 
   // 20 pts: Tool usage (used search tools)
-  const hasSearchTool =
-    trajectory?.some(
-      (step) =>
-        step.type === "tool_call" &&
-        step.status === "completed",
-    ) ?? false;
+  const hasSearchTool = trajectory?.some((step) => step.type === "tool_call" && step.status === "completed") ?? false;
   if (hasSearchTool) {
     deterministicScore += 20;
   }
@@ -233,7 +219,7 @@ Return ONLY valid JSON with this structure:
           llmReasoning = llmResult.reasoning || "";
         }
       }
-    } catch (error: unknown) {
+    } catch (_: unknown) {
       // Fallback: LLM scoring failed, use deterministic only
       llmReasoning = "LLM grading failed";
     }
@@ -287,9 +273,7 @@ export const grade: Grader = async ({ input, output, hint, trajectory }) => {
     return {
       pass: false,
       score: 0,
-      reasoning: hasTimeout
-        ? "Execution timed out"
-        : "Tool execution failed with errors",
+      reasoning: hasTimeout ? "Execution timed out" : "Tool execution failed with errors",
       metadata: {
         isMcpRun,
         mcpToolCalled: false,

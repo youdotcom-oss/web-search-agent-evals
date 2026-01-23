@@ -8,19 +8,23 @@ The **playoffs** system runs a matrix evaluation: 4 agents × 2 tools = 8 pairin
 
 **Key Features:**
 - **Headless adapters** - No custom code, just JSON schemas ([@plaited/agent-eval-harness](https://www.npmjs.com/package/@plaited/agent-eval-harness))
-- **Type-safe configs** - Zod schemas ensure MCP configs are correct
-- **Single source of truth** - `tools/mcp-servers.json` drives all MCP config generation
+- **Flag-based architecture** - Single service per agent, MCP mode selected via environment variable
+- **Type-safe constants** - TypeScript MCP server definitions in `mcp-servers.ts`
+- **CLI-based MCP setup** - Agents configure MCP via official CLI commands at runtime
 - **Isolated execution** - Each pairing runs in its own Docker container
 - **Transparent** - All schemas and configs are public, easily reviewable
 
 ```mermaid
 flowchart TD
-    Prompts[prompts.jsonl] --> Harness[agent-eval-harness]
+    Env[MCP_TOOL env var] --> Entrypoint[docker/entrypoint.sh]
+    Entrypoint -->|builtin| SkipMCP[Skip MCP setup]
+    Entrypoint -->|you/exa/etc| ConfigMCP[CLI: agent mcp add...]
+
+    SkipMCP --> Harness[agent-eval-harness capture]
+    ConfigMCP --> Harness
+
+    Prompts[prompts.jsonl] --> Harness
     Schemas[agent-schemas/*.json] --> Harness
-    MCP[tools/mcp-servers.json] --> Generate[generate-mcp-config]
-    Generate --> ClaudeConfig[.mcp.json]
-    Generate --> GeminiConfig[.gemini/settings.json]
-    Generate --> DroidConfig[.factory/mcp.json]
     Harness --> Results[data/results/agent/tool.jsonl]
 ```
 
@@ -81,16 +85,19 @@ For other servers (AWS, GCP, etc.), use their secrets management:
 
 ```bash
 # Run all agents with builtin search
-docker compose run --rm claude-code-builtin
-docker compose run --rm gemini-builtin
-docker compose run --rm droid-builtin
-docker compose run --rm codex-builtin
+docker compose run --rm -e MCP_TOOL=builtin claude-code
+docker compose run --rm -e MCP_TOOL=builtin gemini
+docker compose run --rm -e MCP_TOOL=builtin droid
+docker compose run --rm -e MCP_TOOL=builtin codex
 
-# Run all agents with MCP search
-docker compose run --rm claude-code-you
-docker compose run --rm gemini-you
-docker compose run --rm droid-you
-docker compose run --rm codex-you
+# Run all agents with You.com MCP search
+docker compose run --rm -e MCP_TOOL=you claude-code
+docker compose run --rm -e MCP_TOOL=you gemini
+docker compose run --rm -e MCP_TOOL=you droid
+docker compose run --rm -e MCP_TOOL=you codex
+
+# Or use the automated script (runs all 8 scenarios in parallel)
+bun run run
 ```
 
 #### Full Workflow (1,254 prompts, ~24-32 hours)
@@ -111,16 +118,20 @@ docker compose run --rm codex-you
 **Or run individual pairings:**
 
 ```bash
-# Update docker-compose.yml first
-sed -i.bak 's|test.jsonl|full.jsonl|g' docker-compose.yml
-sed -i.bak 's|test-mcp.jsonl|full-mcp.jsonl|g' docker-compose.yml
+# Update entrypoint.sh to use full prompts first
+sed -i.bak 's|test.jsonl|full.jsonl|g' docker/entrypoint.sh
+sed -i.bak 's|test-mcp.jsonl|full-mcp.jsonl|g' docker/entrypoint.sh
+
+# Rebuild images with updated entrypoint
+docker compose build
 
 # Run specific agent+tool
-docker compose run --rm claude-code-builtin
-docker compose run --rm gemini-you
+docker compose run --rm -e MCP_TOOL=builtin claude-code
+docker compose run --rm -e MCP_TOOL=you gemini
 
 # Restore test prompts
-mv docker-compose.yml.bak docker-compose.yml
+mv docker/entrypoint.sh.bak docker/entrypoint.sh
+docker compose build
 ```
 
 ### 4. Analyze Results
@@ -691,30 +702,39 @@ See `.claude/skills/playoffs/SKILL.md` for detailed scaffolding guide.
 
 ## Adding MCP Tools
 
-1. **Add to tools/mcp-servers.json**
-   ```json
-   {
-     "servers": {
-       "new-tool": {
-         "name": "tool-name",
-         "type": "http",
-         "url": "https://api.example.com/mcp",
-         "auth": { "type": "bearer", "envVar": "NEW_TOOL_API_KEY" }
-       }
-     }
-   }
+1. **Add to mcp-servers.ts**
+   ```typescript
+   export const MCP_SERVERS = {
+     you: { /* ... */ },
+     exa: {
+       name: 'exa-server',
+       type: 'http' as const,
+       url: 'https://api.exa.ai/mcp',
+       auth: {
+         type: 'bearer' as const,
+         envVar: 'EXA_API_KEY',
+       },
+     },
+   } as const;
    ```
 
-2. **Update generate-mcp-config.ts**
-   - Add to `TOOLS` array
+2. **Update docker/entrypoint**
+   - Add `exa` case to `configureMcp()` function for each agent
 
 3. **Update .env and .env.example**
    ```
-   NEW_TOOL_API_KEY=...
+   EXA_API_KEY=...
    ```
 
-4. **Add Docker Compose services**
-   - Add `<agent>-<tool>` for each agent
+4. **Update scripts/run.ts**
+   - Add `"exa"` to `McpTool` type union
+
+5. **Create MCP prompt set**
+   ```bash
+   bun scripts/convert-to-mcp-format.ts -i test.jsonl -o test-exa.jsonl
+   ```
+
+See `.claude/skills/playoffs/references/mcp-tools.md` for detailed guide.
 
 ## Troubleshooting
 

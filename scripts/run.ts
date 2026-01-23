@@ -5,10 +5,12 @@ import { join } from "node:path";
 
 type Agent = "claude-code" | "gemini" | "droid" | "codex";
 type Mode = "test" | "full";
+type McpTool = "builtin" | "you";
 
 interface RunOptions {
   agents: Agent[];
   mode?: Mode;
+  mcp?: McpTool;
   dryRun?: boolean;
 }
 
@@ -17,6 +19,7 @@ const ALL_AGENTS: Agent[] = ["claude-code", "gemini", "droid", "codex"];
 const parseArgs = (args: string[]): RunOptions => {
   const agents: Agent[] = [];
   let mode: Mode | undefined;
+  let mcp: McpTool | undefined;
   let dryRun = false;
 
   for (let i = 0; i < args.length; i++) {
@@ -34,6 +37,13 @@ const parseArgs = (args: string[]): RunOptions => {
       }
       mode = m;
       i++;
+    } else if (args[i] === "--mcp" && i + 1 < args.length) {
+      const tool = args[i + 1];
+      if (tool !== "builtin" && tool !== "you") {
+        throw new Error(`Invalid MCP tool: ${tool}. Must be "builtin" or "you"`);
+      }
+      mcp = tool;
+      i++;
     } else if (args[i] === "--dry-run") {
       dryRun = true;
     }
@@ -42,21 +52,23 @@ const parseArgs = (args: string[]): RunOptions => {
   return {
     agents: agents.length > 0 ? agents : ALL_AGENTS,
     mode,
+    mcp,
     dryRun,
   };
 };
 
 const detectCurrentMode = async (): Promise<Mode> => {
-  const composeFile = join(process.cwd(), "docker-compose.yml");
-  const content = await readFile(composeFile, "utf-8");
+  // Check entrypoint.sh since docker-compose.yml no longer has hardcoded paths
+  const entrypointFile = join(process.cwd(), "docker", "entrypoint.sh");
+  const content = await readFile(entrypointFile, "utf-8");
 
-  if (content.includes("/eval/data/prompts/test.jsonl")) {
+  if (content.includes('PROMPT_FILE="/eval/data/prompts/test.jsonl"')) {
     return "test";
   }
-  if (content.includes("/eval/data/prompts/full.jsonl")) {
+  if (content.includes('PROMPT_FILE="/eval/data/prompts/full.jsonl"')) {
     return "full";
   }
-  throw new Error("Could not detect current mode from docker-compose.yml");
+  throw new Error("Could not detect current mode from docker/entrypoint.sh");
 };
 
 const toggleMode = async (mode: Mode): Promise<void> => {
@@ -78,11 +90,11 @@ const toggleMode = async (mode: Mode): Promise<void> => {
   });
 };
 
-const runService = (service: string): Promise<number> => {
+const runService = (agent: Agent, mcpTool: McpTool): Promise<number> => {
   return new Promise((resolve) => {
-    console.log(`Starting: ${service}`);
+    console.log(`Starting: ${agent} (${mcpTool})`);
 
-    const proc = spawn("docker", ["compose", "run", "--rm", service], {
+    const proc = spawn("docker", ["compose", "run", "--rm", "-e", `MCP_TOOL=${mcpTool}`, agent], {
       stdio: "inherit",
     });
 
@@ -91,7 +103,7 @@ const runService = (service: string): Promise<number> => {
     });
 
     proc.on("error", (err) => {
-      console.error(`Failed to start ${service}:`, err.message);
+      console.error(`Failed to start ${agent} (${mcpTool}):`, err.message);
       resolve(1);
     });
   });
@@ -121,29 +133,34 @@ const main = async () => {
 
     console.log(`${options.dryRun ? "[DRY RUN] " : ""}Running in ${currentMode} mode`);
     console.log(`Agents: ${options.agents.join(", ")}`);
+
+    // Determine which MCP tools to test
+    const mcpTools: McpTool[] = options.mcp ? [options.mcp] : ["builtin", "you"];
+    console.log(`MCP tools: ${mcpTools.join(", ")}`);
     console.log("");
 
-    // Build service list (agent-builtin and agent-you)
-    const services: string[] = [];
+    // Build execution list (each agent runs with each MCP tool)
+    type RunConfig = { agent: Agent; mcpTool: McpTool };
+    const runs: RunConfig[] = [];
     for (const agent of options.agents) {
-      services.push(`${agent}-builtin`, `${agent}-you`);
+      for (const tool of mcpTools) {
+        runs.push({ agent, mcpTool: tool });
+      }
     }
 
-    console.log(
-      `${options.dryRun ? "[DRY RUN] Would run" : "Running"} ${services.length} services in parallel: ${services.join(", ")}\n`,
-    );
+    console.log(`${options.dryRun ? "[DRY RUN] Would run" : "Running"} ${runs.length} scenarios in parallel\n`);
 
     if (options.dryRun) {
-      console.log("[DRY RUN] Service execution plan:");
-      for (const service of services) {
-        console.log(`  - docker compose run --rm ${service}`);
+      console.log("[DRY RUN] Execution plan:");
+      for (const { agent, mcpTool } of runs) {
+        console.log(`  - docker compose run --rm -e MCP_TOOL=${mcpTool} ${agent}`);
       }
       console.log("\n[DRY RUN] No services were executed.");
       process.exit(0);
     }
 
-    // Run all services in parallel
-    const results = await Promise.all(services.map((service) => runService(service)));
+    // Run all scenarios in parallel
+    const results = await Promise.all(runs.map(({ agent, mcpTool }) => runService(agent, mcpTool)));
 
     // Report results
     console.log(`\n${"=".repeat(80)}`);
@@ -151,28 +168,29 @@ const main = async () => {
     console.log("=".repeat(80));
 
     const failures: string[] = [];
-    for (let i = 0; i < services.length; i++) {
-      const service = services[i];
+    for (let i = 0; i < runs.length; i++) {
+      const run = runs[i];
       const exitCode = results[i];
-      if (service === undefined || exitCode === undefined) {
+      if (run === undefined || exitCode === undefined) {
         continue;
       }
       const status = exitCode === 0 ? "✓" : "✗";
-      console.log(`${status} ${service}: exit code ${exitCode}`);
+      const label = `${run.agent} (${run.mcpTool})`;
+      console.log(`${status} ${label}: exit code ${exitCode}`);
 
       if (exitCode !== 0) {
-        failures.push(service);
+        failures.push(label);
       }
     }
 
     console.log("");
 
     if (failures.length > 0) {
-      console.error(`Failed services (${failures.length}):`);
-      failures.forEach((service) => console.error(`  - ${service}`));
+      console.error(`Failed scenarios (${failures.length}):`);
+      failures.forEach((label) => console.error(`  - ${label}`));
       process.exit(1);
     } else {
-      console.log("All services completed successfully!");
+      console.log("All scenarios completed successfully!");
       process.exit(0);
     }
   } catch (error) {

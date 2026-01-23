@@ -14,9 +14,16 @@ The playoffs system evaluates multiple agents (Claude Code, Gemini, Droid, Codex
 
 **Architecture:**
 - **Agent schemas** (agent-schemas/) - ACP headless adapter schemas
-- **MCP configs** (tools/) - Single source of truth for MCP servers
-- **CLI scripts** (scripts/) - Type-safe config generation and execution
-- **Docker** (docker/, docker-compose.yml) - Isolated execution environments
+- **MCP configs** (mcp-servers.ts) - Type-safe TypeScript constants
+- **TypeScript entrypoint** (docker/entrypoint) - Bun shell script for runtime config
+- **CLI scripts** (scripts/) - Type-safe execution and comparison
+- **Docker** (docker/, docker-compose.yml) - Isolated execution (4 services)
+
+**Key simplification:** Flag-based architecture with TypeScript
+- Single `mcp-servers.ts` for all MCP server definitions
+- TypeScript entrypoint imports MCP constants directly
+- 4 Docker services (not 8) - mode selected via `MCP_TOOL` env var
+- 4 agent schemas (not 8) - base schemas work for both modes
 
 ## Quick Commands
 
@@ -26,65 +33,61 @@ Run all 4 agents with both builtin and MCP search:
 
 ```bash
 # Builtin search - test all agents
-docker compose run --rm claude-code-builtin
-docker compose run --rm gemini-builtin
-docker compose run --rm droid-builtin
-docker compose run --rm codex-builtin
+docker compose run --rm -e MCP_TOOL=builtin claude-code
+docker compose run --rm -e MCP_TOOL=builtin gemini
+docker compose run --rm -e MCP_TOOL=builtin droid
+docker compose run --rm -e MCP_TOOL=builtin codex
 
 # MCP search (39-45% faster) - test all agents
-docker compose run --rm claude-code-you
-docker compose run --rm gemini-you
-docker compose run --rm droid-you
-docker compose run --rm codex-you
-```
+docker compose run --rm -e MCP_TOOL=you claude-code
+docker compose run --rm -e MCP_TOOL=you gemini
+docker compose run --rm -e MCP_TOOL=you droid
+docker compose run --rm -e MCP_TOOL=you codex
 
-**Parallel execution:**
-```bash
-# Run all builtin tests in parallel
-docker compose run --rm claude-code-builtin &
-docker compose run --rm gemini-builtin &
-docker compose run --rm droid-builtin &
-docker compose run --rm codex-builtin &
-wait
+# Or use the automated script (runs all 8 scenarios in parallel)
+bun run run
 
-# Run all MCP tests in parallel
-docker compose run --rm claude-code-you &
-docker compose run --rm gemini-you &
-docker compose run --rm droid-you &
-docker compose run --rm codex-you &
-wait
+# Run specific agent in both modes
+bun run run --agent gemini
+
+# Run all agents in specific mode only
+bun run run --mcp builtin
+bun run run --mcp you
 ```
 
 ### Full Workflow (1,254 prompts, ~10+ hours per agent)
 
-**Step 1:** Update docker-compose.yml to use full prompts:
+**Step 1:** Update docker/entrypoint to use full prompts:
 
-```yaml
-# Change this line in each service:
-- /eval/data/prompts/test.jsonl              # Current (5 prompts)
-# To:
-- /eval/data/prompts/full.jsonl              # Full (1,254 prompts)
+```bash
+# Replace test prompts with full prompts
+sed -i.bak 's|test.jsonl|full.jsonl|g' docker/entrypoint
+sed -i.bak 's|test-mcp.jsonl|full-mcp.jsonl|g' docker/entrypoint
 
-# For MCP services, change:
-- /eval/data/prompts/test-mcp.jsonl          # Current (5 prompts)
-# To:
-- /eval/data/prompts/full-mcp.jsonl          # Full (1,254 prompts)
+# Rebuild images to include updated entrypoint
+docker compose build
 ```
 
 **Step 2:** Run evaluations:
 
 ```bash
-# Builtin - all agents
-docker compose run --rm claude-code-builtin
-docker compose run --rm gemini-builtin
-docker compose run --rm droid-builtin
-docker compose run --rm codex-builtin
+# Use automated script (runs all 8 scenarios in parallel)
+bun run run
 
-# MCP - all agents
-docker compose run --rm claude-code-you
-docker compose run --rm gemini-you
-docker compose run --rm droid-you
-docker compose run --rm codex-you
+# Or run specific agent+tool combinations
+docker compose run --rm -e MCP_TOOL=builtin claude-code
+docker compose run --rm -e MCP_TOOL=you gemini
+
+# Or run all agents in one mode
+bun run run --mcp builtin
+bun run run --mcp you
+```
+
+**Step 3:** Restore test prompts:
+
+```bash
+mv docker/entrypoint.bak docker/entrypoint
+docker compose build
 ```
 
 **Note:** Full evaluation takes significant time and API quota. Consider:
@@ -104,19 +107,6 @@ bunx @plaited/agent-eval-harness summarize \
   data/results/claude-code/builtin.jsonl -o summary.jsonl
 ```
 
-### Generate MCP Configs
-
-```bash
-# Generate config for specific agent+tool
-bun run generate-mcp -- -a claude-code -t you -c /workspace
-
-# Test that configs are valid
-bun run tools/schemas/claude-mcp.ts
-bun run tools/schemas/gemini-mcp.ts
-bun run tools/schemas/droid-mcp.ts
-bun run tools/schemas/codex-mcp.ts
-```
-
 ## Prompt Sets
 
 | File | Prompts | Format | Use With |
@@ -126,28 +116,28 @@ bun run tools/schemas/codex-mcp.ts
 | `full.jsonl` | 1,254 | `<web-search>` | Builtin services |
 | `full-mcp.jsonl` | 1,254 | `<web-search mcp-server="ydc-server">` | MCP services |
 
-**Default:** Docker services use `test.jsonl` (5 prompts) and `test-mcp.jsonl` (5 prompts) for quick validation.
+**Default:** Docker entrypoint uses `test.jsonl` (5 prompts) and `test-mcp.jsonl` (5 prompts) for quick validation.
 
-**Full eval:** Manually update docker-compose.yml to use `full.jsonl` (1,254 prompts) or `full-mcp.jsonl` (1,254 prompts).
+**Full eval:** Update docker/entrypoint to use `full.jsonl` (1,254 prompts) or `full-mcp.jsonl` (1,254 prompts).
 
-See `data/prompts/README.md` for complete workflow documentation.
+See [references/prompts.md](references/prompts.md) for complete prompt documentation.
 
 ## Results Location
 
 ```
 data/results/
 ├── claude-code/
-│   ├── builtin.jsonl
-│   └── you.jsonl
+│   ├── builtin-test.jsonl
+│   └── you-test.jsonl
 ├── gemini/
-│   ├── builtin.jsonl
-│   └── you.jsonl
+│   ├── builtin-test.jsonl
+│   └── you-test.jsonl
 ├── droid/
-│   ├── builtin.jsonl
-│   └── you.jsonl
+│   ├── builtin-test.jsonl
+│   └── you-test.jsonl
 └── codex/
-    ├── builtin.jsonl
-    └── you.jsonl
+    ├── builtin-test.jsonl
+    └── you-test.jsonl
 ```
 
 **Note:** Results are gitignored. Regenerate from prompts as needed.
@@ -174,90 +164,76 @@ Based on test prompts (5 prompts):
    - Map JSON events to ACP protocol
    - Test with `adapter:check`
 
-2. **Create MCP config schema** (`tools/schemas/<agent>-mcp.ts`)
-   - Research agent's MCP config location
-   - Export Zod schema + config path constant
-   - Export `generate<Agent>Config` function
-   - Test compilation: `bun run tools/schemas/<agent>-mcp.ts`
-
-3. **Update generate-mcp-config.ts**
-   - Import new schema
-   - Add agent to `AGENTS` array
-   - Add case to switch statement
-
-4. **Create Dockerfile** (`docker/<agent>.Dockerfile`)
+2. **Create Dockerfile** (`docker/<agent>.Dockerfile`)
    - Base from `base`
    - Install agent CLI
+   - Copy TypeScript entrypoint and mcp-servers.ts
    - Verify with `<agent> --version`
-   - Copy entrypoint script
 
-5. **Add Docker Compose services**
-   - Add `<agent>-builtin` service
-   - Add `<agent>-you` service (or other MCP tool)
-   - Follow existing service patterns
+3. **Add Docker Compose service**
+   - Add single `<agent>` service
+   - Use same pattern as existing services
 
-6. **Update documentation**
-   - Add to agent-schemas/README.md
+4. **Update TypeScript entrypoint** (`docker/entrypoint`)
+   - Add agent case to `configureMcp()` function
+   - Add timeout to `buildCaptureCommand()` if needed
+
+5. **Update documentation**
+   - Add to references/agent-schemas.md
    - Update main README.md
    - Update this skill
 
+See [references/agent-schemas.md](references/agent-schemas.md) for detailed agent schema documentation.
+
 ### Adding a New MCP Tool
 
-1. **Add to mcp-servers.json**
-   ```json
-   {
-     "servers": {
-       "new-tool": {
-         "name": "tool-server-name",
-         "type": "http",
-         "url": "https://api.example.com/mcp",
-         "auth": {
-           "type": "bearer",
-           "envVar": "NEW_TOOL_API_KEY"
-         }
-       }
-     }
-   }
+1. **Add to mcp-servers.ts**
+   ```typescript
+   export const MCP_SERVERS = {
+     you: { /* ... */ },
+     exa: {
+       name: 'exa-server',
+       type: 'http' as const,
+       url: 'https://api.exa.ai/mcp',
+       auth: {
+         type: 'bearer' as const,
+         envVar: 'EXA_API_KEY',
+       },
+     },
+   } as const;
    ```
 
-2. **Update scripts/generate-mcp-config.ts**
-   - Add tool to `TOOLS` array
+2. **Update docker/entrypoint**
+   - Add `exa` case to each agent's configuration in `configureMcp()`
 
 3. **Add to .env and .env.example**
    ```
-   NEW_TOOL_API_KEY=...
+   EXA_API_KEY=...
    ```
 
-4. **Add Docker Compose services**
-   - Add `<agent>-<tool>` services for each agent
-   - Set `MCP_TOOL=<tool>` environment variable
+4. **Update scripts/run.ts**
+   - Add `"exa"` to `McpTool` type union
 
-5. **Test config generation**
+5. **Create MCP prompt set**
    ```bash
-   bun run generate-mcp -- -a claude-code -t <new-tool> -c /tmp/test
-   cat /tmp/test/.mcp.json  # Verify structure
+   bun scripts/convert-to-mcp-format.ts -i test.jsonl -o test-exa.jsonl
    ```
 
-6. **Create MCP prompt set**
+6. **Test**
    ```bash
-   # Convert existing prompts to use new MCP server
-   # Edit scripts/convert-to-mcp-format.ts to support new server
-   bun scripts/convert-to-mcp-format.ts -i test.jsonl -o test-<tool>.jsonl
+   docker compose build
+   docker compose run --rm -e MCP_TOOL=exa claude-code
    ```
+
+See [references/mcp-tools.md](references/mcp-tools.md) for detailed MCP configuration documentation.
 
 ## Troubleshooting
 
 ### MCP Config Not Working
 
-1. **Verify config generation**
+1. **Verify TypeScript entrypoint builds command**
    ```bash
-   # Generate config in temp directory
-   bun run generate-mcp -- -a <agent> -t <tool> -c /tmp/test
-
-   # Check file was created at correct location
-   ls /tmp/test/.mcp.json  # Claude
-   ls /tmp/test/.gemini/settings.json  # Gemini
-   ls /tmp/test/.factory/mcp.json  # Droid
+   docker compose run --rm -e MCP_TOOL=you claude-code bash -c 'cat /entrypoint.ts | grep -A10 "configureMcp"'
    ```
 
 2. **Verify API keys are set**
@@ -267,7 +243,7 @@ Based on test prompts (5 prompts):
 
 3. **Test inside container**
    ```bash
-   docker compose run --rm <agent>-<tool> bash
+   docker compose run --rm -e MCP_TOOL=you claude-code bash
    # Inside container:
    ls -la /workspace/.mcp.json  # Check config exists
    cat /workspace/.mcp.json  # Verify structure
@@ -305,20 +281,21 @@ Based on test prompts (5 prompts):
    docker run --rm test-<agent> <agent> --version
    ```
 
-3. **Check entrypoint script**
+3. **Check TypeScript entrypoint**
    ```bash
-   docker compose run --rm <agent>-<tool> bash -c "cat /entrypoint.sh"
+   docker compose run --rm <agent> bash -c "cat /entrypoint.ts | head -20"
    ```
 
 ### Timeout Issues
 
 If agents timeout frequently:
 
-1. **Check current timeout** in docker-compose.yml
-2. **Increase timeout** for problematic agent:
-   ```yaml
-   - --timeout
-   - "180000"  # 3 minutes (Codex needs this)
+1. **Check current timeout** in docker/entrypoint
+2. **Increase timeout** for problematic agent in `buildCaptureCommand()`:
+   ```typescript
+   case 'slow-agent':
+     cmd.push('--timeout', '240000')  // 4 minutes
+     break
    ```
 3. **Test with single prompt** first to verify it's not a config issue
 
@@ -326,12 +303,23 @@ If agents timeout frequently:
 
 ```
 acp-evals/
-├── agent-schemas/          # ACP headless schemas (public)
-├── tools/                  # MCP configs (single source of truth)
-│   ├── mcp-servers.json    # Server definitions
-│   └── schemas/            # Zod schemas per agent
-├── scripts/                # CLI tools (type-safe, testable)
+├── agent-schemas/          # ACP headless schemas (4 files)
+│   ├── claude-code.json
+│   ├── gemini.json
+│   ├── droid.json
+│   └── codex.json
+├── tools/                  # MCP configuration
+│   └── mcp-servers.ts      # TypeScript constants (single source)
+├── scripts/                # CLI tools
+│   ├── run.ts              # Automated test runner (--mcp flag)
+│   └── compare.ts          # Results comparison
 ├── docker/                 # Container infrastructure
+│   ├── entrypoint          # TypeScript entrypoint (Bun shell)
+│   ├── base.Dockerfile
+│   ├── claude-code.Dockerfile
+│   ├── gemini.Dockerfile
+│   ├── droid.Dockerfile
+│   └── codex.Dockerfile
 ├── data/
 │   ├── prompts/            # Evaluation prompts
 │   │   ├── test.jsonl              # 5 builtin prompts
@@ -339,13 +327,18 @@ acp-evals/
 │   │   ├── full.jsonl              # 1,254 builtin prompts
 │   │   └── full-mcp.jsonl          # 1,254 MCP prompts
 │   └── results/            # Agent outputs (gitignored)
+├── docker-compose.yml      # 4 services (one per agent)
 └── .claude/skills/playoffs/  # This skill
+    ├── SKILL.md
+    └── references/
+        ├── mcp-tools.md         # MCP configuration guide
+        ├── prompts.md           # Prompt format guide
+        └── agent-schemas.md     # Agent schema guide
 ```
 
 ## Related Documentation
 
-- [Agent Schemas](../../../agent-schemas/AGENTS.md)
-- [MCP Tools](../../../tools/AGENTS.md)
-- [Prompts](../../../data/prompts/AGENTS.md)
-- [Main README](../../../README.md)
-- [MCP Variant Analysis](../../../data/MCP-VARIANT-ANALYSIS.md)
+- [MCP Tools Configuration](references/mcp-tools.md) - TypeScript entrypoint and MCP server setup
+- [Prompt Sets](references/prompts.md) - Prompt formats, conversion, and analysis
+- [Agent Schemas](references/agent-schemas.md) - Headless adapter schemas and validation
+- [Main README](../../../README.md) - Project overview and quick start

@@ -13,7 +13,8 @@ ENV PATH="/home/evaluser/.local/bin:${PATH}"
 # Verify Droid CLI installed
 RUN droid --version
 
-COPY --chown=evaluser:evaluser docker/entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+COPY --chown=evaluser:evaluser docker/entrypoint /entrypoint.ts
+COPY --chown=evaluser:evaluser mcp-servers.ts /eval/mcp-servers.ts
+RUN chmod +x /entrypoint.ts
 
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["/entrypoint.ts"]

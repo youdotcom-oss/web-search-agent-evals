@@ -8,48 +8,38 @@ This directory contains prompt sets for evaluating agents with different search 
 
 ```bash
 # Builtin search - all agents
-docker compose run --rm claude-code-builtin
-docker compose run --rm gemini-builtin
-docker compose run --rm droid-builtin
-docker compose run --rm codex-builtin
+docker compose run --rm -e MCP_TOOL=builtin claude-code
+docker compose run --rm -e MCP_TOOL=builtin gemini
+docker compose run --rm -e MCP_TOOL=builtin droid
+docker compose run --rm -e MCP_TOOL=builtin codex
 
 # MCP search (39-45% faster) - all agents
-docker compose run --rm claude-code-you
-docker compose run --rm gemini-you
-docker compose run --rm droid-you
-docker compose run --rm codex-you
+docker compose run --rm -e MCP_TOOL=you claude-code
+docker compose run --rm -e MCP_TOOL=you gemini
+docker compose run --rm -e MCP_TOOL=you droid
+docker compose run --rm -e MCP_TOOL=you codex
 ```
 
 ### Full Prompts (1,254 prompts, ~10+ hours per agent)
 
-**⚠️ Important:** Update docker-compose.yml first to use full prompts:
-
-```yaml
-# Change this line in each service:
-- /eval/data/prompts/test.jsonl              # Test (5 prompts)
-# To:
-- /eval/data/prompts/full.jsonl              # Full (1,254 prompts)
-
-# Or for MCP services:
-- /eval/data/prompts/test-mcp.jsonl          # Test MCP
-# To:
-- /eval/data/prompts/full-mcp.jsonl          # Full MCP
-```
-
-Then run:
+Use the `DATASET` environment variable to switch between test and full datasets:
 
 ```bash
 # Builtin - all agents
-docker compose run --rm claude-code-builtin
-docker compose run --rm gemini-builtin
-docker compose run --rm droid-builtin
-docker compose run --rm codex-builtin
+docker compose run --rm -e MCP_TOOL=builtin -e DATASET=full claude-code
+docker compose run --rm -e MCP_TOOL=builtin -e DATASET=full gemini
+docker compose run --rm -e MCP_TOOL=builtin -e DATASET=full droid
+docker compose run --rm -e MCP_TOOL=builtin -e DATASET=full codex
 
 # MCP - all agents
-docker compose run --rm claude-code-you
-docker compose run --rm gemini-you
-docker compose run --rm droid-you
-docker compose run --rm codex-you
+docker compose run --rm -e MCP_TOOL=you -e DATASET=full claude-code
+docker compose run --rm -e MCP_TOOL=you -e DATASET=full gemini
+docker compose run --rm -e MCP_TOOL=you -e DATASET=full droid
+docker compose run --rm -e MCP_TOOL=you -e DATASET=full codex
+
+# Or use the automated script
+bun scripts/run.ts --mode full --mcp builtin
+bun scripts/run.ts --mode full --mcp you
 ```
 
 ## Prompt Files
@@ -92,70 +82,70 @@ Test with 5 prompts to validate setup:
 
 ```bash
 # Run all builtin tests
-docker compose run --rm claude-code-builtin
-docker compose run --rm gemini-builtin
-docker compose run --rm droid-builtin
-docker compose run --rm codex-builtin
+docker compose run --rm -e MCP_TOOL=builtin claude-code
+docker compose run --rm -e MCP_TOOL=builtin gemini
+docker compose run --rm -e MCP_TOOL=builtin droid
+docker compose run --rm -e MCP_TOOL=builtin codex
 
 # Run all MCP tests
-docker compose run --rm claude-code-you
-docker compose run --rm gemini-you
-docker compose run --rm droid-you
-docker compose run --rm codex-you
+docker compose run --rm -e MCP_TOOL=you claude-code
+docker compose run --rm -e MCP_TOOL=you gemini
+docker compose run --rm -e MCP_TOOL=you droid
+docker compose run --rm -e MCP_TOOL=you codex
+
+# Or use the automated script
+bun scripts/run.ts --mode test
 
 # Or run in parallel (requires sufficient API quota)
-docker compose run --rm claude-code-builtin &
-docker compose run --rm gemini-builtin &
-docker compose run --rm droid-builtin &
-docker compose run --rm codex-builtin &
+docker compose run --rm -e MCP_TOOL=builtin claude-code &
+docker compose run --rm -e MCP_TOOL=builtin gemini &
+docker compose run --rm -e MCP_TOOL=builtin droid &
+docker compose run --rm -e MCP_TOOL=builtin codex &
 wait
 ```
 
 ### Run Full Workflow
 
-**Step 1:** Update docker-compose.yml to use full prompt sets:
-
-```bash
-# Replace test.jsonl with full.jsonl for builtin services
-sed -i.bak 's|/eval/data/prompts/test.jsonl|/eval/data/prompts/full.jsonl|g' docker-compose.yml
-
-# Replace test-mcp.jsonl with full-mcp.jsonl for MCP services
-sed -i.bak 's|/eval/data/prompts/test-mcp.jsonl|/eval/data/prompts/full-mcp.jsonl|g' docker-compose.yml
-```
-
-**Step 2:** Run evaluations (run sequentially to avoid rate limits):
+Run evaluations with the full dataset (run sequentially to avoid rate limits):
 
 ```bash
 # Builtin - all agents (run one at a time)
-docker compose run --rm claude-code-builtin
-docker compose run --rm gemini-builtin
-docker compose run --rm droid-builtin
-docker compose run --rm codex-builtin
+docker compose run --rm -e MCP_TOOL=builtin -e DATASET=full claude-code
+docker compose run --rm -e MCP_TOOL=builtin -e DATASET=full gemini
+docker compose run --rm -e MCP_TOOL=builtin -e DATASET=full droid
+docker compose run --rm -e MCP_TOOL=builtin -e DATASET=full codex
 
 # MCP - all agents
-docker compose run --rm claude-code-you
-docker compose run --rm gemini-you
-docker compose run --rm droid-you
-docker compose run --rm codex-you
-```
+docker compose run --rm -e MCP_TOOL=you -e DATASET=full claude-code
+docker compose run --rm -e MCP_TOOL=you -e DATASET=full gemini
+docker compose run --rm -e MCP_TOOL=you -e DATASET=full droid
+docker compose run --rm -e MCP_TOOL=you -e DATASET=full codex
 
-**Step 3:** Restore test configuration:
-
-```bash
-# Restore test prompts
-mv docker-compose.yml.bak docker-compose.yml
+# Or use the automated script (runs all agents sequentially)
+bun scripts/run.ts --mode full --mcp builtin
+bun scripts/run.ts --mode full --mcp you
 ```
 
 ### Compare Builtin vs MCP Performance
 
 ```bash
-# Compare results for same agent
-bun run compare -- -a claude-code --toolA builtin --toolB you
-bun run compare -- -a gemini --toolA builtin --toolB you
+# Compare results for same agent (test dataset)
+bunx @plaited/agent-eval-harness compare \
+  data/results/claude-code/builtin-test.jsonl \
+  data/results/claude-code/you-test.jsonl
+
+bunx @plaited/agent-eval-harness compare \
+  data/results/gemini/builtin-test.jsonl \
+  data/results/gemini/you-test.jsonl
+
+# Compare full dataset results
+bunx @plaited/agent-eval-harness compare \
+  data/results/claude-code/builtin-full.jsonl \
+  data/results/claude-code/you-full.jsonl
 
 # Analyze specific results
 bunx @plaited/agent-eval-harness summarize \
-  data/results/claude-code/builtin.jsonl -o summary.jsonl
+  data/results/claude-code/builtin-test.jsonl -o summary.jsonl
 ```
 
 ### Convert Prompts to MCP Format
@@ -196,14 +186,14 @@ bunx @plaited/agent-eval-harness summarize \
   data/results/claude-code/builtin.jsonl -o summary.jsonl
 
 # Count tool usage
-cat data/results/claude-code/builtin.jsonl | \
+cat data/results/claude-code/builtin-test.jsonl | \
   jq -r '.trajectory[] | select(.type == "tool_call") | .name' | sort | uniq -c
 
 # Check for errors
-cat data/results/gemini/you.jsonl | jq 'select(.toolErrors == true)'
+cat data/results/gemini/you-test.jsonl | jq 'select(.toolErrors == true)'
 
 # Extract outputs only
-cat data/results/claude-code/builtin.jsonl | jq -r '.output' > outputs.txt
+cat data/results/claude-code/builtin-test.jsonl | jq -r '.output' > outputs.txt
 ```
 
 ## Format Comparison
@@ -229,17 +219,25 @@ Results are written to `data/results/<agent>/<tool>.jsonl`:
 ```
 data/results/
 ├── claude-code/
-│   ├── builtin.jsonl
-│   └── you.jsonl
+│   ├── builtin-test.jsonl
+│   ├── builtin-full.jsonl
+│   ├── you-test.jsonl
+│   └── you-full.jsonl
 ├── gemini/
-│   ├── builtin.jsonl
-│   └── you.jsonl
+│   ├── builtin-test.jsonl
+│   ├── builtin-full.jsonl
+│   ├── you-test.jsonl
+│   └── you-full.jsonl
 ├── droid/
-│   ├── builtin.jsonl
-│   └── you.jsonl
+│   ├── builtin-test.jsonl
+│   ├── builtin-full.jsonl
+│   ├── you-test.jsonl
+│   └── you-full.jsonl
 └── codex/
-    ├── builtin.jsonl
-    └── you.jsonl
+    ├── builtin-test.jsonl
+    ├── builtin-full.jsonl
+    ├── you-test.jsonl
+    └── you-full.jsonl
 ```
 
 **Note:** Results are committed to git for downstream data science analysis.
@@ -248,14 +246,14 @@ data/results/
 
 Different agents require different timeouts for complex searches:
 
-| Agent | Builtin Timeout | MCP Timeout | Notes |
-|-------|----------------|-------------|-------|
-| Claude Code | 90s | 90s | Fast, reliable |
-| Gemini | 60s | 60s | Fastest agent |
-| Droid | Default | Default | Consistent performance |
-| Codex | 180s | 180s | Slower, needs extra time |
+| Agent | Default Timeout | Notes |
+|-------|----------------|-------|
+| Claude Code | 90s | Fast, reliable |
+| Gemini | 60s | Fastest agent |
+| Droid | 120s | Consistent performance |
+| Codex | 180s | Slower, needs extra time |
 
-Timeouts are configured in docker-compose.yml per service.
+Timeouts are configured in the agent schemas (agent-schemas/*.json) and can be overridden via the harness CLI.
 
 ## CI/CD Considerations
 
@@ -290,8 +288,8 @@ jobs:
       - name: Run test prompts
         if: steps.changes.outputs.agents == 'true'
         run: |
-          docker compose run --rm claude-code-builtin
-          docker compose run --rm gemini-builtin
+          docker compose run --rm -e MCP_TOOL=builtin claude-code
+          docker compose run --rm -e MCP_TOOL=builtin gemini
 ```
 
 ## Skills Reference

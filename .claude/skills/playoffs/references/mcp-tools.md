@@ -9,16 +9,16 @@ tools/
 └── mcp-servers.ts      # TypeScript MCP server definitions
 
 docker/
-└── entrypoint          # TypeScript entrypoint (imports mcp-servers.ts)
+└── entrypoint          # Bun shell script with TypeScript syntax (imports mcp-servers.ts)
 ```
 
 ## Overview
 
-MCP (Model Context Protocol) server configurations are defined in `mcp-servers.ts` as TypeScript constants. At runtime, the TypeScript entrypoint (`docker/entrypoint`) imports these constants directly and uses official CLI commands to configure MCP servers for each agent.
+MCP (Model Context Protocol) server configurations are defined in `mcp-servers.ts` as TypeScript constants. At runtime, the Bun shell script with TypeScript syntax (`docker/entrypoint`) imports these constants directly and uses official CLI commands to configure MCP servers for each agent.
 
 **Architecture:**
 - **Build time:** TypeScript constants provide type safety
-- **Runtime:** TypeScript entrypoint (Bun shell) imports MCP_SERVERS and configures agents dynamically
+- **Runtime:** Bun shell script with TypeScript syntax imports MCP_SERVERS and configures agents dynamically
 - **Single source of truth:** One file defines all MCP servers, imported by entrypoint
 - **No intermediate files:** No JSON generation, no schema duplication
 
@@ -63,14 +63,18 @@ docker compose run --rm -e MCP_TOOL=you claude-code
 docker compose run --rm -e MCP_TOOL=you gemini
 
 # Run all agents with MCP tool (automated script)
-bun run run --mcp you
+bun scripts/run.ts --mcp you
+# OR using npm script:
+bun run run -- --mcp you
 
 # Run all agents in both modes (8 scenarios)
+bun scripts/run.ts
+# OR:
 bun run run
 ```
 
 **What happens:**
-1. TypeScript entrypoint (`docker/entrypoint`) reads `MCP_TOOL` environment variable
+1. Bun shell script with TypeScript syntax (`docker/entrypoint`) reads `MCP_TOOL` environment variable
 2. Imports `MCP_SERVERS` constant from `/eval/mcp-servers.ts`
 3. If `MCP_TOOL != "builtin"`, runs `configureMcp()` function with type-safe server config
 4. Agent runs with MCP server available
@@ -103,7 +107,7 @@ echo "EXA_API_KEY=..." >> .env
 echo "EXA_API_KEY=..." >> .env.example
 ```
 
-**3. Update `docker/entrypoint` TypeScript file:**
+**3. Update `docker/entrypoint` Bun shell script:**
 
 Add the new tool case to `configureMcp()` function for each agent:
 
@@ -183,7 +187,7 @@ bearer_token_env_var = "API_KEY_VAR"
 EOF
 ```
 
-These commands are executed in the TypeScript entrypoint (`docker/entrypoint`) based on the `MCP_TOOL` environment variable. The entrypoint imports server configs from `mcp-servers.ts` for type safety.
+These commands are executed in the Bun shell script with TypeScript syntax (`docker/entrypoint`) based on the `MCP_TOOL` environment variable. The entrypoint imports server configs from `mcp-servers.ts` for type safety.
 
 ## Troubleshooting
 
@@ -229,8 +233,8 @@ cat data/results/claude-code/you.jsonl | jq '.trajectory[] | select(.type == "to
 **Enable debug output:**
 
 ```bash
-# Check TypeScript entrypoint logic
-docker compose run --rm -e MCP_TOOL=you claude-code bash -c 'cat /entrypoint.ts | grep -A20 "configureMcp"'
+# Check entrypoint logic
+docker compose run --rm -e MCP_TOOL=you claude-code bash -c 'cat /entrypoint | grep -A20 "configureMcp"'
 ```
 
 ### Container Errors
@@ -241,10 +245,10 @@ docker compose run --rm -e MCP_TOOL=you claude-code bash -c 'cat /entrypoint.ts 
 docker compose build --no-cache
 ```
 
-**Check TypeScript entrypoint is executable:**
+**Check entrypoint is executable:**
 
 ```bash
-docker compose run --rm claude-code bash -c 'ls -la /entrypoint.ts'
+docker compose run --rm claude-code bash -c 'ls -la /entrypoint'
 # Should show: -rwxr-xr-x
 ```
 

@@ -77,9 +77,20 @@ const detectCurrentMode = async (): Promise<Mode> => {
   throw new Error("Could not detect current mode from docker/entrypoint");
 };
 
-const runService = (agent: Agent, mcpTool: McpTool, dataset: Mode): Promise<number> => {
+const runService = (
+  agent: Agent,
+  mcpTool: McpTool,
+  dataset: Mode,
+  scenarioId: number,
+  totalScenarios: number
+): Promise<number> => {
   return new Promise((resolve) => {
-    console.log(`Starting: ${agent} (${mcpTool}, ${dataset})`);
+    const label = `[${scenarioId}/${totalScenarios}] ${agent}-${mcpTool}`;
+    const startTime = Date.now();
+
+    console.log(`\n${"=".repeat(80)}`);
+    console.log(`${label} - STARTING`);
+    console.log(`${"=".repeat(80)}\n`);
 
     const proc = spawn("docker", [
       "compose",
@@ -91,15 +102,56 @@ const runService = (agent: Agent, mcpTool: McpTool, dataset: Mode): Promise<numb
       `DATASET=${dataset}`,
       agent,
     ], {
-      stdio: "inherit",
+      stdio: "pipe", // Capture output instead of inherit
+    });
+
+    let lastLine = "";
+
+    // Show progress lines that matter
+    proc.stdout?.on("data", (data) => {
+      const lines = data.toString().split("\n");
+      for (const line of lines) {
+        // Only show important progress indicators
+        if (
+          line.includes("[") && line.includes("/") && line.includes("]") || // [1/5] progress
+          line.includes("Done!") ||
+          line.includes("TIMEOUT") ||
+          line.includes("ERROR") ||
+          line.includes("Failed") ||
+          line.match(/✓|✗|!/)
+        ) {
+          console.log(`  ${label}: ${line.trim()}`);
+          lastLine = line;
+        }
+      }
+    });
+
+    proc.stderr?.on("data", (data) => {
+      const lines = data.toString().split("\n");
+      for (const line of lines) {
+        if (line.includes("ERROR") || line.includes("WARN")) {
+          console.error(`  ${label}: ${line.trim()}`);
+        }
+      }
     });
 
     proc.on("close", (code) => {
+      const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+      const status = code === 0 ? "✓ COMPLETED" : "✗ FAILED";
+
+      console.log(`\n${"=".repeat(80)}`);
+      console.log(`${label} - ${status} (${elapsed}s, exit code: ${code})`);
+      console.log(`${"=".repeat(80)}\n`);
+
       resolve(code ?? 1);
     });
 
     proc.on("error", (err) => {
-      console.error(`Failed to start ${agent} (${mcpTool}):`, err.message);
+      const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+      console.error(`\n${"=".repeat(80)}`);
+      console.error(`${label} - ✗ ERROR (${elapsed}s)`);
+      console.error(`  ${err.message}`);
+      console.error(`${"=".repeat(80)}\n`);
       resolve(1);
     });
   });
@@ -139,45 +191,63 @@ const main = async () => {
 
     if (options.dryRun) {
       console.log("[DRY RUN] Execution plan:");
-      for (const { agent, mcpTool } of runs) {
-        console.log(`  - docker compose run --rm -e MCP_TOOL=${mcpTool} -e DATASET=${currentMode} ${agent}`);
+      for (let i = 0; i < runs.length; i++) {
+        const run = runs[i];
+        if (!run) continue;
+        console.log(`  [${i + 1}/${runs.length}] ${run.agent}-${run.mcpTool}: docker compose run --rm -e MCP_TOOL=${run.mcpTool} -e DATASET=${currentMode} ${run.agent}`);
       }
       console.log("\n[DRY RUN] No services were executed.");
       process.exit(0);
     }
 
     // Run all scenarios in parallel
-    const results = await Promise.all(runs.map(({ agent, mcpTool }) => runService(agent, mcpTool, currentMode)));
+    const results = await Promise.all(
+      runs.map(({ agent, mcpTool }, index) =>
+        runService(agent, mcpTool, currentMode, index + 1, runs.length)
+      )
+    );
 
-    // Report results
+    // Report results summary
     console.log(`\n${"=".repeat(80)}`);
-    console.log("Results:");
+    console.log("FINAL RESULTS SUMMARY");
     console.log("=".repeat(80));
 
-    const failures: string[] = [];
+    const failures: Array<{ label: string; exitCode: number }> = [];
+    const successes: string[] = [];
+
     for (let i = 0; i < runs.length; i++) {
       const run = runs[i];
       const exitCode = results[i];
       if (run === undefined || exitCode === undefined) {
         continue;
       }
-      const status = exitCode === 0 ? "✓" : "✗";
-      const label = `${run.agent} (${run.mcpTool})`;
-      console.log(`${status} ${label}: exit code ${exitCode}`);
 
-      if (exitCode !== 0) {
-        failures.push(label);
+      const label = `[${i + 1}/${runs.length}] ${run.agent}-${run.mcpTool}`;
+
+      if (exitCode === 0) {
+        successes.push(label);
+        console.log(`✓ ${label}`);
+      } else {
+        failures.push({ label, exitCode });
+        console.log(`✗ ${label} (exit code: ${exitCode})`);
       }
     }
 
-    console.log("");
+    console.log(`\n${"=".repeat(80)}`);
+    console.log(`Success: ${successes.length}/${runs.length}`);
+    console.log(`Failed: ${failures.length}/${runs.length}`);
+    console.log("=".repeat(80));
 
     if (failures.length > 0) {
-      console.error(`Failed scenarios (${failures.length}):`);
-      failures.forEach((label) => console.error(`  - ${label}`));
+      console.error(`\n⚠️  Failed scenarios (${failures.length}):`);
+      failures.forEach(({ label, exitCode }) => {
+        const errorType = exitCode === 143 || exitCode === 124 ? "TIMEOUT" : "ERROR";
+        console.error(`  - ${label}: ${errorType} (exit code ${exitCode})`);
+      });
+      console.error("\n💡 Tip: Check output above for specific error details (tool errors, MCP issues, etc.)");
       process.exit(1);
     } else {
-      console.log("All scenarios completed successfully!");
+      console.log("\n✅ All scenarios completed successfully!");
       process.exit(0);
     }
   } catch (error) {

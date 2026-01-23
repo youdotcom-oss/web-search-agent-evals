@@ -53,28 +53,39 @@ const MCP_INDICATORS = [
 ];
 
 /**
- * Check if MCP tool was actually called in trajectory
+ * Check if tools were used (via tool_call events or message content)
  *
  * @remarks
- * NOTE: Due to adapter schema deduplication, tool names in trajectory show
- * tool IDs (toolu_XXX) not actual MCP tool names. This function checks for
- * any completed tool calls as a proxy - if tools were called in an MCP run,
- * they were likely MCP tools.
+ * Primary detection: Looks for tool_call events with completed status.
  *
- * For reliable MCP detection, use metadata.agent field instead.
+ * Fallback detection: Some adapters (like Codex) only capture message events.
+ * For these, we check message content for evidence of tool usage:
+ * - URLs (http://, https://) indicate web search was performed
+ * - Source citations suggest data retrieval
+ *
+ * This dual approach ensures tool detection works across all agent adapters.
  */
-const hasMcpToolCall = (
+const hasToolUsage = (
   trajectory?: Array<{
     type: string;
     name?: string;
     status?: string;
+    content?: string;
   }>,
 ): boolean => {
   if (!trajectory) return false;
 
-  // Check for any completed tool calls
-  // In MCP runs, these are likely MCP tool calls even if name shows ID
-  return trajectory.some((step) => step.type === "tool_call" && step.status === "completed");
+  // Primary: Check for explicit tool_call events
+  const hasToolCallEvent = trajectory.some((step) => step.type === "tool_call" && step.status === "completed");
+  if (hasToolCallEvent) return true;
+
+  // Fallback: Check message content for URLs (evidence of web search)
+  const hasUrlsInMessages = trajectory.some((step) => {
+    if (step.type !== "message" || !step.content) return false;
+    return /https?:\/\/[^\s]+/.test(step.content);
+  });
+
+  return hasUrlsInMessages;
 };
 
 /**
@@ -100,6 +111,7 @@ const hasExecutionErrors = (
   trajectory?: Array<{
     type: string;
     status?: string;
+    content?: string;
   }>,
 ): { hasErrors: boolean; hasTimeout: boolean } => {
   const hasErrors =
@@ -137,7 +149,7 @@ const assessQuality = async ({
   input: string;
   output: string;
   hint?: string;
-  trajectory?: Array<{ type: string; name?: string; status?: string }>;
+  trajectory?: Array<{ type: string; name?: string; status?: string; content?: string }>;
   isMcpRun: boolean;
 }): Promise<{
   deterministicScore: number;
@@ -154,7 +166,7 @@ const assessQuality = async ({
   }
 
   // 20 pts: Tool usage (used search tools)
-  const hasSearchTool = trajectory?.some((step) => step.type === "tool_call" && step.status === "completed") ?? false;
+  const hasSearchTool = hasToolUsage(trajectory);
   if (hasSearchTool) {
     deterministicScore += 20;
   }
@@ -286,7 +298,7 @@ export const grade: Grader = async ({ input, output, hint, trajectory }) => {
   }
 
   // For MCP runs: check if MCP was actually used
-  const mcpToolCalled = hasMcpToolCall(trajectory);
+  const mcpToolCalled = hasToolUsage(trajectory);
   const mcpIndicatorCount = hasMcpDataIndicators(output);
 
   // CRITICAL MCP gate: If prompt requests MCP but MCP not used, immediate FAIL

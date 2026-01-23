@@ -62,10 +62,10 @@ const detectCurrentMode = async (): Promise<Mode> => {
   const entrypointFile = join(process.cwd(), "docker", "entrypoint");
   const content = await readFile(entrypointFile, "utf-8");
 
-  if (content.includes('/eval/data/prompts/test.jsonl')) {
+  if (content.includes("/eval/data/prompts/test.jsonl")) {
     return "test";
   }
-  if (content.includes('/eval/data/prompts/full.jsonl')) {
+  if (content.includes("/eval/data/prompts/full.jsonl")) {
     return "full";
   }
   throw new Error("Could not detect current mode from docker/entrypoint");

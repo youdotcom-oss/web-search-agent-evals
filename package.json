@@ -22,12 +22,17 @@
     "validate": "bun scripts/validate-setup.ts"
   },
   "lint-staged": {
-    "*.{ts,tsx,js,jsx,json,md}": ["biome format --write", "biome lint --write"],
-    "package.json": ["format-package -w"]
+    "*.{ts,tsx,js,jsx,json,md}": [
+      "biome format --write",
+      "biome lint --write"
+    ],
+    "package.json": [
+      "format-package -w"
+    ]
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
-    "@plaited/agent-eval-harness": "^0.5.2",
+    "@plaited/agent-eval-harness": "^0.6.0",
     "zod": "^3.24.1"
   },
   "devDependencies": {

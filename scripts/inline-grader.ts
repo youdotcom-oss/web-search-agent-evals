@@ -9,7 +9,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
  * - **Claude Code**: tool names with `mcp__` prefix (e.g., `mcp__ydc-server__you-search`)
  * - **Codex**: trajectory steps with `mcpServer` field
  * - **DROID**: tool names with `___` separator (e.g., `ydc-server___you-search`)
- * - **GEMINI**: message content with `mcp-server="..."` attribute
+ * - **GEMINI**: tool name `you-search` (vs builtin `google_web_search`)
  * - Schemas extract these fields from raw CLI output for authoritative detection
  *
  * **Hybrid Scoring:**
@@ -31,20 +31,60 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
  */
 
 /**
- * Detect MCP tool usage from trajectory
+ * Detect MCP tool usage from agent trajectory
  *
  * @remarks
- * Uses explicit MCP indicators extracted by adapter schemas from CLI output:
- * - **Claude Code**: tool names starting with `mcp__` (e.g., `mcp__ydc-server__you-search`)
- * - **Codex**: trajectory steps with `mcpServer` field set
- * - **DROID**: tool names with `___` separator (e.g., `ydc-server___you-search`)
- * - **GEMINI**: message content containing `mcp-server="..."` attribute
+ * Detects Model Context Protocol (MCP) tool usage by checking explicit indicators
+ * extracted from raw CLI output by adapter schemas. Each agent platform has a unique
+ * MCP signature pattern that reliably distinguishes MCP tools from builtin tools.
  *
- * This is the authoritative way to detect MCP usage - no heuristics or output parsing needed.
- * See FINDINGS-MCP-RAW-OUTPUT.md for investigation details.
+ * ## Detection Patterns by Agent
+ *
+ * ### Claude Code
+ * **Pattern**: Tool names with `mcp__<server>__<tool>` format
+ * - **Example**: `mcp__ydc-server__you-search`
+ * - **How it works**: Claude Code prefixes all MCP tool names with the server name
+ * - **Schema field**: `name` or `toolName`
+ * - **Detection**: Check if tool name starts with `mcp__`
+ *
+ * ### Codex
+ * **Pattern**: Explicit `mcpServer` field in trajectory steps
+ * - **Example**: `{type: "tool_call", mcpServer: "ydc-server", toolName: "you-search"}`
+ * - **How it works**: Codex uses dedicated `mcp_tool_call` event type with separate server field
+ * - **Schema field**: `mcpServer`
+ * - **Detection**: Check if `mcpServer` field exists
+ *
+ * ### DROID
+ * **Pattern**: Tool names with `<server>___<tool>` format (triple underscore)
+ * - **Example**: `ydc-server___you-search`
+ * - **How it works**: DROID concatenates server and tool names with triple underscore separator
+ * - **Schema field**: `name`
+ * - **Detection**: Check if tool name contains `___` (excluding Claude tool IDs like `toolu_`)
+ * - **False positives avoided**: `toolu_01ABC...` (Claude's internal IDs use single underscore)
+ *
+ * ### GEMINI
+ * **Pattern**: Specific MCP tool names vs builtin tool names
+ * - **MCP example**: `you-search` or `you-search-1769145251964-7bebc5cb4e7ed8`
+ * - **Builtin example**: `google_web_search` or `google_web_search-<timestamp>-<id>`
+ * - **How it works**: GEMINI uses different tool names for MCP vs builtin implementations
+ * - **Schema field**: `name`
+ * - **Detection**: Check if tool name is `you-search` or starts with `you-search-`
+ * - **Note**: Message content with `<web-search mcp-server="...">` is the INPUT prompt, not a trajectory indicator
+ *
+ * ## Why This Approach Works
+ *
+ * 1. **No heuristics**: Uses explicit indicators from agent output, not content analysis
+ * 2. **Reliable**: These patterns are part of each agent's MCP implementation
+ * 3. **Fast**: Simple string checks, no complex parsing or LLM calls
+ * 4. **Maintainable**: Each agent pattern is independent and well-documented
+ *
+ * ## Investigation References
+ *
+ * - **Claude Code/Codex**: See FINDINGS-MCP-RAW-OUTPUT.md for raw CLI output analysis
+ * - **DROID/GEMINI**: See FINDINGS-DROID-GEMINI-MCP.md for trajectory analysis
  *
  * @param trajectory - Agent execution trajectory with tool calls and messages
- * @returns True if any MCP tool usage detected
+ * @returns `true` if any MCP tool usage detected, `false` otherwise
  *
  * @public
  */
@@ -56,20 +96,26 @@ const detectMcpFromTrajectory = (
     name?: string;
     title?: string;
     content?: string;
-  }>,
+  }>
 ): boolean => {
   if (!trajectory) return false;
 
   return trajectory.some((step) => {
-    // Claude Code: check for mcp__ prefix in name or toolName
+    // Get tool identifier from various possible field names
+    // Different schemas extract to different fields (name, toolName, title)
     const toolIdentifier = step.name || step.toolName || step.title || "";
+
+    // Claude Code: tool names with mcp__<server>__<tool> pattern
+    // Example: mcp__ydc-server__you-search
     if (toolIdentifier.startsWith("mcp__")) return true;
 
-    // Codex: check for mcpServer field
+    // Codex: explicit mcpServer field from mcp_tool_call events
+    // Example: {mcpServer: "ydc-server", toolName: "you-search"}
     if (step.mcpServer) return true;
 
-    // DROID: check for triple underscore pattern (e.g., ydc-server___you-search)
-    // Exclude false positives like toolu_ prefixes (Claude's internal tool IDs)
+    // DROID: tool names with <server>___<tool> pattern (triple underscore)
+    // Example: ydc-server___you-search
+    // Exclude Claude's internal tool IDs (toolu_01ABC...) which use single underscore
     if (
       step.type === "tool_call" &&
       toolIdentifier.includes("___") &&
@@ -78,9 +124,14 @@ const detectMcpFromTrajectory = (
       return true;
     }
 
-    // GEMINI: check for mcp-server attribute in message content
-    if (step.type === "message" && step.content) {
-      if (step.content.includes('mcp-server=')) return true;
+    // GEMINI: MCP tool name vs builtin tool name
+    // MCP: you-search or you-search-<timestamp>-<id>
+    // Builtin: google_web_search or google_web_search-<timestamp>-<id>
+    if (
+      step.type === "tool_call" &&
+      (toolIdentifier === "you-search" || toolIdentifier.startsWith("you-search-"))
+    ) {
+      return true;
     }
 
     return false;
@@ -96,13 +147,18 @@ const hasExecutionErrors = (
     type: string;
     status?: string;
     content?: string;
-  }>,
+  }>
 ): { hasErrors: boolean; hasTimeout: boolean } => {
   const hasErrors =
-    trajectory?.some((step) => step.type === "tool_call" && (step.status === "failed" || step.status === "error")) ??
-    false;
+    trajectory?.some(
+      (step) =>
+        step.type === "tool_call" &&
+        (step.status === "failed" || step.status === "error")
+    ) ?? false;
 
-  const hasTimeout = output.toLowerCase().includes("timeout") || output.toLowerCase().includes("timed out");
+  const hasTimeout =
+    output.toLowerCase().includes("timeout") ||
+    output.toLowerCase().includes("timed out");
 
   return { hasErrors, hasTimeout };
 };
@@ -132,7 +188,12 @@ const assessQuality = async ({
   input: string;
   output: string;
   hint?: string;
-  trajectory?: Array<{ type: string; name?: string; status?: string; content?: string }>;
+  trajectory?: Array<{
+    type: string;
+    name?: string;
+    status?: string;
+    content?: string;
+  }>;
 }): Promise<{
   deterministicScore: number;
   llmScore: number;
@@ -148,7 +209,8 @@ const assessQuality = async ({
   }
 
   // 20 pts: Tool usage (any tool calls in trajectory)
-  const usedTools = trajectory?.some((step) => step.type === "tool_call") ?? false;
+  const usedTools =
+    trajectory?.some((step) => step.type === "tool_call") ?? false;
   if (usedTools) {
     deterministicScore += 20;
   }
@@ -231,7 +293,7 @@ Return ONLY valid JSON with this structure:
  * - **Claude Code**: Checks for `mcp__` prefix in tool names
  * - **Codex**: Checks for `mcpServer` field in trajectory steps
  * - **DROID**: Checks for `___` separator in tool names
- * - **GEMINI**: Checks for `mcp-server=` in message content
+ * - **GEMINI**: Checks for `you-search` tool name
  * - Schemas extract these fields from raw CLI output (see FINDINGS-MCP-RAW-OUTPUT.md)
  *
  * **Hybrid Scoring:**
@@ -262,7 +324,9 @@ export const grade: Grader = async ({ input, output, hint, trajectory }) => {
     return {
       pass: false,
       score: 0,
-      reasoning: hasTimeout ? "Execution timed out" : "Tool execution failed with errors",
+      reasoning: hasTimeout
+        ? "Execution timed out"
+        : "Tool execution failed with errors",
       metadata: {
         mcpToolCalled: false,
         hasErrors,
@@ -275,7 +339,7 @@ export const grade: Grader = async ({ input, output, hint, trajectory }) => {
   const mcpToolCalled = detectMcpFromTrajectory(trajectory);
 
   // Determine if MCP was expected from the input prompt
-  const expectedMcp = inputStr.includes('mcp-server=');
+  const expectedMcp = inputStr.startsWith("<web-search mcp-server=");
 
   // Hybrid quality assessment (deterministic 60% + LLM 40%)
   const quality = await assessQuality({

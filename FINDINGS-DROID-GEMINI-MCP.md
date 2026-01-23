@@ -19,7 +19,7 @@ Unlike the Claude Code/Codex investigation (which analyzed raw CLI output), this
 | **Claude Code** | `mcp__` prefix | Tool name | `mcp__ydc-server__you-search` | `name` |
 | **Codex** | `mcpServer` field | Trajectory step | `mcpServer: "ydc-server"` | `mcpServer` |
 | **DROID** | `___` separator | Tool name | `ydc-server___you-search` | `name` |
-| **GEMINI** | `mcp-server=` attribute | Message content | `<web-search mcp-server="ydc-server">` | `content` |
+| **GEMINI** | Tool name pattern | Tool name | `you-search` (vs `google_web_search`) | `name` |
 
 ### DROID Pattern
 
@@ -67,17 +67,23 @@ if (
 ```
 
 **Key characteristics:**
-- Message content contains `mcp-server="server-name"` attribute
-- Tool names are plain: `you-search` (vs builtin `google_web_search`)
-- MCP marker appears in **message** event, not tool call event
-- Both message and tool_use events needed for complete detection
+- Tool names distinguish MCP from builtin: `you-search` (MCP) vs `google_web_search` (builtin)
+- Message content with `mcp-server="..."` is the INPUT prompt (not a detection indicator)
+- Tool name alone is sufficient to detect MCP usage
+- No special prefix or field needed - just compare tool name
 
 **Detection logic:**
 ```typescript
-if (step.type === "message" && step.content) {
-  if (step.content.includes('mcp-server=')) return true;
+if (
+  step.type === "tool_call" &&
+  (toolIdentifier === "you-search" || toolIdentifier.startsWith("you-search-"))
+) {
+  return true;
 }
 ```
+
+**Why not use message content?**
+The message with `<web-search mcp-server="ydc-server">` is the user's INPUT prompt being echoed in the trajectory. It doesn't indicate whether GEMINI actually called an MCP tool - it only shows what the user requested.
 
 ## Implementation Changes
 
@@ -125,7 +131,7 @@ if (step.type === "message" && step.content) {
  * - **Claude Code**: tool names starting with `mcp__` (e.g., `mcp__ydc-server__you-search`)
  * - **Codex**: trajectory steps with `mcpServer` field set
  * - **DROID**: tool names with `___` separator (e.g., `ydc-server___you-search`)
- * - **GEMINI**: message content containing `mcp-server="..."` attribute
+ * - **GEMINI**: tool name `you-search` (vs builtin `google_web_search`)
  *
  * This is the authoritative way to detect MCP usage - no heuristics or output parsing needed.
  * See FINDINGS-MCP-RAW-OUTPUT.md for investigation details.
@@ -162,9 +168,12 @@ const detectMcpFromTrajectory = (
       return true;
     }
 
-    // GEMINI: check for mcp-server attribute in message content
-    if (step.type === "message" && step.content) {
-      if (step.content.includes('mcp-server=')) return true;
+    // GEMINI: check for you-search tool name (MCP tool vs google_web_search builtin)
+    if (
+      step.type === "tool_call" &&
+      (toolIdentifier === "you-search" || toolIdentifier.startsWith("you-search-"))
+    ) {
+      return true;
     }
 
     return false;
@@ -175,7 +184,7 @@ const detectMcpFromTrajectory = (
 **Key changes:**
 1. Check `title` field in addition to `name`/`toolName` (DROID/GEMINI extract to these fields)
 2. Add DROID pattern: `includes("___")` with `toolu_` exclusion
-3. Add GEMINI pattern: check message content for `mcp-server=`
+3. Add GEMINI pattern: check tool name for `you-search`
 4. Updated TSDoc to document all four patterns
 
 ## Verification Results
@@ -294,13 +303,13 @@ Different schemas extract to different field names:
 
 Checking all fields ensures compatibility across schema variations.
 
-### Why Check Message Content for GEMINI?
+### Why Check Tool Name for GEMINI?
 
-GEMINI's MCP indicator appears in the **message content**, not the tool call itself:
-- Message: `<web-search mcp-server="ydc-server">query</web-search>`
-- Tool call: `{ "type": "tool_call", "name": "you-search" }`
+GEMINI uses different tool names for MCP vs builtin:
+- **MCP tool**: `you-search` (and variants like `you-search-<timestamp>-<id>`)
+- **Builtin tool**: `google_web_search` (and variants like `google_web_search-<timestamp>-<id>`)
 
-The plain tool name `you-search` alone isn't sufficient to distinguish MCP from builtin tools. We need to check if any message in the trajectory references MCP servers.
+The tool name alone is sufficient to distinguish MCP from builtin. The message with `<web-search mcp-server="ydc-server">` is the INPUT prompt being echoed - not a reliable indicator of actual MCP usage.
 
 ### Why Exclude `toolu_` Prefixes?
 

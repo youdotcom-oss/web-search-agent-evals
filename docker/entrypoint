@@ -148,10 +148,8 @@ const buildCaptureCommand = (): string[] => {
   // Build command array
   const cmd = ["bunx", "@plaited/agent-eval-harness", "capture", promptFile, "--schema", schemaFile];
 
-  // Add grader if MCP mode
-  if (MCP_TOOL !== "builtin") {
-    cmd.push("--grader", "/eval/scripts/inline-grader.ts");
-  }
+  // Add grader for all evaluations (both builtin and MCP)
+  cmd.push("--grader", "/eval/scripts/inline-grader.ts");
 
   cmd.push("--cwd", "/workspace");
 

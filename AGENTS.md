@@ -13,5 +13,6 @@ Each rule file covers a specific topic:
 - @.plaited/rules/accuracy.md - [accuracy](.plaited/rules/accuracy.md)
 - @.plaited/rules/code-review.md - [code-review](.plaited/rules/code-review.md)
 - @.plaited/rules/documentation.md - [documentation](.plaited/rules/documentation.md)
+- @.plaited/rules/skills.md - [skills](.plaited/rules/skills.md)
 
 <!-- PLAITED-RULES-END -->

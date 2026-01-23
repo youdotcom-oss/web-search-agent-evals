@@ -26,9 +26,7 @@ const parseArgs = (args: string[]): RunOptions => {
     if (args[i] === "--agent" && i + 1 < args.length) {
       const agent = args[i + 1];
       if (!ALL_AGENTS.includes(agent as Agent)) {
-        throw new Error(
-          `Invalid agent: ${agent}. Must be one of: ${ALL_AGENTS.join(", ")}`
-        );
+        throw new Error(`Invalid agent: ${agent}. Must be one of: ${ALL_AGENTS.join(", ")}`);
       }
       agents.push(agent as Agent);
       i++;
@@ -42,9 +40,7 @@ const parseArgs = (args: string[]): RunOptions => {
     } else if (args[i] === "--mcp" && i + 1 < args.length) {
       const tool = args[i + 1];
       if (tool !== "builtin" && tool !== "you") {
-        throw new Error(
-          `Invalid MCP tool: ${tool}. Must be "builtin" or "you"`
-        );
+        throw new Error(`Invalid MCP tool: ${tool}. Must be "builtin" or "you"`);
       }
       mcp = tool;
       i++;
@@ -66,18 +62,13 @@ const detectCurrentMode = async (): Promise<Mode> => {
   const entrypointFile = join(process.cwd(), "docker", "entrypoint");
   const content = await readFile(entrypointFile, "utf-8");
 
-  const datasetMatch = content.match(
-    /const DATASET = process\.env\.DATASET \|\| "(\w+)"/
-  );
+  const datasetMatch = content.match(/const DATASET = process\.env\.DATASET \|\| "(\w+)"/);
   if (datasetMatch?.[1]) {
     return datasetMatch[1] as Mode;
   }
 
   // Fallback: check for test or full patterns in prompt paths
-  if (
-    content.includes("/eval/data/prompts/${DATASET}.jsonl") ||
-    content.includes("prompts/test.jsonl")
-  ) {
+  if (content.includes("/eval/data/prompts/${DATASET}.jsonl") || content.includes("prompts/test.jsonl")) {
     return "test";
   }
   if (content.includes("prompts/full.jsonl")) {
@@ -91,7 +82,7 @@ const runService = (
   mcpTool: McpTool,
   dataset: Mode,
   scenarioId: number,
-  totalScenarios: number
+  totalScenarios: number,
 ): Promise<number> => {
   return new Promise((resolve) => {
     const label = `[${scenarioId}/${totalScenarios}] ${agent}-${mcpTool}`;
@@ -103,19 +94,10 @@ const runService = (
 
     const proc = spawn(
       "docker",
-      [
-        "compose",
-        "run",
-        "--rm",
-        "-e",
-        `MCP_TOOL=${mcpTool}`,
-        "-e",
-        `DATASET=${dataset}`,
-        agent,
-      ],
+      ["compose", "run", "--rm", "-e", `MCP_TOOL=${mcpTool}`, "-e", `DATASET=${dataset}`, agent],
       {
         stdio: "pipe", // Capture output instead of inherit
-      }
+      },
     );
 
     let currentPrompt = "";
@@ -174,9 +156,7 @@ const runService = (
       const errorNote = hasError && code === 0 ? " (had warnings)" : "";
 
       console.log(`\n${"=".repeat(80)}`);
-      console.log(
-        `${label} - ${status}${errorNote} (${elapsed}s, exit code: ${code})`
-      );
+      console.log(`${label} - ${status}${errorNote} (${elapsed}s, exit code: ${code})`);
       console.log(`${"=".repeat(80)}\n`);
 
       resolve(code ?? 1);
@@ -206,15 +186,11 @@ const main = async () => {
     // Determine dataset mode (use override if provided, otherwise detect from entrypoint default)
     const currentMode = options.mode || (await detectCurrentMode());
 
-    console.log(
-      `${options.dryRun ? "[DRY RUN] " : ""}Running in ${currentMode} mode`
-    );
+    console.log(`${options.dryRun ? "[DRY RUN] " : ""}Running in ${currentMode} mode`);
     console.log(`Agents: ${options.agents.join(", ")}`);
 
     // Determine which MCP tools to test
-    const mcpTools: McpTool[] = options.mcp
-      ? [options.mcp]
-      : ["builtin", "you"];
+    const mcpTools: McpTool[] = options.mcp ? [options.mcp] : ["builtin", "you"];
     console.log(`MCP tools: ${mcpTools.join(", ")}`);
     console.log("");
 
@@ -227,11 +203,7 @@ const main = async () => {
       }
     }
 
-    console.log(
-      `${options.dryRun ? "[DRY RUN] Would run" : "Running"} ${
-        runs.length
-      } scenarios in parallel\n`
-    );
+    console.log(`${options.dryRun ? "[DRY RUN] Would run" : "Running"} ${runs.length} scenarios in parallel\n`);
 
     if (options.dryRun) {
       console.log("[DRY RUN] Execution plan:");
@@ -239,11 +211,9 @@ const main = async () => {
         const run = runs[i];
         if (!run) continue;
         console.log(
-          `  [${i + 1}/${runs.length}] ${run.agent}-${
+          `  [${i + 1}/${runs.length}] ${run.agent}-${run.mcpTool}: docker compose run --rm -e MCP_TOOL=${
             run.mcpTool
-          }: docker compose run --rm -e MCP_TOOL=${
-            run.mcpTool
-          } -e DATASET=${currentMode} ${run.agent}`
+          } -e DATASET=${currentMode} ${run.agent}`,
         );
       }
       console.log("\n[DRY RUN] No services were executed.");
@@ -266,9 +236,7 @@ const main = async () => {
 
         const stillRunning = runs
           .map((run, index) =>
-            !completed.has(index + 1)
-              ? `[${index + 1}/${runs.length}] ${run.agent}-${run.mcpTool}`
-              : null
+            completed.has(index + 1) ? null : `[${index + 1}/${runs.length}] ${run.agent}-${run.mcpTool}`,
           )
           .filter((x) => x !== null);
 
@@ -282,13 +250,11 @@ const main = async () => {
     // Run all scenarios in parallel
     const results = await Promise.all(
       runs.map(({ agent, mcpTool }, index) =>
-        runService(agent, mcpTool, currentMode, index + 1, runs.length).then(
-          (result) => {
-            completed.add(index + 1);
-            return result;
-          }
-        )
-      )
+        runService(agent, mcpTool, currentMode, index + 1, runs.length).then((result) => {
+          completed.add(index + 1);
+          return result;
+        }),
+      ),
     );
 
     clearInterval(statusInterval);
@@ -329,13 +295,10 @@ const main = async () => {
     if (failures.length > 0) {
       console.error(`\n⚠️  Failed scenarios (${failures.length}):`);
       failures.forEach(({ label, exitCode }) => {
-        const errorType =
-          exitCode === 143 || exitCode === 124 ? "TIMEOUT" : "ERROR";
+        const errorType = exitCode === 143 || exitCode === 124 ? "TIMEOUT" : "ERROR";
         console.error(`  - ${label}: ${errorType} (exit code ${exitCode})`);
       });
-      console.error(
-        "\n💡 Tip: Check output above for specific error details (tool errors, MCP issues, etc.)"
-      );
+      console.error("\n💡 Tip: Check output above for specific error details (tool errors, MCP issues, etc.)");
       process.exit(1);
     } else {
       console.log("\n✅ All scenarios completed successfully!");

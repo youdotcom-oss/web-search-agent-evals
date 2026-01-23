@@ -5,7 +5,11 @@
     "check": "bun run format:check && bun run lint && bun run typecheck",
     "check:write": "bun run format && bun run lint:fix && bun run format:package",
     "clean": "rm -rf data/results/*/*.jsonl",
-    "compare": "bun scripts/compare-results.ts",
+    "compare": "bunx @plaited/agent-eval-harness compare",
+    "compare:all-statistical": "bun run compare --run claude-builtin:data/results/claude-code/builtin-test.jsonl --run claude-you:data/results/claude-code/you-test.jsonl --run codex-builtin:data/results/codex/builtin-test.jsonl --run codex-you:data/results/codex/you-test.jsonl --run droid-builtin:data/results/droid/builtin-test.jsonl --run droid-you:data/results/droid/you-test.jsonl --run gemini-builtin:data/results/gemini/builtin-test.jsonl --run gemini-you:data/results/gemini/you-test.jsonl --strategy statistical -o data/comparison-all-statistical.json",
+    "compare:all-weighted": "bun run compare --run claude-builtin:data/results/claude-code/builtin-test.jsonl --run claude-you:data/results/claude-code/you-test.jsonl --run codex-builtin:data/results/codex/builtin-test.jsonl --run codex-you:data/results/codex/you-test.jsonl --run droid-builtin:data/results/droid/builtin-test.jsonl --run droid-you:data/results/droid/you-test.jsonl --run gemini-builtin:data/results/gemini/builtin-test.jsonl --run gemini-you:data/results/gemini/you-test.jsonl --strategy weighted -o data/comparison-all-weighted.json",
+    "compare:builtin-agents": "bun run compare --run claude:data/results/claude-code/builtin-test.jsonl --run codex:data/results/codex/builtin-test.jsonl --run droid:data/results/droid/builtin-test.jsonl --run gemini:data/results/gemini/builtin-test.jsonl --strategy weighted -o data/comparison-builtin-agents.json",
+    "compare:you-agents": "bun run compare --run claude:data/results/claude-code/you-test.jsonl --run codex:data/results/codex/you-test.jsonl --run droid:data/results/droid/you-test.jsonl --run gemini:data/results/gemini/you-test.jsonl --strategy weighted -o data/comparison-you-agents.json",
     "format": "biome format --write",
     "format:check": "biome format",
     "format:package": "format-package --write",
@@ -13,19 +17,18 @@
     "lint:fix": "biome lint --write .",
     "prepare": "git config core.hooksPath .hooks",
     "run": "bun scripts/run.ts",
-    "run:full": "bun scripts/run.ts --mode full",
-    "run:test": "bun scripts/run.ts --mode test",
+    "run:full": "bun run --mode full",
+    "run:test": "bun run --mode test",
     "test": "bun test",
+    "trials": "bun scripts/run-trials.ts",
+    "trials:capability": "bun scripts/run-trials.ts --type capability",
+    "trials:full": "bun scripts/run-trials.ts --mode full",
+    "trials:regression": "bun scripts/run-trials.ts --type regression",
     "typecheck": "tsc --noEmit"
   },
   "lint-staged": {
-    "*.{ts,tsx,js,jsx,json,md}": [
-      "biome format --write",
-      "biome lint --write"
-    ],
-    "package.json": [
-      "format-package -w"
-    ]
+    "*.{ts,tsx,js,jsx,json,md}": ["biome format --write", "biome lint --write"],
+    "package.json": ["format-package -w"]
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

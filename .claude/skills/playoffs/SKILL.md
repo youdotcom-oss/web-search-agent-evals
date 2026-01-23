@@ -97,15 +97,58 @@ docker compose build
 
 ### Compare Results
 
-```bash
-# Compare builtin vs MCP for same agent
-bun run compare -- -a claude-code --toolA builtin --toolB you
-bun run compare -- -a gemini --toolA builtin --toolB you
+The project includes built-in comparison scripts using weighted and statistical graders:
 
-# Analyze specific results
+```bash
+# Compare all 8 result files (all agents × both configs)
+bun run compare:all-weighted          # Weighted: quality + latency + reliability
+bun run compare:all-statistical       # Statistical: bootstrap with confidence intervals
+
+# Compare agents on builtin config only
+bun run compare:builtin-agents        # Which agent is best without MCP
+
+# Compare agents on You.com MCP config only
+bun run compare:you-agents            # Which agent is best with MCP
+
+# Custom weights (quality=70%, latency=20%, reliability=10%)
+COMPARE_QUALITY=0.7 COMPARE_LATENCY=0.2 COMPARE_RELIABILITY=0.1 \
+  bun run compare:all-weighted
+
+# View comparison results
+cat data/comparison-all-weighted.json | jq '.meta, .quality'
+cat data/comparison-all-weighted.json | jq '.headToHead.pairwise'
+
+# Analyze individual results
 bunx @plaited/agent-eval-harness summarize \
-  data/results/claude-code/builtin.jsonl -o summary.jsonl
+  data/results/claude-code/builtin-test.jsonl -o summary.jsonl
 ```
+
+**Comparison strategies:**
+- **Weighted**: Balances quality (from inline grader), latency, and reliability
+- **Statistical**: Bootstrap sampling with significance testing (p<0.05)
+
+### Pass@k Trials
+
+Run multiple trials per prompt to measure reliability:
+
+```bash
+# Default: Droid agent, k=5 trials
+bun run trials
+
+# Capability mode (k=10)
+bun run trials:capability
+
+# Regression mode (k=3)
+bun run trials:regression
+
+# Specify agent
+bun run trials -- --agent gemini
+
+# Custom k value
+bun run trials -- --agent claude-code -k 7 --mode full
+```
+
+Results: `data/results/trials/{agent}-{mode}.jsonl` with `passAtK` (capability) and `passExpK` (reliability) metrics.
 
 ## Prompt Sets
 

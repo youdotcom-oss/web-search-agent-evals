@@ -90,7 +90,7 @@ const detectMcpFromTrajectory = (
   metadata?: {
     mcp_server?: string;
     expected_tools?: string[];
-  }
+  },
 ): boolean => {
   // No MCP expected if metadata doesn't specify server
   if (!trajectory || !metadata?.mcp_server) return false;
@@ -143,18 +143,13 @@ const hasExecutionErrors = (
     type: string;
     status?: string;
     content?: string;
-  }>
+  }>,
 ): { hasErrors: boolean; hasTimeout: boolean } => {
   const hasErrors =
-    trajectory?.some(
-      (step) =>
-        step.type === "tool_call" &&
-        (step.status === "failed" || step.status === "error")
-    ) ?? false;
+    trajectory?.some((step) => step.type === "tool_call" && (step.status === "failed" || step.status === "error")) ??
+    false;
 
-  const hasTimeout =
-    output.toLowerCase().includes("timeout") ||
-    output.toLowerCase().includes("timed out");
+  const hasTimeout = output.toLowerCase().includes("timeout") || output.toLowerCase().includes("timed out");
 
   return { hasErrors, hasTimeout };
 };
@@ -205,8 +200,7 @@ const assessQuality = async ({
   }
 
   // 20 pts: Tool usage (any tool calls in trajectory)
-  const usedTools =
-    trajectory?.some((step) => step.type === "tool_call") ?? false;
+  const usedTools = trajectory?.some((step) => step.type === "tool_call") ?? false;
   if (usedTools) {
     deterministicScore += 20;
   }
@@ -319,9 +313,7 @@ export const grade: Grader = async ({ input, output, hint, trajectory, metadata 
     return {
       pass: false,
       score: 0,
-      reasoning: hasTimeout
-        ? "Execution timed out"
-        : "Tool execution failed with errors",
+      reasoning: hasTimeout ? "Execution timed out" : "Tool execution failed with errors",
       metadata: {
         mcpToolCalled: false,
         expectedMcp: !!metadata?.mcp_server,

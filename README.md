@@ -126,15 +126,30 @@ docker compose run --rm -e MCP_TOOL=you -e DATASET=full codex
 ### 4. Analyze Results
 
 ```bash
-# Compare builtin vs MCP for same agent
-bun run compare -- -a claude-code --toolA builtin --toolB you
+# Compare all 8 result files (all agents × both configs)
+bun run compare:all-weighted          # Weighted: quality + latency + reliability
+bun run compare:all-statistical       # Statistical: bootstrap with confidence intervals
 
-# Generate summary
+# Compare agents on builtin config only
+bun run compare:builtin-agents        # Which agent is best without MCP
+
+# Compare agents on You.com MCP config only
+bun run compare:you-agents            # Which agent is best with MCP
+
+# Custom weights (quality=70%, latency=20%, reliability=10%)
+COMPARE_QUALITY=0.7 COMPARE_LATENCY=0.2 COMPARE_RELIABILITY=0.1 \
+  bun run compare:all-weighted
+
+# View comparison results
+cat data/comparison-all-weighted.json | jq '.meta, .quality'
+cat data/comparison-all-weighted.json | jq '.headToHead.pairwise'
+
+# Generate summary for individual results
 bunx @plaited/agent-eval-harness summarize \
-  data/results/claude-code/builtin.jsonl -o summary.jsonl
+  data/results/claude-code/builtin-test.jsonl -o summary.jsonl
 
 # Extract tool usage statistics
-cat data/results/claude-code/builtin.jsonl | \
+cat data/results/claude-code/builtin-test.jsonl | \
   jq -r '.trajectory[] | select(.type == "tool_call") | .name' | \
   sort | uniq -c
 ```
@@ -206,39 +221,56 @@ docker compose run --rm -e MCP_TOOL=you -e DATASET=full codex
 
 ### Comparing Results
 
-After running evaluations, compare agent performance:
+After running evaluations, compare agent performance using built-in comparison scripts:
 
 ```bash
-# Compare builtin vs MCP for same agent
-bun run compare -- -a claude-code --toolA builtin --toolB you
+# Compare all 8 result files with weighted strategy
+bun run compare:all-weighted
 
-# View comparison output
-cat data/results/claude-code/builtin-vs-you.jsonl | jq .
+# Compare all 8 result files with statistical significance testing
+bun run compare:all-statistical
+
+# Compare agents on builtin config only
+bun run compare:builtin-agents
+
+# Compare agents on You.com MCP config only
+bun run compare:you-agents
+
+# Customize weights for weighted comparison
+COMPARE_QUALITY=0.7 COMPARE_LATENCY=0.2 COMPARE_RELIABILITY=0.1 \
+  bun run compare:all-weighted
+
+# View comparison results
+cat data/comparison-all-weighted.json | jq '.meta, .quality'
+cat data/comparison-all-weighted.json | jq '.headToHead.pairwise'
 ```
+
+**Comparison strategies:**
+- **Weighted**: Combines quality (from inline grader), latency, and reliability with configurable weights
+- **Statistical**: Bootstrap sampling (1000 iterations) with confidence intervals and significance testing
 
 ### Pass@k Analysis
 
-The harness supports **pass@k** and **pass^k** analysis for measuring agent reliability:
-
-- **pass@k**: Capability metric - "Can the agent complete this task in at least one of k attempts?"
-- **pass^k**: Reliability metric - "Will the agent complete this task successfully every time?"
-
-**Running pass@k analysis:**
+Run multiple trials per prompt to measure agent reliability:
 
 ```bash
-# Run each prompt 5 times with inline grading
-bunx @plaited/agent-eval-harness trials \
-  data/prompts/test.jsonl \
-  --schema agent-schemas/claude-code.json \
-  -k 5 \
-  --grader ./scripts/my-grader.ts \
-  -o data/results/trials.jsonl
+# Default: Droid agent, test set, k=5
+bun run trials
 
-# View pass@k metrics
-cat data/results/trials.jsonl | jq '.passAtK, .passExpK'
+# Capability exploration (k=10)
+bun run trials:capability
+
+# Regression safety (k=3, faster)
+bun run trials:regression
+
+# Custom: specify agent and k value
+bun run trials -- --agent gemini -k 7
+
+# View metrics
+cat data/results/trials/droid-test.jsonl | jq '{id, passRate, passAtK, passExpK}'
 ```
 
-**Note:** This project doesn't run pass@k analysis automatically. Use the `trials` command manually when you need reliability metrics.
+**Metrics:** `passAtK` = capability (can do task?), `passExpK` = reliability (always succeeds?)
 
 ## Grading & Validation
 
@@ -251,18 +283,37 @@ Grading is a core part of evaluation - it provides the pass/fail logic that meas
 | **Single-run grader** | Pass/fail scoring for one agent run | Inline evaluation with `--grader` flag |
 | **Comparison grader** | Ranking multiple runs for the same prompt | Post-hoc comparison with `compare` script |
 
-### Built-in Comparison Grader
+### Built-in Comparison Graders
 
-The project includes a comparison grader at `scripts/comparison-grader.ts` that:
+The project uses built-in comparison graders from `@plaited/agent-eval-harness`:
 
-- **Deterministic scoring** (60 pts): Completion, tool usage, MCP validation
-- **LLM quality judgment** (40 pts): Accuracy, relevance, completeness via Gemini
-- **Fallback logic**: Uses deterministic-only if `GEMINI_API_KEY` unavailable
+**Weighted Grader:**
+- Combines quality (from inline grader score), latency, and reliability
+- Default weights: quality=0.5, latency=0.3, reliability=0.2
+- Configurable via environment variables
+
+**Statistical Grader:**
+- Bootstrap sampling (1000 iterations by default)
+- Confidence intervals and significance testing (p<0.05)
+- Detects when differences are statistically significant
 
 **Usage:**
 ```bash
-bun run compare -- -a claude-code --toolA builtin --toolB you
+# Weighted comparison with default weights
+bun run compare:all-weighted
+
+# Weighted comparison with custom weights
+COMPARE_QUALITY=0.7 COMPARE_LATENCY=0.2 COMPARE_RELIABILITY=0.1 \
+  bun run compare:all-weighted
+
+# Statistical comparison with significance testing
+bun run compare:all-statistical
+
+# View results
+cat data/comparison-all-weighted.json | jq '.quality, .headToHead'
 ```
+
+**Quality scores** come from the inline grader (deterministic + LLM), which must be run during evaluation using the `--grader` flag.
 
 ### Writing Custom Single-Run Graders
 
@@ -513,15 +564,27 @@ docker compose run --rm -e MCP_TOOL=builtin claude-code bash
 ### Analyze Results
 
 ```bash
-# Generate summary
-bunx @plaited/agent-eval-harness summarize data/results/claude-code/builtin.jsonl -o summary.jsonl
-bunx @plaited/agent-eval-harness summarize data/results/claude-code/you.jsonl --markdown -o summary.md
+# Compare all agents and configurations
+bun run compare:all-weighted          # Weighted comparison
+bun run compare:all-statistical       # Statistical significance testing
+
+# Compare specific subsets
+bun run compare:builtin-agents        # Builtin config only
+bun run compare:you-agents            # You.com MCP config only
+
+# View comparison results
+cat data/comparison-all-weighted.json | jq '.meta, .quality'
+cat data/comparison-all-weighted.json | jq '.headToHead.pairwise'
+
+# Generate summary for individual results
+bunx @plaited/agent-eval-harness summarize data/results/claude-code/builtin-test.jsonl -o summary.jsonl
+bunx @plaited/agent-eval-harness summarize data/results/claude-code/you-test.jsonl --markdown -o summary.md
 
 # Count tool usage
-cat data/results/claude-code/builtin.jsonl | jq -r '.trajectory[] | select(.type == "tool_call") | .name' | sort | uniq -c
+cat data/results/claude-code/builtin-test.jsonl | jq -r '.trajectory[] | select(.type == "tool_call") | .name' | sort | uniq -c
 
 # Check for tool errors
-cat data/results/gemini/you.jsonl | jq 'select(.toolErrors == true)'
+cat data/results/gemini/you-test.jsonl | jq 'select(.toolErrors == true)'
 ```
 
 ## Deployment Options

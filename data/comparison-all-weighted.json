@@ -1,0 +1,741 @@
+{
+  "meta": {
+    "generatedAt": "2026-01-23T09:53:22.941Z",
+    "runs": [
+      "claude-builtin",
+      "claude-you",
+      "codex-builtin",
+      "codex-you",
+      "droid-builtin",
+      "droid-you",
+      "gemini-builtin",
+      "gemini-you"
+    ],
+    "promptCount": 5,
+    "promptsWithAllRuns": 5
+  },
+  "quality": {
+    "claude-builtin": {
+      "avgScore": 0,
+      "passRate": 0,
+      "passCount": 0,
+      "failCount": 5,
+      "scoreDistribution": {
+        "0.0-0.2": 5,
+        "0.2-0.4": 0,
+        "0.4-0.6": 0,
+        "0.6-0.8": 0,
+        "0.8-1.0": 0
+      }
+    },
+    "claude-you": {
+      "avgScore": 0.95,
+      "passRate": 1,
+      "passCount": 5,
+      "failCount": 0,
+      "scoreDistribution": {
+        "0.0-0.2": 0,
+        "0.2-0.4": 0,
+        "0.4-0.6": 0,
+        "0.6-0.8": 0,
+        "0.8-1.0": 5
+      }
+    },
+    "codex-builtin": {
+      "avgScore": 0,
+      "passRate": 0,
+      "passCount": 0,
+      "failCount": 5,
+      "scoreDistribution": {
+        "0.0-0.2": 5,
+        "0.2-0.4": 0,
+        "0.4-0.6": 0,
+        "0.6-0.8": 0,
+        "0.8-1.0": 0
+      }
+    },
+    "codex-you": {
+      "avgScore": 0.8099999999999999,
+      "passRate": 0.6,
+      "passCount": 3,
+      "failCount": 2,
+      "scoreDistribution": {
+        "0.0-0.2": 0,
+        "0.2-0.4": 0,
+        "0.4-0.6": 0,
+        "0.6-0.8": 2,
+        "0.8-1.0": 3
+      }
+    },
+    "droid-builtin": {
+      "avgScore": 0,
+      "passRate": 0,
+      "passCount": 0,
+      "failCount": 5,
+      "scoreDistribution": {
+        "0.0-0.2": 5,
+        "0.2-0.4": 0,
+        "0.4-0.6": 0,
+        "0.6-0.8": 0,
+        "0.8-1.0": 0
+      }
+    },
+    "droid-you": {
+      "avgScore": 0.95,
+      "passRate": 1,
+      "passCount": 5,
+      "failCount": 0,
+      "scoreDistribution": {
+        "0.0-0.2": 0,
+        "0.2-0.4": 0,
+        "0.4-0.6": 0,
+        "0.6-0.8": 0,
+        "0.8-1.0": 5
+      }
+    },
+    "gemini-builtin": {
+      "avgScore": 0,
+      "passRate": 0,
+      "passCount": 0,
+      "failCount": 5,
+      "scoreDistribution": {
+        "0.0-0.2": 5,
+        "0.2-0.4": 0,
+        "0.4-0.6": 0,
+        "0.6-0.8": 0,
+        "0.8-1.0": 0
+      }
+    },
+    "gemini-you": {
+      "avgScore": 0.8099999999999999,
+      "passRate": 0.6,
+      "passCount": 3,
+      "failCount": 2,
+      "scoreDistribution": {
+        "0.0-0.2": 0,
+        "0.2-0.4": 0,
+        "0.4-0.6": 0,
+        "0.6-0.8": 2,
+        "0.8-1.0": 3
+      }
+    }
+  },
+  "performance": {
+    "claude-builtin": {
+      "latency": {
+        "p50": 30318,
+        "p90": 34540,
+        "p99": 34540,
+        "mean": 30057,
+        "min": 24563,
+        "max": 34540
+      },
+      "firstResponse": {
+        "p50": 30318,
+        "p90": 34540,
+        "p99": 34540,
+        "mean": 30057,
+        "min": 24563,
+        "max": 34540
+      },
+      "totalDuration": 150285
+    },
+    "claude-you": {
+      "latency": {
+        "p50": 23503,
+        "p90": 32889,
+        "p99": 32889,
+        "mean": 23497.6,
+        "min": 15381,
+        "max": 32889
+      },
+      "firstResponse": {
+        "p50": 23503,
+        "p90": 32889,
+        "p99": 32889,
+        "mean": 23497.6,
+        "min": 15381,
+        "max": 32889
+      },
+      "totalDuration": 117488
+    },
+    "codex-builtin": {
+      "latency": {
+        "p50": 83427,
+        "p90": 180018,
+        "p99": 180018,
+        "mean": 93339.2,
+        "min": 2372,
+        "max": 180018
+      },
+      "firstResponse": {
+        "p50": 83427,
+        "p90": 180018,
+        "p99": 180018,
+        "mean": 93339.2,
+        "min": 2372,
+        "max": 180018
+      },
+      "totalDuration": 466696
+    },
+    "codex-you": {
+      "latency": {
+        "p50": 10482,
+        "p90": 89067,
+        "p99": 89067,
+        "mean": 32803.8,
+        "min": 5248,
+        "max": 89067
+      },
+      "firstResponse": {
+        "p50": 10482,
+        "p90": 89067,
+        "p99": 89067,
+        "mean": 32803.8,
+        "min": 5248,
+        "max": 89067
+      },
+      "totalDuration": 164019
+    },
+    "droid-builtin": {
+      "latency": {
+        "p50": 16647,
+        "p90": 24287,
+        "p99": 24287,
+        "mean": 18296.8,
+        "min": 12411,
+        "max": 24287
+      },
+      "firstResponse": {
+        "p50": 16647,
+        "p90": 24287,
+        "p99": 24287,
+        "mean": 18297,
+        "min": 12412,
+        "max": 24287
+      },
+      "totalDuration": 91484
+    },
+    "droid-you": {
+      "latency": {
+        "p50": 19585,
+        "p90": 28149,
+        "p99": 28149,
+        "mean": 21260.2,
+        "min": 16358,
+        "max": 28149
+      },
+      "firstResponse": {
+        "p50": 19585,
+        "p90": 28149,
+        "p99": 28149,
+        "mean": 21260.4,
+        "min": 16358,
+        "max": 28149
+      },
+      "totalDuration": 106301
+    },
+    "gemini-builtin": {
+      "latency": {
+        "p50": 24631,
+        "p90": 28370,
+        "p99": 28370,
+        "mean": 23054,
+        "min": 12802,
+        "max": 28370
+      },
+      "firstResponse": {
+        "p50": 24631,
+        "p90": 28370,
+        "p99": 28370,
+        "mean": 23054,
+        "min": 12802,
+        "max": 28370
+      },
+      "totalDuration": 115270
+    },
+    "gemini-you": {
+      "latency": {
+        "p50": 21348,
+        "p90": 32898,
+        "p99": 32898,
+        "mean": 23762,
+        "min": 16167,
+        "max": 32898
+      },
+      "firstResponse": {
+        "p50": 21348,
+        "p90": 32898,
+        "p99": 32898,
+        "mean": 23762,
+        "min": 16167,
+        "max": 32898
+      },
+      "totalDuration": 118810
+    }
+  },
+  "reliability": {
+    "claude-builtin": {
+      "toolErrors": 0,
+      "toolErrorRate": 0,
+      "timeouts": 0,
+      "timeoutRate": 0,
+      "completionRate": 1
+    },
+    "claude-you": {
+      "toolErrors": 0,
+      "toolErrorRate": 0,
+      "timeouts": 0,
+      "timeoutRate": 0,
+      "completionRate": 1
+    },
+    "codex-builtin": {
+      "toolErrors": 2,
+      "toolErrorRate": 0.4,
+      "timeouts": 0,
+      "timeoutRate": 0,
+      "completionRate": 0.6
+    },
+    "codex-you": {
+      "toolErrors": 0,
+      "toolErrorRate": 0,
+      "timeouts": 0,
+      "timeoutRate": 0,
+      "completionRate": 1
+    },
+    "droid-builtin": {
+      "toolErrors": 0,
+      "toolErrorRate": 0,
+      "timeouts": 0,
+      "timeoutRate": 0,
+      "completionRate": 1
+    },
+    "droid-you": {
+      "toolErrors": 0,
+      "toolErrorRate": 0,
+      "timeouts": 0,
+      "timeoutRate": 0,
+      "completionRate": 1
+    },
+    "gemini-builtin": {
+      "toolErrors": 0,
+      "toolErrorRate": 0,
+      "timeouts": 0,
+      "timeoutRate": 0,
+      "completionRate": 1
+    },
+    "gemini-you": {
+      "toolErrors": 0,
+      "toolErrorRate": 0,
+      "timeouts": 0,
+      "timeoutRate": 0,
+      "completionRate": 1
+    }
+  },
+  "trajectoryInfo": {
+    "claude-builtin": {
+      "richness": "full",
+      "avgStepCount": 4
+    },
+    "claude-you": {
+      "richness": "full",
+      "avgStepCount": 6.6
+    },
+    "codex-builtin": {
+      "richness": "full",
+      "avgStepCount": 11.6
+    },
+    "codex-you": {
+      "richness": "full",
+      "avgStepCount": 5.2
+    },
+    "droid-builtin": {
+      "richness": "full",
+      "avgStepCount": 4.2
+    },
+    "droid-you": {
+      "richness": "full",
+      "avgStepCount": 5
+    },
+    "gemini-builtin": {
+      "richness": "full",
+      "avgStepCount": 9.8
+    },
+    "gemini-you": {
+      "richness": "full",
+      "avgStepCount": 12.6
+    }
+  },
+  "headToHead": {
+    "prompts": [
+      {
+        "id": "websearch-2",
+        "winner": "codex-you",
+        "scores": {
+          "codex-you": 0.7230153649167734,
+          "droid-you": 0.6906707062264938,
+          "claude-you": 0.6853462546558146,
+          "gemini-you": 0.5088500796507169,
+          "droid-builtin": 0.22236969651778393,
+          "gemini-builtin": 0.21055966209081312,
+          "claude-builtin": 0.2084411930219471,
+          "codex-builtin": 0.20355336562947873
+        },
+        "latencies": {
+          "claude-builtin": 34540,
+          "claude-you": 27996,
+          "codex-builtin": 83427,
+          "codex-you": 5248,
+          "droid-builtin": 12411,
+          "droid-you": 18144,
+          "gemini-builtin": 27410,
+          "gemini-you": 32898
+        },
+        "hadErrors": {
+          "claude-builtin": false,
+          "claude-you": false,
+          "codex-builtin": false,
+          "codex-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false
+        }
+      },
+      {
+        "id": "websearch-3",
+        "winner": "claude-you",
+        "scores": {
+          "claude-you": 0.6910264971419413,
+          "gemini-you": 0.6899090547659279,
+          "droid-you": 0.6869688809096349,
+          "codex-you": 0.6783308536978028,
+          "droid-builtin": 0.21819505094614267,
+          "gemini-builtin": 0.2130112330311836,
+          "claude-builtin": 0.20910940394133545,
+          "codex-builtin": 0.0016572937497928383
+        },
+        "latencies": {
+          "claude-builtin": 31933,
+          "claude-you": 17719,
+          "codex-builtin": 180018,
+          "codex-you": 89067,
+          "droid-builtin": 15488,
+          "droid-you": 24065,
+          "gemini-builtin": 22057,
+          "gemini-you": 19122
+        },
+        "hadErrors": {
+          "claude-builtin": false,
+          "claude-you": false,
+          "codex-builtin": true,
+          "codex-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false
+        }
+      },
+      {
+        "id": "websearch-6",
+        "winner": "droid-you",
+        "scores": {
+          "droid-you": 0.6895737187272286,
+          "gemini-you": 0.6849091659785301,
+          "claude-you": 0.6838524299920328,
+          "codex-you": 0.5261278522905417,
+          "droid-builtin": 0.21186380353541345,
+          "gemini-builtin": 0.21021450459652707,
+          "claude-builtin": 0.21002305302195048,
+          "codex-builtin": 0.001657321216473773
+        },
+        "latencies": {
+          "claude-builtin": 28931,
+          "claude-you": 32889,
+          "codex-builtin": 180015,
+          "codex-you": 10482,
+          "droid-builtin": 24287,
+          "droid-you": 19585,
+          "gemini-builtin": 28370,
+          "gemini-you": 29275
+        },
+        "hadErrors": {
+          "claude-builtin": false,
+          "claude-you": false,
+          "codex-builtin": true,
+          "codex-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false
+        }
+      },
+      {
+        "id": "websearch-7",
+        "winner": "codex-you",
+        "scores": {
+          "codex-you": 0.7084150144798396,
+          "claude-you": 0.6933139002502899,
+          "gemini-you": 0.6924753888274013,
+          "droid-you": 0.6922830971310059,
+          "codex-builtin": 0.2889679715302491,
+          "gemini-builtin": 0.22173598029271122,
+          "droid-builtin": 0.21700005666685557,
+          "claude-builtin": 0.2117357117709189
+        },
+        "latencies": {
+          "claude-builtin": 24563,
+          "claude-you": 15381,
+          "codex-builtin": 2372,
+          "codex-you": 7978,
+          "droid-builtin": 16647,
+          "droid-you": 16358,
+          "gemini-builtin": 12802,
+          "gemini-you": 16167
+        },
+        "hadErrors": {
+          "claude-builtin": false,
+          "claude-you": false,
+          "codex-builtin": false,
+          "codex-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false
+        }
+      },
+      {
+        "id": "websearch-9",
+        "winner": "claude-you",
+        "scores": {
+          "claude-you": 0.6872433987674978,
+          "droid-you": 0.6852919482658066,
+          "gemini-you": 0.5134240200465365,
+          "codex-you": 0.5057422861955441,
+          "codex-builtin": 0.21372118551042812,
+          "droid-builtin": 0.21268445308866435,
+          "gemini-builtin": 0.21170457648940738,
+          "claude-builtin": 0.20957915575707262
+        },
+        "latencies": {
+          "claude-builtin": 30318,
+          "claude-you": 23503,
+          "codex-builtin": 20864,
+          "codex-you": 51244,
+          "droid-builtin": 22651,
+          "droid-you": 28149,
+          "gemini-builtin": 24631,
+          "gemini-you": 21348
+        },
+        "hadErrors": {
+          "claude-builtin": false,
+          "claude-you": false,
+          "codex-builtin": false,
+          "codex-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false
+        }
+      }
+    ],
+    "pairwise": [
+      {
+        "runA": "claude-builtin",
+        "runB": "claude-you",
+        "aWins": 0,
+        "bWins": 2,
+        "ties": 3
+      },
+      {
+        "runA": "claude-builtin",
+        "runB": "codex-builtin",
+        "aWins": 0,
+        "bWins": 0,
+        "ties": 5
+      },
+      {
+        "runA": "claude-builtin",
+        "runB": "codex-you",
+        "aWins": 0,
+        "bWins": 2,
+        "ties": 3
+      },
+      {
+        "runA": "claude-builtin",
+        "runB": "droid-builtin",
+        "aWins": 0,
+        "bWins": 0,
+        "ties": 5
+      },
+      {
+        "runA": "claude-builtin",
+        "runB": "droid-you",
+        "aWins": 0,
+        "bWins": 1,
+        "ties": 4
+      },
+      {
+        "runA": "claude-builtin",
+        "runB": "gemini-builtin",
+        "aWins": 0,
+        "bWins": 0,
+        "ties": 5
+      },
+      {
+        "runA": "claude-builtin",
+        "runB": "gemini-you",
+        "aWins": 0,
+        "bWins": 0,
+        "ties": 5
+      },
+      {
+        "runA": "claude-you",
+        "runB": "codex-builtin",
+        "aWins": 2,
+        "bWins": 0,
+        "ties": 3
+      },
+      {
+        "runA": "claude-you",
+        "runB": "codex-you",
+        "aWins": 2,
+        "bWins": 2,
+        "ties": 1
+      },
+      {
+        "runA": "claude-you",
+        "runB": "droid-builtin",
+        "aWins": 2,
+        "bWins": 0,
+        "ties": 3
+      },
+      {
+        "runA": "claude-you",
+        "runB": "droid-you",
+        "aWins": 2,
+        "bWins": 1,
+        "ties": 2
+      },
+      {
+        "runA": "claude-you",
+        "runB": "gemini-builtin",
+        "aWins": 2,
+        "bWins": 0,
+        "ties": 3
+      },
+      {
+        "runA": "claude-you",
+        "runB": "gemini-you",
+        "aWins": 2,
+        "bWins": 0,
+        "ties": 3
+      },
+      {
+        "runA": "codex-builtin",
+        "runB": "codex-you",
+        "aWins": 0,
+        "bWins": 2,
+        "ties": 3
+      },
+      {
+        "runA": "codex-builtin",
+        "runB": "droid-builtin",
+        "aWins": 0,
+        "bWins": 0,
+        "ties": 5
+      },
+      {
+        "runA": "codex-builtin",
+        "runB": "droid-you",
+        "aWins": 0,
+        "bWins": 1,
+        "ties": 4
+      },
+      {
+        "runA": "codex-builtin",
+        "runB": "gemini-builtin",
+        "aWins": 0,
+        "bWins": 0,
+        "ties": 5
+      },
+      {
+        "runA": "codex-builtin",
+        "runB": "gemini-you",
+        "aWins": 0,
+        "bWins": 0,
+        "ties": 5
+      },
+      {
+        "runA": "codex-you",
+        "runB": "droid-builtin",
+        "aWins": 2,
+        "bWins": 0,
+        "ties": 3
+      },
+      {
+        "runA": "codex-you",
+        "runB": "droid-you",
+        "aWins": 2,
+        "bWins": 1,
+        "ties": 2
+      },
+      {
+        "runA": "codex-you",
+        "runB": "gemini-builtin",
+        "aWins": 2,
+        "bWins": 0,
+        "ties": 3
+      },
+      {
+        "runA": "codex-you",
+        "runB": "gemini-you",
+        "aWins": 2,
+        "bWins": 0,
+        "ties": 3
+      },
+      {
+        "runA": "droid-builtin",
+        "runB": "droid-you",
+        "aWins": 0,
+        "bWins": 1,
+        "ties": 4
+      },
+      {
+        "runA": "droid-builtin",
+        "runB": "gemini-builtin",
+        "aWins": 0,
+        "bWins": 0,
+        "ties": 5
+      },
+      {
+        "runA": "droid-builtin",
+        "runB": "gemini-you",
+        "aWins": 0,
+        "bWins": 0,
+        "ties": 5
+      },
+      {
+        "runA": "droid-you",
+        "runB": "gemini-builtin",
+        "aWins": 1,
+        "bWins": 0,
+        "ties": 4
+      },
+      {
+        "runA": "droid-you",
+        "runB": "gemini-you",
+        "aWins": 1,
+        "bWins": 0,
+        "ties": 4
+      },
+      {
+        "runA": "gemini-builtin",
+        "runB": "gemini-you",
+        "aWins": 0,
+        "bWins": 0,
+        "ties": 5
+      }
+    ]
+  }
+}

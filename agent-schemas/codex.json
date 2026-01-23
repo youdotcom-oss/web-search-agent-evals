@@ -15,11 +15,32 @@
       "match": { "path": "$.item.type", "value": "agent_message" },
       "emitAs": "message",
       "extract": { "content": "$.item.text" }
+    },
+    {
+      "match": { "path": "$.item.type", "value": "command_execution" },
+      "emitAs": "tool_call",
+      "extract": {
+        "title": "$.item.id",
+        "status": "$.item.status",
+        "toolName": "$.item.command"
+      }
+    },
+    {
+      "match": { "path": "$.item.type", "value": "mcp_tool_call" },
+      "emitAs": "tool_call",
+      "extract": {
+        "title": "$.item.id",
+        "status": "$.item.status",
+        "toolName": "$.item.tool",
+        "mcpServer": "$.item.server",
+        "input": "$.item.arguments",
+        "output": "$.item.result"
+      }
     }
   ],
   "result": {
     "matchPath": "$.type",
     "matchValue": "turn.completed",
-    "contentPath": "$.usage.output_tokens"
+    "contentPath": "$"
   }
 }

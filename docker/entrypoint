@@ -1,0 +1,215 @@
+#!/usr/bin/env bun
+import { $ } from "bun";
+import { MCP_SERVERS } from "/eval/mcp-servers.ts";
+import type { McpServerKey } from "/eval/mcp-servers.ts";
+
+/**
+ * Docker entrypoint for ACP evaluation containers
+ *
+ * @remarks
+ * Configures MCP servers dynamically based on MCP_TOOL environment variable,
+ * then executes the agent-eval-harness capture command with derived paths.
+ *
+ * **Environment variables:**
+ * - `AGENT` - Agent name (claude-code, gemini, droid, codex)
+ * - `MCP_TOOL` - MCP tool to use (builtin, you, exa, etc.) or "builtin" for no MCP
+ * - `YOU_API_KEY` - API key for You.com MCP server
+ * - `OPENAI_API_KEY` - API key for Codex agent
+ *
+ * **Execution:**
+ * - If args provided: Execute args directly
+ * - If no args: Build capture command dynamically based on environment
+ *
+ * @public
+ */
+
+const AGENT = process.env.AGENT;
+const MCP_TOOL = (process.env.MCP_TOOL || "builtin") as McpServerKey | "builtin";
+const DATASET = process.env.DATASET || "test"; // test | full
+
+/**
+ * Configure Codex CLI with API key
+ *
+ * @remarks
+ * Codex requires authentication via `codex login --with-api-key`.
+ * This must run before any Codex commands.
+ */
+const configureCodex = async (): Promise<void> => {
+  if (AGENT !== "codex" || !process.env.OPENAI_API_KEY) {
+    return;
+  }
+
+  console.log("Configuring Codex CLI with API key...");
+  await $`echo ${process.env.OPENAI_API_KEY} | codex login --with-api-key`.quiet();
+  console.log("✓ Codex CLI configured");
+};
+
+/**
+ * Configure MCP server for agent via CLI commands
+ *
+ * @remarks
+ * Each agent has its own CLI command format:
+ * - Claude: `claude mcp add --transport http <name> <url> --header "KEY: VALUE"`
+ * - Gemini: `gemini mcp add --transport http --header "KEY: VALUE" <name> <url>`
+ * - Droid: `droid mcp add <name> <url> --type http --header "KEY: VALUE"`
+ * - Codex: Uses ~/.codex/config.toml file (no simple CLI)
+ *
+ * @param agent - Agent name
+ * @param tool - MCP tool key from MCP_SERVERS
+ */
+const configureMcp = async (agent: string, tool: McpServerKey): Promise<void> => {
+  console.log(`Configuring MCP for ${agent} with tool ${tool}...`);
+
+  const server = MCP_SERVERS[tool];
+  if (!server) {
+    console.log(`⚠️  Unknown MCP tool: ${tool}`);
+    return;
+  }
+
+  // Check if API key is available
+  const apiKey = server.auth ? process.env[server.auth.envVar] : undefined;
+  if (server.auth && !apiKey) {
+    console.log(`⚠️  Skipping ${agent} MCP: missing ${server.auth.envVar}`);
+    return;
+  }
+
+  try {
+    switch (agent) {
+      case "claude-code": {
+        await $`claude mcp add --transport http ${server.name} ${server.url} --header "Authorization: Bearer ${apiKey}"`.quiet();
+        console.log("✓ Claude Code MCP server added via CLI");
+        break;
+      }
+
+      case "gemini": {
+        await $`gemini mcp add --transport http --header "Authorization: Bearer ${apiKey}" ${server.name} ${server.url}`.quiet();
+        console.log("✓ Gemini MCP server added via CLI");
+        break;
+      }
+
+      case "droid": {
+        await $`droid mcp add ${server.name} ${server.url} --type http --header "Authorization: Bearer ${apiKey}"`.quiet();
+        console.log("✓ Droid MCP server added via CLI");
+        break;
+      }
+
+      case "codex": {
+        // Codex uses config file instead of CLI
+        const configDir = `${process.env.HOME}/.codex`;
+        await $`mkdir -p ${configDir}`.quiet();
+
+        const config = `[mcp_servers.${server.name}]
+url = "${server.url}"
+bearer_token_env_var = "${server.auth?.envVar}"
+`;
+        await Bun.write(`${configDir}/config.toml`, config);
+        console.log("✓ Codex MCP server configured in ~/.codex/config.toml");
+        break;
+      }
+
+      default:
+        console.log(`⚠️  Unknown agent: ${agent}`);
+    }
+  } catch (error) {
+    console.error(`⚠️  Failed to configure MCP for ${agent}:`, error);
+  }
+};
+
+/**
+ * Build capture command arguments based on environment
+ *
+ * @remarks
+ * Derives:
+ * - Prompt file based on DATASET and MCP_TOOL (e.g., test.jsonl, full-mcp.jsonl)
+ * - Schema file (always base schema, no -mcp suffix)
+ * - Output file (includes MCP_TOOL in filename)
+ * - Grader flag (only for non-builtin modes)
+ * - Timeout flag (agent-specific: claude-code 90s, codex 180s)
+ *
+ * @returns Command arguments array
+ */
+const buildCaptureCommand = (): string[] => {
+  if (!AGENT) {
+    throw new Error("AGENT environment variable is required");
+  }
+
+  // Derive prompt file based on DATASET and MCP mode
+  const promptFile = MCP_TOOL === "builtin"
+    ? `/eval/data/prompts/${DATASET}.jsonl`
+    : `/eval/data/prompts/${DATASET}-mcp.jsonl`;
+
+  // Schema file: Always use base schema (no -mcp suffix)
+  const schemaFile = `/eval/agent-schemas/${AGENT}.json`;
+
+  // Output file (include DATASET suffix if not "test")
+  const datasetSuffix = DATASET === "test" ? "-test" : "";
+  const outputFile = `/eval/data/results/${AGENT}/${MCP_TOOL}${datasetSuffix}.jsonl`;
+
+  // Build command array
+  const cmd = ["bunx", "@plaited/agent-eval-harness", "capture", promptFile, "--schema", schemaFile];
+
+  // Add grader for all evaluations (both builtin and MCP)
+  cmd.push("--grader", "/eval/scripts/inline-grader.ts");
+
+  cmd.push("--cwd", "/workspace");
+
+  // Add timeout if needed (agent-specific)
+  switch (AGENT) {
+    case "claude-code":
+      cmd.push("--timeout", "90000");
+      break;
+    case "codex":
+      cmd.push("--timeout", "180000");
+      break;
+  }
+
+  cmd.push("-o", outputFile, "--progress");
+
+  return cmd;
+};
+
+/**
+ * Main entrypoint logic
+ *
+ * @remarks
+ * 1. Configure Codex if needed
+ * 2. Configure MCP if MCP_TOOL is set and not "builtin"
+ * 3. If args provided: execute them directly
+ * 4. If no args: build and execute capture command
+ */
+const main = async (): Promise<void> => {
+  // Configure Codex CLI
+  await configureCodex();
+
+  // Configure MCP if needed
+  if (MCP_TOOL !== "builtin" && AGENT) {
+    await configureMcp(AGENT, MCP_TOOL as McpServerKey);
+  }
+
+  // If arguments provided, execute them directly
+  if (process.argv.length > 2) {
+    const args = process.argv.slice(2);
+    await $`${args}`.quiet(false);
+    process.exit(0);
+  }
+
+  // Build and execute capture command
+  const cmd = buildCaptureCommand();
+
+  console.log("Running: bunx @plaited/agent-eval-harness capture", cmd[3]);
+  console.log(`  Schema: ${cmd[5]}`);
+  console.log(`  Output: ${cmd[cmd.length - 2]}`);
+  console.log(`  Mode: ${MCP_TOOL}`);
+  console.log("");
+  console.log("Executing command:");
+  cmd.forEach((arg) => console.log(`  ${arg}`));
+  console.log("");
+
+  await $`${cmd}`.quiet(false);
+};
+
+// Run main and handle errors
+main().catch((error) => {
+  console.error("Entrypoint failed:", error);
+  process.exit(1);
+});

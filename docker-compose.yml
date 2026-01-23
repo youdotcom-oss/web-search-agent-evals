@@ -1,168 +1,54 @@
 services:
-  # Gemini + builtin search
-  gemini-builtin:
+  # Gemini AI Agent
+  # Run with: docker compose run --rm -e MCP_TOOL=builtin gemini
+  #       or: docker compose run --rm -e MCP_TOOL=you gemini
+  gemini:
     build:
       context: .
       dockerfile: docker/gemini.Dockerfile
     image: acp-evals-gemini:latest
     env_file: .env
     environment:
-      - MCP_TOOL=builtin
       - AGENT=gemini
+      # MCP_TOOL will be injected by `docker compose run -e MCP_TOOL=...`
     volumes:
       - ./data:/eval/data:ro
       - ./agent-schemas:/eval/agent-schemas:ro
-      - ./tools:/eval/tools:ro
       - ./scripts:/eval/scripts:ro
       - ./data/results:/eval/data/results:rw
     working_dir: /workspace
-    command:
-      - bunx
-      - "@plaited/agent-eval-harness"
-      - capture
-      - /eval/data/prompts/test.jsonl
-      - --schema
-      - /eval/agent-schemas/gemini.json
-      - --cwd
-      - /workspace
-      - -o
-      - /eval/data/results/gemini/builtin.jsonl
-      - --progress
 
-  # Gemini + You.com MCP
-  gemini-you:
-    build:
-      context: .
-      dockerfile: docker/gemini.Dockerfile
-    image: acp-evals-gemini:latest
-    env_file: .env
-    environment:
-      - MCP_TOOL=you
-      - AGENT=gemini
-    volumes:
-      - ./data:/eval/data:ro
-      - ./agent-schemas:/eval/agent-schemas:ro
-      - ./tools:/eval/tools:ro
-      - ./scripts:/eval/scripts:ro
-      - ./data/results:/eval/data/results:rw
-    working_dir: /workspace
-    command:
-      - bunx
-      - "@plaited/agent-eval-harness"
-      - capture
-      - /eval/data/prompts/test.jsonl
-      - --schema
-      - /eval/agent-schemas/gemini-mcp.json
-      - --cwd
-      - /workspace
-      - -o
-      - /eval/data/results/gemini/you.jsonl
-      - --progress
-
-  # Claude Code + builtin search
-  claude-code-builtin:
+  # Claude Code Agent
+  # Run with: docker compose run --rm -e MCP_TOOL=builtin claude-code
+  #       or: docker compose run --rm -e MCP_TOOL=you claude-code
+  claude-code:
     build:
       context: .
       dockerfile: docker/claude-code.Dockerfile
     image: acp-evals-claude-code:latest
     env_file: .env
     environment:
-      - MCP_TOOL=builtin
       - AGENT=claude-code
+      # MCP_TOOL will be injected by `docker compose run -e MCP_TOOL=...`
     volumes:
       - ./data:/eval/data:ro
       - ./agent-schemas:/eval/agent-schemas:ro
-      - ./tools:/eval/tools:ro
       - ./scripts:/eval/scripts:ro
       - ./data/results:/eval/data/results:rw
     working_dir: /workspace
-    command:
-      - bunx
-      - "@plaited/agent-eval-harness"
-      - capture
-      - /eval/data/prompts/test.jsonl
-      - --schema
-      - /eval/agent-schemas/claude-code.json
-      - --cwd
-      - /workspace
-      - --timeout
-      - "90000"
-      - -o
-      - /eval/data/results/claude-code/builtin.jsonl
-      - --progress
 
-  # Claude Code + You.com MCP
-  claude-code-you:
-    build:
-      context: .
-      dockerfile: docker/claude-code.Dockerfile
-    image: acp-evals-claude-code:latest
-    env_file: .env
-    environment:
-      - MCP_TOOL=you
-      - AGENT=claude-code
-    volumes:
-      - ./data:/eval/data:ro
-      - ./agent-schemas:/eval/agent-schemas:ro
-      - ./tools:/eval/tools:ro
-      - ./scripts:/eval/scripts:ro
-      - ./data/results:/eval/data/results:rw
-    working_dir: /workspace
-    command:
-      - bunx
-      - "@plaited/agent-eval-harness"
-      - capture
-      - /eval/data/prompts/test.jsonl
-      - --schema
-      - /eval/agent-schemas/claude-code-mcp.json
-      - --cwd
-      - /workspace
-      - --timeout
-      - "90000"
-      - -o
-      - /eval/data/results/claude-code/you.jsonl
-      - --progress
-
-  # Droid + builtin search
-  droid-builtin:
+  # Droid Agent
+  # Run with: docker compose run --rm -e MCP_TOOL=builtin droid
+  #       or: docker compose run --rm -e MCP_TOOL=you droid
+  droid:
     build:
       context: .
       dockerfile: docker/droid.Dockerfile
     image: acp-evals-droid:latest
     env_file: .env
     environment:
-      - MCP_TOOL=builtin
       - AGENT=droid
-    volumes:
-      - ./data:/eval/data:ro
-      - ./agent-schemas:/eval/agent-schemas:ro
-      - ./tools:/eval/tools:ro
-      - ./scripts:/eval/scripts:ro
-      - ./data/results:/eval/data/results:rw
-    working_dir: /workspace
-    command:
-      - bunx
-      - "@plaited/agent-eval-harness"
-      - capture
-      - /eval/data/prompts/test.jsonl
-      - --schema
-      - /eval/agent-schemas/droid.json
-      - --cwd
-      - /workspace
-      - -o
-      - /eval/data/results/droid/builtin.jsonl
-      - --progress
-
-  # Droid + You.com MCP
-  droid-you:
-    build:
-      context: .
-      dockerfile: docker/droid.Dockerfile
-    image: acp-evals-droid:latest
-    env_file: .env
-    environment:
-      - MCP_TOOL=you
-      - AGENT=droid
+      # MCP_TOOL will be injected by `docker compose run -e MCP_TOOL=...`
     deploy:
       resources:
         limits:
@@ -170,84 +56,25 @@ services:
     volumes:
       - ./data:/eval/data:ro
       - ./agent-schemas:/eval/agent-schemas:ro
-      - ./tools:/eval/tools:ro
       - ./scripts:/eval/scripts:ro
       - ./data/results:/eval/data/results:rw
     working_dir: /workspace
-    command:
-      - bunx
-      - "@plaited/agent-eval-harness"
-      - capture
-      - /eval/data/prompts/test.jsonl
-      - --schema
-      - /eval/agent-schemas/droid-mcp.json
-      - --cwd
-      - /workspace
-      - -o
-      - /eval/data/results/droid/you.jsonl
-      - --progress
 
-  # Codex + builtin search
-  codex-builtin:
+  # Codex Agent
+  # Run with: docker compose run --rm -e MCP_TOOL=builtin codex
+  #       or: docker compose run --rm -e MCP_TOOL=you codex
+  codex:
     build:
       context: .
       dockerfile: docker/codex.Dockerfile
     image: acp-evals-codex:latest
     env_file: .env
     environment:
-      - MCP_TOOL=builtin
       - AGENT=codex
+      # MCP_TOOL will be injected by `docker compose run -e MCP_TOOL=...`
     volumes:
       - ./data:/eval/data:ro
       - ./agent-schemas:/eval/agent-schemas:ro
-      - ./tools:/eval/tools:ro
       - ./scripts:/eval/scripts:ro
       - ./data/results:/eval/data/results:rw
     working_dir: /workspace
-    command:
-      - bunx
-      - "@plaited/agent-eval-harness"
-      - capture
-      - /eval/data/prompts/test.jsonl
-      - --schema
-      - /eval/agent-schemas/codex.json
-      - --cwd
-      - /workspace
-      - --timeout
-      - "180000"
-      - -o
-      - /eval/data/results/codex/builtin.jsonl
-      - --progress
-
-  # Codex + You.com MCP
-  codex-you:
-    build:
-      context: .
-      dockerfile: docker/codex.Dockerfile
-    image: acp-evals-codex:latest
-    env_file: .env
-    environment:
-      - MCP_TOOL=you
-      - AGENT=codex
-    volumes:
-      - ./data:/eval/data:ro
-      - ./agent-schemas:/eval/agent-schemas:ro
-      - ./tools:/eval/tools:ro
-      - ./scripts:/eval/scripts:ro
-      - ./data/results:/eval/data/results:rw
-    working_dir: /workspace
-    command:
-      - bunx
-      - "@plaited/agent-eval-harness"
-      - capture
-      - /eval/data/prompts/test.jsonl
-      - --schema
-      - /eval/agent-schemas/codex-mcp.json
-      - --cwd
-      - /workspace
-      - --timeout
-      - "180000"
-      - -o
-      - /eval/data/results/codex/you.jsonl
-      - --progress
-

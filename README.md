@@ -8,58 +8,24 @@ The **playoffs** system runs a matrix evaluation: 4 agents × 2 tools = 8 pairin
 
 **Key Features:**
 - **Headless adapters** - No custom code, just JSON schemas ([@plaited/agent-eval-harness](https://www.npmjs.com/package/@plaited/agent-eval-harness))
-- **Type-safe configs** - Zod schemas ensure MCP configs are correct
-- **Single source of truth** - `tools/mcp-servers.json` drives all MCP config generation
+- **Flag-based architecture** - Single service per agent, MCP mode selected via environment variable
+- **Type-safe constants** - MCP server definitions in `mcp-servers.ts`
+- **TypeScript entrypoint** - Bun shell script for runtime MCP configuration
 - **Isolated execution** - Each pairing runs in its own Docker container
-- **Transparent** - All schemas and configs are public, easily reviewable
 
 ```mermaid
 flowchart TD
-    Prompts[prompts.jsonl] --> Harness[agent-eval-harness]
+    Env[MCP_TOOL & DATASET env vars] --> Entrypoint[docker/entrypoint]
+    Entrypoint -->|builtin| SkipMCP[Skip MCP setup]
+    Entrypoint -->|you| ConfigMCP[Configure MCP via CLI]
+
+    SkipMCP --> Harness[agent-eval-harness capture]
+    ConfigMCP --> Harness
+
+    Prompts[prompts.jsonl] --> Harness
     Schemas[agent-schemas/*.json] --> Harness
-    MCP[tools/mcp-servers.json] --> Generate[generate-mcp-config]
-    Generate --> ClaudeConfig[.mcp.json]
-    Generate --> GeminiConfig[.gemini/settings.json]
-    Generate --> DroidConfig[.factory/mcp.json]
     Harness --> Results[data/results/agent/tool.jsonl]
 ```
-
-## Cost & Time Estimates
-
-### Test Workflow (5 prompts)
-**Purpose:** Quick validation of setup and changes
-
-| Mode | Time | Cost | Use Case |
-|------|------|------|----------|
-| All agents (8 runs) | ~5 minutes | ~$2-5 | PR validation, testing changes |
-| Single agent | ~30 seconds | ~$0.25-0.50 | Quick checks |
-
-### Full Workflow (1,254 prompts)
-**Purpose:** Complete evaluation for production data
-
-| Mode | Time | Cost | Use Case |
-|------|------|------|----------|
-| **Parallel** (8 concurrent) | **~4 hours** | **~$130-260** | Fast results, high API quota |
-| **Sequential** (1 at a time) | **~24 hours** | **~$130-260** | Standard quota, safer |
-
-**Cost Breakdown (Full Workflow):**
-- Anthropic Claude Code: $50-100
-- Google Gemini: $20-40
-- Factory Droid: $20-40
-- OpenAI Codex: $30-60
-- You.com MCP: $10-20
-- **Total:** ~$130-260
-
-**API Requests:**
-- 10,032 total requests (1,254 prompts × 8 agent+tool combinations)
-- Parallel mode: Up to 8 concurrent requests
-- Sequential mode: 1 request at a time
-
-**Recommendations:**
-- ✅ Run **test workflow first** to validate setup (~$3)
-- ✅ Use **sequential mode** if on standard API quotas
-- ✅ Use **parallel mode** if you need results quickly and have high quotas
-- ✅ Consider **monthly** full evaluations instead of weekly (~$150/month vs ~$600/month)
 
 ## Quick Start
 
@@ -71,110 +37,103 @@ bun install
 
 ### 2. Set API Keys
 
-#### Option A: Local Development (.env file)
+Create `.env` file (gitignored):
 
 ```bash
-# Copy example and edit with your keys
 cp .env.example .env
-
-# Required API keys:
-# - ANTHROPIC_API_KEY=sk-ant-...     # For Claude Code agent
-# - GEMINI_API_KEY=...                # For Gemini agent
-# - FACTORY_API_KEY=fk-...            # For Droid agent
-# - OPENAI_API_KEY=sk-...             # For Codex agent
-# - YOU_API_KEY=...                   # For You.com MCP tool
-
-# Edit .env:
 nano .env
 ```
 
-**Security:**
-- `.env` is gitignored and never committed
-- API keys are injected at runtime via Docker environment
-
-#### Option B: CI/Server Environment Variables
-
-For GitHub Actions, set secrets in repo settings:
-
-```
-Settings → Secrets and variables → Actions → New repository secret
-```
-
-Add each API key as a separate secret:
-- `ANTHROPIC_API_KEY`
-- `GEMINI_API_KEY`
-- `FACTORY_API_KEY`
-- `OPENAI_API_KEY`
-- `YOU_API_KEY`
-
-For other servers (AWS, GCP, etc.), use their secrets management:
-- AWS: Secrets Manager or Parameter Store
-- GCP: Secret Manager
-- Docker: `docker run --env-file .env.production`
+Required keys:
+- `ANTHROPIC_API_KEY` - Claude Code agent
+- `GEMINI_API_KEY` - Gemini agent + inline grader LLM scoring
+- `FACTORY_API_KEY` - Droid agent
+- `OPENAI_API_KEY` - Codex agent
+- `YOU_API_KEY` - You.com MCP tool
 
 ### 3. Run Evaluations
 
 #### Test Workflow (5 prompts, ~5 minutes)
 
 ```bash
-# Run all agents with builtin search
-docker compose run --rm claude-code-builtin
-docker compose run --rm gemini-builtin
-docker compose run --rm droid-builtin
-docker compose run --rm codex-builtin
+# Run all agents in parallel (8 scenarios: 4 agents × 2 tools)
+bun run run
 
-# Run all agents with MCP search
-docker compose run --rm claude-code-you
-docker compose run --rm gemini-you
-docker compose run --rm droid-you
-docker compose run --rm codex-you
+# Or run specific agent+tool combinations
+docker compose run --rm -e MCP_TOOL=builtin claude-code
+docker compose run --rm -e MCP_TOOL=you gemini
 ```
 
-#### Full Workflow (1,254 prompts, ~24-32 hours)
-
-**Run automated script:**
+#### Full Workflow (1,254 prompts, ~10+ hours)
 
 ```bash
-# Interactive script with progress tracking
-./run-full-workflow.sh
-
-# This will:
-# 1. Verify docker-compose.yml uses full prompts
-# 2. Run all 8 evaluations sequentially
-# 3. Track elapsed time
-# 4. Optionally commit results to new branch
-```
-
-**Or run individual pairings:**
-
-```bash
-# Update docker-compose.yml first
-sed -i.bak 's|test.jsonl|full.jsonl|g' docker-compose.yml
-sed -i.bak 's|test-mcp.jsonl|full-mcp.jsonl|g' docker-compose.yml
-
-# Run specific agent+tool
-docker compose run --rm claude-code-builtin
-docker compose run --rm gemini-you
-
-# Restore test prompts
-mv docker-compose.yml.bak docker-compose.yml
+# Run all agents with full dataset
+bun run run:full
 ```
 
 ### 4. Analyze Results
 
+Compare results using the flexible CLI tool:
+
 ```bash
-# Compare builtin vs MCP for same agent
-bun run compare -- -a claude-code --toolA builtin --toolB you
+# Default: all agents, test mode, weighted strategy
+bun scripts/compare.ts
 
-# Generate summary
-bunx @plaited/agent-eval-harness summarize \
-  data/results/claude-code/builtin.jsonl -o summary.jsonl
+# Compare full dataset
+bun scripts/compare.ts --mode full
 
-# Extract tool usage statistics
-cat data/results/claude-code/builtin.jsonl | \
-  jq -r '.trajectory[] | select(.type == "tool_call") | .name' | \
-  sort | uniq -c
+# Filter by agent or MCP mode
+bun scripts/compare.ts --agent gemini --agent claude-code
+bun scripts/compare.ts --mcp builtin
+
+# Use statistical strategy
+bun scripts/compare.ts --strategy statistical
+
+# Combine flags
+bun scripts/compare.ts --mode full --mcp you --strategy statistical
+
+# Preview configuration
+bun scripts/compare.ts --dry-run
 ```
+
+Or use npm shortcuts for common test data comparisons:
+
+```bash
+bun run compare:all-weighted        # All agents, both modes
+bun run compare:all-statistical     # Statistical analysis
+bun run compare:builtin-agents      # Builtin only
+bun run compare:you-agents          # MCP only
+```
+
+View results:
+
+```bash
+cat data/comparison-all-weighted-test.json | jq '.meta, .quality'
+cat data/comparison-all-weighted-test.json | jq '.headToHead.pairwise'
+```
+
+## Pass@k Analysis
+
+Run multiple trials per prompt to measure agent reliability:
+
+```bash
+# Default: Droid agent, test set, k=5
+bun run trials
+
+# Capability exploration (k=10)
+bun run trials:capability
+
+# Regression safety (k=3, faster)
+bun run trials:regression
+
+# Custom: specify agent and k value
+bun run trials -- --agent gemini -k 7
+
+# View metrics
+cat data/results/trials/droid-test.jsonl | jq '{id, passRate, passAtK, passExpK}'
+```
+
+**Metrics:** `passAtK` = capability (can do task?), `passExpK` = reliability (always succeeds?)
 
 ## Architecture
 
@@ -186,40 +145,33 @@ ACP headless adapter schemas - no custom code, just JSON configuration:
 |--------|-------|------|--------|
 | `claude-code.json` | Claude Code | stream | ✅ Tested |
 | `gemini.json` | Gemini CLI | iterative | ✅ Tested |
-| `droid.json` | Droid CLI | stream | 🔄 New |
-| `codex.json` | Codex CLI | stream | 🔄 New |
+| `droid.json` | Droid CLI | stream | ✅ Tested |
+| `codex.json` | Codex CLI | stream | ✅ Tested |
 
 **Session Modes:**
 - **stream**: Process stays alive, multi-turn via stdin
 - **iterative**: New process per turn, history accumulated
 
-### MCP Tools (tools/)
+### MCP Configuration (mcp-servers.ts)
 
-Single source of truth for MCP server configurations:
-
-```
-tools/
-├── mcp-servers.json    # Unified server definitions
-└── schemas/            # Zod schemas (agent-specific formats)
-    ├── claude-mcp.ts   # .mcp.json
-    ├── gemini-mcp.ts   # .gemini/settings.json
-    ├── droid-mcp.ts    # .factory/mcp.json
-    └── codex-mcp.ts    # CLI commands (codex mcp add)
-```
+Single source of truth for MCP server configurations. The TypeScript entrypoint (`docker/entrypoint`) imports these constants and configures agents at runtime via their official CLI commands.
 
 **Available Tools:**
 - `builtin` - Agent's native search (no MCP config)
 - `you` - You.com MCP server (requires `YOU_API_KEY`)
 
-### CLI Scripts (scripts/)
+To add new MCP tools, see `.claude/skills/playoffs/references/mcp-tools.md`.
 
-Type-safe, manually runnable scripts:
+### CLI Scripts (scripts/)
 
 | Script | Purpose |
 |--------|---------|
-| `generate-mcp-config.ts` | Generate MCP config for agent+tool |
-| `run-pairing.ts` | Run single agent×tool pairing via Docker |
-| `compare-results.ts` | Compare results across tools |
+| `run.ts` | Automated test runner (4 agents × 2 tools in parallel) |
+| `compare.ts` | Flexible comparison tool with mode/agent/strategy flags |
+| `run-trials.ts` | Multi-trial wrapper for pass@k/pass^k analysis |
+| `inline-grader.ts` | Hybrid grader (deterministic + LLM scoring) |
+
+See "Analyze Results" in Quick Start for comparison usage examples.
 
 ### Docker Infrastructure
 
@@ -232,343 +184,68 @@ docker/
 ├── gemini.Dockerfile
 ├── droid.Dockerfile
 ├── codex.Dockerfile
-├── entrypoint.sh             # Calls generate-mcp-config.ts
-└── docker-compose.yml        # 8 services (4 agents × 2 tools)
+├── entrypoint                # TypeScript entrypoint (Bun shell)
+└── docker-compose.yml        # 4 services (one per agent)
 ```
+
+The entrypoint script:
+1. Reads `MCP_TOOL` environment variable (`builtin` or `you`)
+2. Reads `DATASET` environment variable (`test` or `full`)
+3. Configures MCP via agent CLI if needed (skips for `builtin`)
+4. Runs `@plaited/agent-eval-harness capture` with appropriate prompts
 
 ## Prompts
 
-| File | Description | Count |
-|------|-------------|-------|
-| `data/prompts/search-test.jsonl` | Search-triggering test prompts | 5 |
-| `data/prompts/test.jsonl` | Original test subset | 5 |
-| `data/prompts/full.jsonl` | Full evaluation set | 1,254 |
+| File | Prompts | Format | Use With |
+|------|---------|--------|----------|
+| `test.jsonl` | 5 | `<web-search>` | Builtin |
+| `test-mcp.jsonl` | 5 | `<web-search mcp-server="ydc-server">` | MCP |
+| `full.jsonl` | 1,254 | `<web-search>` | Builtin |
+| `full-mcp.jsonl` | 1,254 | `<web-search mcp-server="ydc-server">` | MCP |
 
-**Search prompts** are designed to trigger web search:
-- Natural language questions
-- Time-sensitive queries (2025, latest, current)
-- Recent events (CES 2025, API pricing)
+Prompts are designed to trigger web search with time-sensitive queries and recent events.
 
 ## Results
 
-Results are written to `data/results/<agent>/<tool>.jsonl`:
+Results are written to `data/results/<agent>/<tool>[-<dataset>].jsonl`:
+
+**Naming convention:**
+- Test mode: `<tool>-test.jsonl` (e.g., `builtin-test.jsonl`)
+- Full mode: `<tool>.jsonl` (e.g., `builtin.jsonl`, no suffix)
 
 ```
 data/results/
 ├── claude-code/
-│   ├── builtin.jsonl
-│   └── you.jsonl
+│   ├── builtin-test.jsonl    # Test dataset
+│   ├── builtin.jsonl         # Full dataset
+│   ├── you-test.jsonl        # Test dataset
+│   └── you.jsonl             # Full dataset
 ├── gemini/
+│   ├── builtin-test.jsonl
 │   ├── builtin.jsonl
+│   ├── you-test.jsonl
 │   └── you.jsonl
 ├── droid/
+│   ├── builtin-test.jsonl
 │   ├── builtin.jsonl
+│   ├── you-test.jsonl
 │   └── you.jsonl
 └── codex/
+    ├── builtin-test.jsonl
     ├── builtin.jsonl
+    ├── you-test.jsonl
     └── you.jsonl
 ```
 
 Each result includes full trajectory (messages, tool calls, timing, token usage).
 
-## Usage Examples
+## Inline Grader
 
-### Generate MCP Configs
+The project uses a hybrid grading approach in `scripts/inline-grader.ts`:
+- **Deterministic (60%)** - Checks for hint content, proper formatting
+- **LLM (40%)** - Gemini Flash 2.0 for semantic quality scoring
 
-```bash
-# Generate config for specific agent+tool
-bun run generate-mcp -- -a claude-code -t you -c /workspace
-
-# Test generation locally
-bun run generate-mcp -- -a gemini -t you -c /tmp/test
-cat /tmp/test/.gemini/settings.json
-```
-
-### Run Docker Services
-
-```bash
-# Build all images
-docker compose build
-
-# Run specific pairing
-docker compose run --rm claude-code-builtin
-docker compose run --rm gemini-you
-
-# Debug: Shell into container
-docker compose run --rm claude-code-builtin bash
-```
-
-### Analyze Results
-
-```bash
-# Generate summary
-bunx @plaited/agent-eval-harness summarize data/results/claude-code/builtin.jsonl -o summary.jsonl
-bunx @plaited/agent-eval-harness summarize data/results/claude-code/you.jsonl --markdown -o summary.md
-
-# Count tool usage
-cat data/results/claude-code/builtin.jsonl | jq -r '.trajectory[] | select(.type == "tool_call") | .name' | sort | uniq -c
-
-# Check for tool errors
-cat data/results/gemini/you.jsonl | jq 'select(.toolErrors == true)'
-```
-
-## Deployment Options
-
-### Local Development (Recommended for Testing)
-
-**Test workflow (5 prompts, ~5 minutes):**
-```bash
-# Run all agents sequentially
-docker compose run --rm claude-code-builtin
-docker compose run --rm gemini-builtin
-docker compose run --rm droid-builtin
-docker compose run --rm codex-builtin
-```
-
-**Full workflow (1,254 prompts, 4-24 hours):**
-```bash
-# Run automated script (handles everything)
-./run-full-workflow.sh
-```
-
-**Timing:**
-- Sequential: ~24 hours (safest for API rate limits)
-- Parallel: ~4 hours (may hit rate limits)
-
-### GitHub Actions CI
-
-Automatically run evaluations on code changes:
-
-```bash
-# Workflows defined in .github/workflows/playoffs.yml
-
-# Test prompts: Runs on every PR/push
-#   - 8 parallel jobs
-#   - ~5 minutes total
-#   - Validates changes work
-
-# Full prompts: Manual trigger or main branch only
-#   - Choose sequential (24h) or parallel (4h)
-#   - Results auto-committed to new branch
-#   - Creates PR for data science team
-```
-
-**Manual trigger:**
-```
-Actions → Playoffs Evaluation → Run workflow
-  - Prompt set: full
-  - Parallel: true (4h) or false (24h)
-```
-
-**Required secrets** (Settings → Secrets and variables → Actions):
-- `ANTHROPIC_API_KEY`
-- `GEMINI_API_KEY`
-- `FACTORY_API_KEY`
-- `OPENAI_API_KEY`
-- `YOU_API_KEY`
-
-### Cloud Servers (AWS, GCP, Azure)
-
-**Option A: Long-running VM**
-
-```bash
-# Launch VM with Docker
-aws ec2 run-instances --image-id ami-xxx --instance-type t3.large
-
-# SSH and clone repo
-git clone https://github.com/your-org/acp-evals.git
-cd acp-evals
-
-# Set API keys
-export ANTHROPIC_API_KEY=...
-export GEMINI_API_KEY=...
-export FACTORY_API_KEY=...
-export OPENAI_API_KEY=...
-export YOU_API_KEY=...
-
-# Run full workflow
-./run-full-workflow.sh
-```
-
-**Option B: Container Service (ECS, Cloud Run, GKE)**
-
-```bash
-# Build and push Docker image
-docker build -t acp-evals -f docker/base.Dockerfile .
-docker tag acp-evals:latest your-registry/acp-evals:latest
-docker push your-registry/acp-evals:latest
-
-# Deploy with secrets from secrets manager
-# Results are committed back to repo automatically
-```
-
-### Recommendations
-
-| Environment | Prompt Set | Mode | Time | Best For |
-|-------------|------------|------|------|----------|
-| **Local Dev** | test | - | 5 min | Validating changes |
-| **Local Dev** | full | sequential | 24h | First full run, debugging |
-| **GitHub Actions** | test | parallel | 5 min | PR validation (automated) |
-| **GitHub Actions** | full | parallel | 4h | Quick results, sufficient API quota |
-| **Cloud Server** | full | sequential | 24h | Cost-effective, limited quota |
-| **Cloud Server** | full | parallel | 4h | Fast results, high quota |
-
-**API Rate Limit Considerations:**
-- **Parallel (4h):** Requires high API quota, 8 concurrent requests
-- **Sequential (24h):** Works with standard quotas, 1 request at a time
-
-**Cost Estimates (approximate):**
-- API calls: ~10,000 requests total (1,254 prompts × 8 runs)
-- Anthropic Claude: $50-100
-- Google Gemini: $20-40
-- OpenAI Codex: $30-60
-- Factory Droid: $20-40
-- You.com MCP: $10-20
-- **Total:** ~$130-260 per full evaluation
-
-## Adding Agents
-
-1. **Create adapter schema** (`agent-schemas/<agent>.json`)
-   - Test CLI: `<agent> --help`
-   - Map JSON events to ACP
-   - Test: `bunx @plaited/agent-eval-harness adapter:check -- bunx @plaited/agent-eval-harness headless --schema agent-schemas/<agent>.json`
-
-2. **Create MCP schema** (`tools/schemas/<agent>-mcp.ts`)
-   - Research config location
-   - Export Zod schema + path constant
-   - Export `generate<Agent>Config` function
-
-3. **Update generate-mcp-config.ts**
-   - Import schema
-   - Add to `AGENTS` array
-   - Add switch case
-
-4. **Create Dockerfile** (`docker/<agent>.Dockerfile`)
-   - Install CLI
-   - Copy entrypoint
-
-5. **Add Docker Compose services**
-   - `<agent>-builtin`
-   - `<agent>-you`
-
-See `.claude/skills/playoffs/SKILL.md` for detailed scaffolding guide.
-
-## Adding MCP Tools
-
-1. **Add to tools/mcp-servers.json**
-   ```json
-   {
-     "servers": {
-       "new-tool": {
-         "name": "tool-name",
-         "type": "http",
-         "url": "https://api.example.com/mcp",
-         "auth": { "type": "bearer", "envVar": "NEW_TOOL_API_KEY" }
-       }
-     }
-   }
-   ```
-
-2. **Update generate-mcp-config.ts**
-   - Add to `TOOLS` array
-
-3. **Update .env and .env.example**
-   ```
-   NEW_TOOL_API_KEY=...
-   ```
-
-4. **Add Docker Compose services**
-   - Add `<agent>-<tool>` for each agent
-
-## Troubleshooting
-
-### MCP Config Issues
-
-1. **Test config generation**
-   ```bash
-   bun run generate-mcp -- -a <agent> -t <tool> -c /tmp/test
-   ls /tmp/test/.mcp.json  # Claude
-   ls /tmp/test/.gemini/settings.json  # Gemini
-   ls /tmp/test/.factory/mcp.json  # Droid
-   ```
-
-2. **Verify API keys**
-   ```bash
-   cat .env | grep API_KEY
-   ```
-
-3. **Test inside container**
-   ```bash
-   docker compose run --rm <agent>-<tool> bash -c "cat /workspace/.mcp.json"
-   ```
-
-### Agent Schema Issues
-
-1. **Capture raw CLI output**
-   ```bash
-   <agent> --help
-   <agent> "test prompt" --output-format stream-json | head -20
-   ```
-
-2. **Test adapter compliance**
-   ```bash
-   bunx @plaited/agent-eval-harness adapter:check -- \
-     bunx @plaited/agent-eval-harness headless --schema agent-schemas/<agent>.json
-   ```
-
-### Docker Build Failures
-
-1. **Check base image**
-   ```bash
-   docker build -t base -f docker/base.Dockerfile .
-   docker run --rm base bun --version
-   ```
-
-2. **Check agent CLI**
-   ```bash
-   docker build -t test-<agent> -f docker/<agent>.Dockerfile .
-   docker run --rm test-<agent> <agent> --version
-   ```
-
-## Project Structure
-
-```
-acp-evals/
-├── agent-schemas/          # ACP headless schemas (public)
-│   ├── claude-code.json
-│   ├── gemini.json
-│   ├── droid.json
-│   ├── codex.json
-│   └── README.md
-│
-├── tools/                  # MCP configs (single source of truth)
-│   ├── mcp-servers.json    # Unified server definitions
-│   ├── schemas/            # Zod schemas per agent
-│   └── README.md
-│
-├── scripts/                # CLI tools (type-safe, testable)
-│   ├── generate-mcp-config.ts
-│   ├── run-pairing.ts
-│   └── compare-results.ts
-│
-├── docker/                 # Container infrastructure
-│   ├── base.Dockerfile
-│   ├── claude-code.Dockerfile
-│   ├── gemini.Dockerfile
-│   ├── droid.Dockerfile
-│   ├── entrypoint.sh
-│   └── docker-compose.yml
-│
-├── data/
-│   ├── prompts/            # Evaluation prompts
-│   │   ├── search-test.jsonl
-│   │   ├── test.jsonl
-│   │   └── full.jsonl
-│   └── results/            # Agent outputs (gitignored)
-│
-├── .claude/skills/playoffs/  # Development assistant skill
-└── .env                      # API keys (gitignored)
-```
+The grader runs inline during evaluation via the `--grader` flag. For detailed grading concepts (validation, calibration, best practices), see the `agent-eval-harness` skill documentation.
 
 ## Development
 
@@ -588,15 +265,96 @@ bun run check:write
 bun test
 ```
 
-### Skills
+### Adding Agents
+
+1. **Create adapter schema** (`agent-schemas/<agent>.json`)
+2. **Create Dockerfile** (`docker/<agent>.Dockerfile`)
+3. **Add Docker Compose service**
+4. **Update TypeScript entrypoint** (`docker/entrypoint`)
+
+See `.claude/skills/playoffs/SKILL.md` for detailed guide.
+
+### Adding MCP Tools
+
+1. **Add to mcp-servers.ts**
+2. **Update docker/entrypoint** (add case to `configureMcp()`)
+3. **Update .env and .env.example**
+4. **Update scripts/run.ts** (add to `McpTool` type)
+5. **Create MCP prompt set**
+
+See `.claude/skills/playoffs/references/mcp-tools.md` for detailed guide.
+
+## Troubleshooting
+
+### MCP Config Issues
+
+```bash
+# Verify API keys
+cat .env | grep API_KEY
+
+# Test inside container
+docker compose run --rm -e MCP_TOOL=you claude-code bash -c "cat ~/.mcp.json"
+```
+
+### Agent Schema Issues
+
+```bash
+# Test adapter compliance
+bunx @plaited/agent-eval-harness adapter:check -- \
+  bunx @plaited/agent-eval-harness headless --schema agent-schemas/<agent>.json
+```
+
+### Docker Build Failures
+
+```bash
+# Check base image
+docker build -t base -f docker/base.Dockerfile .
+docker run --rm base bun --version
+
+# Check agent CLI
+docker build -t test-<agent> -f docker/<agent>.Dockerfile .
+docker run --rm test-<agent> <agent> --version
+```
+
+## Project Structure
+
+```
+acp-evals/
+├── agent-schemas/          # ACP headless schemas
+│   ├── claude-code.json
+│   ├── gemini.json
+│   ├── droid.json
+│   └── codex.json
+│
+├── mcp-servers.ts          # MCP configuration (TypeScript constants)
+│
+├── scripts/                # CLI tools
+│   ├── run.ts              # Automated test runner
+│   ├── compare.ts          # Flexible comparison tool
+│   ├── run-trials.ts       # Pass@k trials wrapper
+│   └── inline-grader.ts    # Hybrid grader
+│
+├── docker/                 # Container infrastructure
+│   ├── base.Dockerfile
+│   ├── {agent}.Dockerfile  # One per agent
+│   ├── entrypoint          # TypeScript entrypoint
+│   └── docker-compose.yml
+│
+├── data/
+│   ├── prompts/            # Evaluation prompts
+│   └── results/            # Agent outputs (gitignored)
+│
+└── .claude/skills/playoffs/  # Development assistant skill
+```
+
+## Skills
 
 This project uses [AgentSkills](https://agentskills.io) for agent-first development:
 
-- **playoffs** (`.claude/skills/playoffs/`) - Development assistant for extending playoffs
-- **acp-adapters** - Schema creation and adapter testing
+- **playoffs** - Development assistant for extending playoffs
 - **agent-eval-harness** - Capture, trials, and analysis commands
 
-See [@AGENTS.md](AGENTS.md) for development rules and conventions.
+See `@AGENTS.md` for development rules and conventions.
 
 ## Built With
 
@@ -604,10 +362,3 @@ See [@AGENTS.md](AGENTS.md) for development rules and conventions.
 - **[Zod](https://zod.dev)** - TypeScript-first schema validation
 - **[Bun](https://bun.sh)** - Fast TypeScript runtime
 - **[Docker](https://www.docker.com)** - Isolated execution
-
-## References
-
-- [Agent Client Protocol](https://agentclientprotocol.com/) - Protocol specification
-- [Model Context Protocol](https://modelcontextprotocol.io/) - MCP specification
-- [AgentSkills Spec](https://agentskills.io) - Agent skill conventions
-- [Factory AI](https://factory.ai/) - Droid's platform

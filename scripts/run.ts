@@ -68,7 +68,7 @@ const detectCurrentMode = async (): Promise<Mode> => {
   }
 
   // Fallback: check for test or full patterns in prompt paths
-  if (content.includes("/eval/data/prompts/${DATASET}.jsonl") || content.includes("prompts/test.jsonl")) {
+  if (content.includes(`/eval/data/prompts/\${DATASET}.jsonl`) || content.includes("prompts/test.jsonl")) {
     return "test";
   }
   if (content.includes("prompts/full.jsonl")) {

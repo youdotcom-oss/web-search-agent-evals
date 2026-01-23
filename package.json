@@ -20,8 +20,8 @@
     "lint:fix": "biome lint --write .",
     "prepare": "git config core.hooksPath .hooks",
     "run": "bun scripts/run.ts",
-    "run:full": "bun run --mode full",
-    "run:test": "bun run --mode test",
+    "run:full": "bun run run --mode full",
+    "run:test": "bun run run --mode test",
     "test": "bun test",
     "trials": "bun scripts/run-trials.ts",
     "trials:capability": "bun scripts/run-trials.ts --type capability",
@@ -30,8 +30,13 @@
     "typecheck": "tsc --noEmit"
   },
   "lint-staged": {
-    "*.{ts,tsx,js,jsx,json,md}": ["biome format --write", "biome lint --write"],
-    "package.json": ["format-package -w"]
+    "*.{ts,tsx,js,jsx,json,md}": [
+      "biome format --write",
+      "biome lint --write"
+    ],
+    "package.json": [
+      "format-package -w"
+    ]
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

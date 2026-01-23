@@ -73,20 +73,43 @@ bun run run:full
 
 ### 4. Analyze Results
 
+Compare results using the flexible CLI tool:
+
 ```bash
-# Compare all 8 result files (weighted strategy)
-bun run compare:all-weighted
+# Default: all agents, test mode, weighted strategy
+bun scripts/compare.ts
 
-# Statistical significance testing
-bun run compare:all-statistical
+# Compare full dataset
+bun scripts/compare.ts --mode full
 
-# Compare specific subsets
-bun run compare:builtin-agents        # Builtin only
-bun run compare:you-agents            # MCP only
+# Filter by agent or MCP mode
+bun scripts/compare.ts --agent gemini --agent claude-code
+bun scripts/compare.ts --mcp builtin
 
-# View results
-cat data/comparison-all-weighted.json | jq '.meta, .quality'
-cat data/comparison-all-weighted.json | jq '.headToHead.pairwise'
+# Use statistical strategy
+bun scripts/compare.ts --strategy statistical
+
+# Combine flags
+bun scripts/compare.ts --mode full --mcp you --strategy statistical
+
+# Preview configuration
+bun scripts/compare.ts --dry-run
+```
+
+Or use npm shortcuts for common test data comparisons:
+
+```bash
+bun run compare:all-weighted        # All agents, both modes
+bun run compare:all-statistical     # Statistical analysis
+bun run compare:builtin-agents      # Builtin only
+bun run compare:you-agents          # MCP only
+```
+
+View results:
+
+```bash
+cat data/comparison-all-weighted-test.json | jq '.meta, .quality'
+cat data/comparison-all-weighted-test.json | jq '.headToHead.pairwise'
 ```
 
 ## Pass@k Analysis
@@ -144,10 +167,11 @@ To add new MCP tools, see `.claude/skills/playoffs/references/mcp-tools.md`.
 | Script | Purpose |
 |--------|---------|
 | `run.ts` | Automated test runner (4 agents × 2 tools in parallel) |
+| `compare.ts` | Flexible comparison tool with mode/agent/strategy flags |
 | `run-trials.ts` | Multi-trial wrapper for pass@k/pass^k analysis |
 | `inline-grader.ts` | Hybrid grader (deterministic + LLM scoring) |
 
-**Comparison** is handled by `@plaited/agent-eval-harness compare` command (see npm scripts in package.json).
+See "Analyze Results" in Quick Start for comparison usage examples.
 
 ### Docker Infrastructure
 
@@ -294,6 +318,7 @@ acp-evals/
 │
 ├── scripts/                # CLI tools
 │   ├── run.ts              # Automated test runner
+│   ├── compare.ts          # Flexible comparison tool
 │   ├── run-trials.ts       # Pass@k trials wrapper
 │   └── inline-grader.ts    # Hybrid grader
 │

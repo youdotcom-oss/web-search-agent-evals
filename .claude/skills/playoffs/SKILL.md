@@ -97,31 +97,37 @@ docker compose build
 
 ### Compare Results
 
-The project includes built-in comparison scripts using weighted and statistical graders:
+Use the flexible CLI tool or npm shortcuts:
 
 ```bash
-# Compare all 8 result files (all agents × both configs)
-bun run compare:all-weighted          # Weighted: quality + latency + reliability
-bun run compare:all-statistical       # Statistical: bootstrap with confidence intervals
+# Flexible CLI tool (recommended)
+bun scripts/compare.ts                     # Default: all agents, test, weighted
+bun scripts/compare.ts --mode full         # Compare full dataset
+bun scripts/compare.ts --agent gemini      # Specific agent
+bun scripts/compare.ts --mcp builtin       # Builtin only
+bun scripts/compare.ts --strategy statistical  # Statistical
 
-# Compare agents on builtin config only
-bun run compare:builtin-agents        # Which agent is best without MCP
+# Quick shortcuts (test data only)
+bun run compare:all-weighted
+bun run compare:all-statistical
+bun run compare:builtin-agents
+bun run compare:you-agents
 
-# Compare agents on You.com MCP config only
-bun run compare:you-agents            # Which agent is best with MCP
-
-# Custom weights (quality=70%, latency=20%, reliability=10%)
-COMPARE_QUALITY=0.7 COMPARE_LATENCY=0.2 COMPARE_RELIABILITY=0.1 \
-  bun run compare:all-weighted
-
-# View comparison results
-cat data/comparison-all-weighted.json | jq '.meta, .quality'
-cat data/comparison-all-weighted.json | jq '.headToHead.pairwise'
+# View results
+cat data/comparison-all-weighted-test.json | jq '.meta, .quality'
+cat data/comparison-all-weighted-test.json | jq '.headToHead.pairwise'
 
 # Analyze individual results
 bunx @plaited/agent-eval-harness summarize \
   data/results/claude-code/builtin-test.jsonl -o summary.jsonl
 ```
+
+**CLI Options:**
+- `--mode test|full` - Dataset to compare (default: test)
+- `--agent <name>` - Filter to specific agents (repeatable)
+- `--mcp builtin|you` - Filter to specific MCP mode
+- `--strategy weighted|statistical` - Comparison strategy (default: weighted)
+- `--dry-run` - Show configuration without executing
 
 **Comparison strategies:**
 - **Weighted**: Balances quality (from inline grader), latency, and reliability

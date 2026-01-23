@@ -102,22 +102,34 @@ The entrypoint automatically selects the correct prompt file based on `MCP_TOOL`
 
 ## Results
 
-Results are written to `data/results/<agent>/<tool>-<dataset>.jsonl`:
+Results are written to `data/results/<agent>/<tool>[-<dataset>].jsonl`:
+
+**Naming convention:**
+- Test mode: `<tool>-test.jsonl` (e.g., `builtin-test.jsonl`)
+- Full mode: `<tool>.jsonl` (e.g., `builtin.jsonl`, no suffix)
 
 ```
 data/results/
 ├── claude-code/
-│   ├── builtin-test.jsonl
-│   └── you-test.jsonl
+│   ├── builtin-test.jsonl    # Test dataset
+│   ├── builtin.jsonl         # Full dataset
+│   ├── you-test.jsonl        # Test dataset
+│   └── you.jsonl             # Full dataset
 ├── gemini/
 │   ├── builtin-test.jsonl
-│   └── you-test.jsonl
+│   ├── builtin.jsonl
+│   ├── you-test.jsonl
+│   └── you.jsonl
 ├── droid/
 │   ├── builtin-test.jsonl
-│   └── you-test.jsonl
+│   ├── builtin.jsonl
+│   ├── you-test.jsonl
+│   └── you.jsonl
 └── codex/
     ├── builtin-test.jsonl
-    └── you-test.jsonl
+    ├── builtin.jsonl
+    ├── you-test.jsonl
+    └── you.jsonl
 ```
 
 Results are committed to git for downstream data science analysis.

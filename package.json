@@ -42,15 +42,18 @@
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "@plaited/agent-eval-harness": "^0.6.0",
-    "zod": "^3.24.1"
+    "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.9.4",
+    "@biomejs/biome": "2.3.12",
+    "@commitlint/cli": "20.3.1",
+    "@commitlint/config-conventional": "20.3.1",
+    "@commitlint/types": "20.3.1",
     "@types/bun": "latest",
-    "@types/node": "^25.0.8",
+    "@types/node": "25.0.10",
     "bun-types": "latest",
-    "format-package": "^7.0.0",
-    "lint-staged": "^15.2.11",
-    "typescript": "^5.9.3"
+    "format-package": "7.0.0",
+    "lint-staged": "16.2.7",
+    "typescript": "5.9.3"
   }
 }

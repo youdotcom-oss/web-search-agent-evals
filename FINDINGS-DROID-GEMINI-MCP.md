@@ -339,6 +339,90 @@ if (
 3. **MCP version detection:** Extract and report MCP server versions
 4. **Unified schema approach:** Standardize extraction field names across all adapters
 
+## Metadata-Driven Detection (v0.6.0+)
+
+As of `@plaited/agent-eval-harness` v0.6.0, MCP detection uses **prompt metadata** instead of hardcoded patterns. This approach is declarative, future-proof, and requires no code changes to support new MCP servers.
+
+### How It Works
+
+Prompt files specify MCP expectations in metadata:
+
+```jsonl
+{
+  "input": "What are the latest web design trends?",
+  "metadata": {
+    "mcp_server": "ydc-server",
+    "expected_tools": ["you-search", "you-express"]
+  }
+}
+```
+
+The harness preserves this metadata through the capture → extract → grade pipeline, and the grader uses it to:
+
+1. **Determine if MCP was expected** (`metadata.mcp_server` present)
+2. **Validate tool usage** (check if any `metadata.expected_tools` were called)
+3. **Report detection results** (in score metadata for analysis)
+
+### Benefits
+
+- **Future-proof**: Add any MCP server without code changes
+- **Declarative**: Intent is clear in prompt files
+- **Testable**: Easy to verify expectations vs. actual behavior
+- **Flexible**: Support multiple MCP servers in same evaluation
+
+### Implementation
+
+**Grader signature:**
+```typescript
+export const grade: Grader = async ({
+  input,
+  output,
+  hint,
+  trajectory,
+  metadata  // ← Now receives metadata from harness
+}) => {
+  const mcpToolCalled = detectMcpFromTrajectory(trajectory, metadata);
+  const expectedMcp = !!metadata?.mcp_server;
+  // ...
+}
+```
+
+**Detection function:**
+```typescript
+const detectMcpFromTrajectory = (
+  trajectory?: Array<{...}>,
+  metadata?: {
+    mcp_server?: string;
+    expected_tools?: string[];
+  }
+): boolean => {
+  if (!trajectory || !metadata?.mcp_server) return false;
+
+  // Check if any expected tool was called
+  return trajectory.some(step => {
+    // Agent-specific pattern matching using metadata expectations
+  });
+}
+```
+
+### Migration from Workaround
+
+Prior to v0.6.0, the grader used a workaround that parsed `mcp-server="..."` from input strings. This has been removed in favor of the metadata-driven approach:
+
+```typescript
+// ❌ OLD: Input parsing workaround (removed)
+const mcpServerMatch = inputStr.match(/mcp-server="([^"]+)"/);
+const fallbackMetadata = mcpServerMatch ? {...} : undefined;
+
+// ✅ NEW: Use harness-provided metadata
+const mcpToolCalled = detectMcpFromTrajectory(trajectory, metadata);
+```
+
+### Related Issues
+
+- [plaited/agent-eval-harness#32](https://github.com/plaited/agent-eval-harness/issues/32) - Add metadata parameter to Grader type (✅ resolved in v0.6.0)
+- [plaited/agent-eval-harness#31](https://github.com/plaited/agent-eval-harness/issues/31) - MCP detection support (✅ resolved)
+
 ## Related Documentation
 
 - **FINDINGS-MCP-RAW-OUTPUT.md** - Original Claude Code/Codex investigation

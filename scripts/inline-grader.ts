@@ -34,57 +34,48 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
  * Detect MCP tool usage from agent trajectory
  *
  * @remarks
- * Detects Model Context Protocol (MCP) tool usage by checking explicit indicators
- * extracted from raw CLI output by adapter schemas. Each agent platform has a unique
- * MCP signature pattern that reliably distinguishes MCP tools from builtin tools.
+ * Detects Model Context Protocol (MCP) tool usage by checking if tools from the expected
+ * MCP server were called during execution. Uses metadata-driven detection to support any
+ * MCP server and tool combination.
+ *
+ * ## Metadata-Driven Detection
+ *
+ * The function requires prompt metadata specifying:
+ * - `mcp_server`: The MCP server name (e.g., "ydc-server")
+ * - `expected_tools`: List of acceptable MCP tools (e.g., ["you-search", "you-express"])
  *
  * ## Detection Patterns by Agent
  *
  * ### Claude Code
  * **Pattern**: Tool names with `mcp__<server>__<tool>` format
  * - **Example**: `mcp__ydc-server__you-search`
- * - **How it works**: Claude Code prefixes all MCP tool names with the server name
- * - **Schema field**: `name` or `toolName`
- * - **Detection**: Check if tool name starts with `mcp__`
+ * - **Detection**: Extract server from tool name, verify it matches expected server
  *
  * ### Codex
  * **Pattern**: Explicit `mcpServer` field in trajectory steps
- * - **Example**: `{type: "tool_call", mcpServer: "ydc-server", toolName: "you-search"}`
- * - **How it works**: Codex uses dedicated `mcp_tool_call` event type with separate server field
- * - **Schema field**: `mcpServer`
- * - **Detection**: Check if `mcpServer` field exists
+ * - **Example**: `{mcpServer: "ydc-server", toolName: "you-search"}`
+ * - **Detection**: Check if `mcpServer` matches expected server
  *
  * ### DROID
  * **Pattern**: Tool names with `<server>___<tool>` format (triple underscore)
  * - **Example**: `ydc-server___you-search`
- * - **How it works**: DROID concatenates server and tool names with triple underscore separator
- * - **Schema field**: `name`
- * - **Detection**: Check if tool name contains `___` (excluding Claude tool IDs like `toolu_`)
- * - **False positives avoided**: `toolu_01ABC...` (Claude's internal IDs use single underscore)
+ * - **Detection**: Extract server from tool name, verify it matches expected server
  *
  * ### GEMINI
- * **Pattern**: Specific MCP tool names vs builtin tool names
- * - **MCP example**: `you-search` or `you-search-1769145251964-7bebc5cb4e7ed8`
- * - **Builtin example**: `google_web_search` or `google_web_search-<timestamp>-<id>`
- * - **How it works**: GEMINI uses different tool names for MCP vs builtin implementations
- * - **Schema field**: `name`
- * - **Detection**: Check if tool name is `you-search` or starts with `you-search-`
- * - **Note**: Message content with `<web-search mcp-server="...">` is the INPUT prompt, not a trajectory indicator
+ * **Pattern**: Tool names match expected tools list
+ * - **Example**: `you-search` or `you-search-<timestamp>-<id>`
+ * - **Detection**: Check if tool name (base or timestamped) is in expected_tools list
  *
- * ## Why This Approach Works
+ * ## Benefits
  *
- * 1. **No heuristics**: Uses explicit indicators from agent output, not content analysis
- * 2. **Reliable**: These patterns are part of each agent's MCP implementation
- * 3. **Fast**: Simple string checks, no complex parsing or LLM calls
- * 4. **Maintainable**: Each agent pattern is independent and well-documented
- *
- * ## Investigation References
- *
- * - **Claude Code/Codex**: See FINDINGS-MCP-RAW-OUTPUT.md for raw CLI output analysis
- * - **DROID/GEMINI**: See FINDINGS-DROID-GEMINI-MCP.md for trajectory analysis
+ * 1. **Future-proof**: Add any MCP server by updating prompt metadata
+ * 2. **No hardcoding**: No agent-specific tool name patterns
+ * 3. **Explicit**: Clear intent in prompt files
+ * 4. **Testable**: Easy to verify detection against expected tools
  *
  * @param trajectory - Agent execution trajectory with tool calls and messages
- * @returns `true` if any MCP tool usage detected, `false` otherwise
+ * @param metadata - Prompt metadata containing `mcp_server` and `expected_tools`
+ * @returns `true` if any expected MCP tool was used, `false` otherwise
  *
  * @public
  */
@@ -96,42 +87,48 @@ const detectMcpFromTrajectory = (
     name?: string;
     title?: string;
     content?: string;
-  }>
+  }>,
+  metadata?: {
+    mcp_server?: string;
+    expected_tools?: string[];
+  }
 ): boolean => {
-  if (!trajectory) return false;
+  // No MCP expected if metadata doesn't specify server
+  if (!trajectory || !metadata?.mcp_server) return false;
+
+  const expectedServer = metadata.mcp_server;
+  const expectedTools = metadata.expected_tools || [];
 
   return trajectory.some((step) => {
+    if (step.type !== "tool_call") return false;
+
     // Get tool identifier from various possible field names
-    // Different schemas extract to different fields (name, toolName, title)
     const toolIdentifier = step.name || step.toolName || step.title || "";
 
-    // Claude Code: tool names with mcp__<server>__<tool> pattern
-    // Example: mcp__ydc-server__you-search
-    if (toolIdentifier.startsWith("mcp__")) return true;
-
-    // Codex: explicit mcpServer field from mcp_tool_call events
-    // Example: {mcpServer: "ydc-server", toolName: "you-search"}
-    if (step.mcpServer) return true;
-
-    // DROID: tool names with <server>___<tool> pattern (triple underscore)
-    // Example: ydc-server___you-search
-    // Exclude Claude's internal tool IDs (toolu_01ABC...) which use single underscore
-    if (
-      step.type === "tool_call" &&
-      toolIdentifier.includes("___") &&
-      !toolIdentifier.startsWith("toolu_")
-    ) {
-      return true;
+    // Claude Code: extract server from mcp__<server>__<tool>
+    if (toolIdentifier.startsWith("mcp__")) {
+      const parts = toolIdentifier.split("__");
+      return parts[1] === expectedServer;
     }
 
-    // GEMINI: MCP tool name vs builtin tool name
-    // MCP: you-search or you-search-<timestamp>-<id>
-    // Builtin: google_web_search or google_web_search-<timestamp>-<id>
-    if (
-      step.type === "tool_call" &&
-      (toolIdentifier === "you-search" || toolIdentifier.startsWith("you-search-"))
-    ) {
-      return true;
+    // Codex: check mcpServer field directly
+    if (step.mcpServer) {
+      return step.mcpServer === expectedServer;
+    }
+
+    // DROID: extract server from <server>___<tool>
+    // Exclude false positives like Claude's tool IDs (toolu_)
+    if (toolIdentifier.includes("___") && !toolIdentifier.startsWith("toolu_")) {
+      const server = toolIdentifier.split("___")[0];
+      return server === expectedServer;
+    }
+
+    // GEMINI: check if tool name matches any expected tool
+    // Handle both base names and timestamped variants (you-search-123...)
+    for (const expectedTool of expectedTools) {
+      if (toolIdentifier === expectedTool || toolIdentifier.startsWith(`${expectedTool}-`)) {
+        return true;
+      }
     }
 
     return false;
@@ -312,7 +309,7 @@ Return ONLY valid JSON with this structure:
  *
  * @returns Grading result with pass/fail, normalized score (0-1), reasoning, and metadata
  */
-export const grade: Grader = async ({ input, output, hint, trajectory }) => {
+export const grade: Grader = async ({ input, output, hint, trajectory, metadata }) => {
   // Normalize input to string
   const inputStr = Array.isArray(input) ? input.join(" ") : input;
 
@@ -329,17 +326,18 @@ export const grade: Grader = async ({ input, output, hint, trajectory }) => {
         : "Tool execution failed with errors",
       metadata: {
         mcpToolCalled: false,
+        expectedMcp: !!metadata?.mcp_server,
         hasErrors,
         hasTimeout,
       },
     };
   }
 
-  // Detect MCP usage from trajectory (authoritative method)
-  const mcpToolCalled = detectMcpFromTrajectory(trajectory);
+  // Detect MCP usage from trajectory using metadata
+  const mcpToolCalled = detectMcpFromTrajectory(trajectory, metadata);
 
-  // Determine if MCP was expected from the input prompt
-  const expectedMcp = inputStr.startsWith("<web-search mcp-server=");
+  // Determine if MCP was expected from metadata
+  const expectedMcp = !!metadata?.mcp_server;
 
   // Hybrid quality assessment (deterministic 60% + LLM 40%)
   const quality = await assessQuality({

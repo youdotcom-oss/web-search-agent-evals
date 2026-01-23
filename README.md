@@ -16,7 +16,7 @@ The **playoffs** system runs a matrix evaluation: 4 agents × 2 tools = 8 pairin
 
 ```mermaid
 flowchart TD
-    Env[MCP_TOOL env var] --> Entrypoint[docker/entrypoint.sh]
+    Env[MCP_TOOL & DATASET env vars] --> Entrypoint[docker/entrypoint]
     Entrypoint -->|builtin| SkipMCP[Skip MCP setup]
     Entrypoint -->|you/exa/etc| ConfigMCP[CLI: agent mcp add...]
 
@@ -105,33 +105,22 @@ bun run run
 **Run automated script:**
 
 ```bash
-# Interactive script with progress tracking
-./run-full-workflow.sh
+# Run all agents with full dataset (uses DATASET=full env var)
+bun run run:full
 
-# This will:
-# 1. Verify docker-compose.yml uses full prompts
-# 2. Run all 8 evaluations sequentially
-# 3. Track elapsed time
-# 4. Optionally commit results to new branch
+# Or run specific MCP mode only
+bun run run:full -- --mcp builtin
+bun run run:full -- --mcp you
 ```
 
-**Or run individual pairings:**
+**Or run individual agents:**
 
 ```bash
-# Update entrypoint.sh to use full prompts first
-sed -i.bak 's|test.jsonl|full.jsonl|g' docker/entrypoint.sh
-sed -i.bak 's|test-mcp.jsonl|full-mcp.jsonl|g' docker/entrypoint.sh
-
-# Rebuild images with updated entrypoint
-docker compose build
-
-# Run specific agent+tool
-docker compose run --rm -e MCP_TOOL=builtin claude-code
-docker compose run --rm -e MCP_TOOL=you gemini
-
-# Restore test prompts
-mv docker/entrypoint.sh.bak docker/entrypoint.sh
-docker compose build
+# Use DATASET=full environment variable
+docker compose run --rm -e MCP_TOOL=builtin -e DATASET=full claude-code
+docker compose run --rm -e MCP_TOOL=you -e DATASET=full gemini
+docker compose run --rm -e MCP_TOOL=builtin -e DATASET=full droid
+docker compose run --rm -e MCP_TOOL=you -e DATASET=full codex
 ```
 
 ### 4. Analyze Results
@@ -175,69 +164,45 @@ The project includes two prompt sets:
 **Single agent+tool pairing:**
 ```bash
 # Test with builtin search
-docker compose run --rm claude-code-builtin
+docker compose run --rm -e MCP_TOOL=builtin claude-code
 
 # Test with MCP search
-docker compose run --rm claude-code-you
+docker compose run --rm -e MCP_TOOL=you claude-code
 ```
 
-**All agents (using workflow script):**
+**All agents (using automated script):**
 ```bash
-./run-full-workflow.sh
+bun run run
 ```
 
 ### Running Full Evaluations
 
 Full evaluations run 1,254 prompts per agent. This takes significant time and API quota.
 
-**Step 1: Switch to full prompts**
+**Use the automated script:**
 
-Edit `docker-compose.yml` and update the volume mounts:
-
-```yaml
-# For builtin services, change FROM:
-volumes:
-  - ./data/prompts/test.jsonl:/eval/data/prompts/test.jsonl:ro
-
-# Change TO:
-volumes:
-  - ./data/prompts/full.jsonl:/eval/data/prompts/test.jsonl:ro
-
-# For MCP services, change FROM:
-volumes:
-  - ./data/prompts/test-mcp.jsonl:/eval/data/prompts/test.jsonl:ro
-
-# Change TO:
-volumes:
-  - ./data/prompts/full-mcp.jsonl:/eval/data/prompts/test.jsonl:ro
-```
-
-**Why this approach:** The container always reads from `/eval/data/prompts/test.jsonl`, but you control which host file gets mounted to that path. This avoids changing command arguments.
-
-**Quick switch using sed:**
 ```bash
-# Switch to full prompts
-sed -i.bak 's|/test\.jsonl:|/full.jsonl:|g' docker-compose.yml
-sed -i.bak 's|/test-mcp\.jsonl:|/full-mcp.jsonl:|g' docker-compose.yml
+# Run all agents with full dataset
+bun run run:full
 
-# Verify changes
-grep "prompts/" docker-compose.yml
+# Or run specific MCP mode only
+bun run run:full -- --mcp builtin
+bun run run:full -- --mcp you
 ```
 
-**Step 2: Run workflow**
+**Or run individual agents manually:**
+
 ```bash
-./run-full-workflow.sh
+# Use DATASET=full environment variable
+docker compose run --rm -e MCP_TOOL=builtin -e DATASET=full claude-code
+docker compose run --rm -e MCP_TOOL=you -e DATASET=full gemini
+docker compose run --rm -e MCP_TOOL=builtin -e DATASET=full droid
+docker compose run --rm -e MCP_TOOL=you -e DATASET=full codex
 ```
 
-**Step 3: Restore test prompts when done**
-```bash
-# Restore from backup
-mv docker-compose.yml.bak docker-compose.yml
-
-# Or switch back manually
-sed -i.bak 's|/full\.jsonl:|/test.jsonl:|g' docker-compose.yml
-sed -i.bak 's|/full-mcp\.jsonl:|/test-mcp.jsonl:|g' docker-compose.yml
-```
+**How it works:** The `DATASET` environment variable (default: `test`) controls which prompt file is used. The entrypoint script automatically selects:
+- `DATASET=test` → `test.jsonl` / `test-mcp.jsonl` (5 prompts)
+- `DATASET=full` → `full.jsonl` / `full-mcp.jsonl` (1,254 prompts)
 
 ### Comparing Results
 
@@ -535,14 +500,14 @@ cat /tmp/test/.gemini/settings.json
 
 ```bash
 # Build all images
-docker compose build
+bun run build
 
-# Run specific pairing
-docker compose run --rm claude-code-builtin
-docker compose run --rm gemini-you
+# Run specific agent+tool combination
+docker compose run --rm -e MCP_TOOL=builtin claude-code
+docker compose run --rm -e MCP_TOOL=you gemini
 
 # Debug: Shell into container
-docker compose run --rm claude-code-builtin bash
+docker compose run --rm -e MCP_TOOL=builtin claude-code bash
 ```
 
 ### Analyze Results
@@ -565,17 +530,18 @@ cat data/results/gemini/you.jsonl | jq 'select(.toolErrors == true)'
 
 **Test workflow (5 prompts, ~5 minutes):**
 ```bash
-# Run all agents sequentially
-docker compose run --rm claude-code-builtin
-docker compose run --rm gemini-builtin
-docker compose run --rm droid-builtin
-docker compose run --rm codex-builtin
+# Run all agents in parallel
+bun run run
+
+# Or run specific agent with both MCP modes
+docker compose run --rm -e MCP_TOOL=builtin claude-code
+docker compose run --rm -e MCP_TOOL=you claude-code
 ```
 
 **Full workflow (1,254 prompts, 4-24 hours):**
 ```bash
 # Run automated script (handles everything)
-./run-full-workflow.sh
+bun run run:full
 ```
 
 **Timing:**
@@ -757,7 +723,7 @@ See `.claude/skills/playoffs/references/mcp-tools.md` for detailed guide.
 
 3. **Test inside container**
    ```bash
-   docker compose run --rm <agent>-<tool> bash -c "cat /workspace/.mcp.json"
+   docker compose run --rm -e MCP_TOOL=you <agent> bash -c "cat /workspace/.mcp.json"
    ```
 
 ### Agent Schema Issues
@@ -799,30 +765,31 @@ acp-evals/
 │   ├── codex.json
 │   └── README.md
 │
-├── tools/                  # MCP configs (single source of truth)
-│   ├── mcp-servers.json    # Unified server definitions
-│   ├── schemas/            # Zod schemas per agent
-│   └── README.md
+├── tools/                  # MCP configuration
+│   └── mcp-servers.ts      # TypeScript constants (single source)
 │
 ├── scripts/                # CLI tools (type-safe, testable)
-│   ├── generate-mcp-config.ts
-│   ├── run-pairing.ts
-│   └── compare-results.ts
+│   ├── run.ts              # Automated test runner
+│   ├── compare.ts          # Results comparison
+│   ├── inline-grader.ts    # Hybrid grader with LLM scoring
+│   └── comparison-grader.ts # Comparison grader for A/B testing
 │
 ├── docker/                 # Container infrastructure
 │   ├── base.Dockerfile
 │   ├── claude-code.Dockerfile
 │   ├── gemini.Dockerfile
 │   ├── droid.Dockerfile
-│   ├── entrypoint.sh
-│   └── docker-compose.yml
+│   ├── codex.Dockerfile
+│   ├── entrypoint          # TypeScript entrypoint (Bun shell)
+│   └── docker-compose.yml  # 4 services (one per agent)
 │
 ├── data/
 │   ├── prompts/            # Evaluation prompts
-│   │   ├── search-test.jsonl
-│   │   ├── test.jsonl
-│   │   └── full.jsonl
-│   └── results/            # Agent outputs (gitignored)
+│   │   ├── test.jsonl              # 5 builtin prompts
+│   │   ├── test-mcp.jsonl          # 5 MCP prompts
+│   │   ├── full.jsonl              # 1,254 builtin prompts
+│   │   └── full-mcp.jsonl          # 1,254 MCP prompts
+│   └── results/            # Agent outputs (committed for analysis)
 │
 ├── .claude/skills/playoffs/  # Development assistant skill
 └── .env                      # API keys (gitignored)

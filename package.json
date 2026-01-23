@@ -11,9 +11,11 @@
     "generate-mcp": "bun scripts/generate-mcp-config.ts",
     "lint": "biome lint .",
     "lint:fix": "biome lint --write .",
-    "playoffs": "docker compose up --build",
+    "build": "docker compose build",
     "prepare": "git config core.hooksPath .hooks",
     "run": "bun scripts/run.ts",
+    "run:full": "bun scripts/run.ts --mode full",
+    "run:test": "bun scripts/run.ts --mode test",
     "test": "bun test",
     "typecheck": "tsc --noEmit",
     "validate": "bun scripts/validate-setup.ts"

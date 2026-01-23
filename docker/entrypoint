@@ -25,6 +25,7 @@ import type { McpServerKey } from "/eval/mcp-servers.ts";
 
 const AGENT = process.env.AGENT;
 const MCP_TOOL = (process.env.MCP_TOOL || "builtin") as McpServerKey | "builtin";
+const DATASET = process.env.DATASET || "test"; // test | full
 
 /**
  * Configure Codex CLI with API key
@@ -119,7 +120,7 @@ bearer_token_env_var = "${server.auth?.envVar}"
  *
  * @remarks
  * Derives:
- * - Prompt file based on MCP_TOOL (test.jsonl vs test-mcp.jsonl)
+ * - Prompt file based on DATASET and MCP_TOOL (e.g., test.jsonl, full-mcp.jsonl)
  * - Schema file (always base schema, no -mcp suffix)
  * - Output file (includes MCP_TOOL in filename)
  * - Grader flag (only for non-builtin modes)
@@ -132,14 +133,17 @@ const buildCaptureCommand = (): string[] => {
     throw new Error("AGENT environment variable is required");
   }
 
-  // Derive prompt file based on MCP mode
-  const promptFile = MCP_TOOL === "builtin" ? "/eval/data/prompts/test.jsonl" : "/eval/data/prompts/test-mcp.jsonl";
+  // Derive prompt file based on DATASET and MCP mode
+  const promptFile = MCP_TOOL === "builtin"
+    ? `/eval/data/prompts/${DATASET}.jsonl`
+    : `/eval/data/prompts/${DATASET}-mcp.jsonl`;
 
   // Schema file: Always use base schema (no -mcp suffix)
   const schemaFile = `/eval/agent-schemas/${AGENT}.json`;
 
-  // Output file
-  const outputFile = `/eval/data/results/${AGENT}/${MCP_TOOL}-test.jsonl`;
+  // Output file (include DATASET suffix if not "test")
+  const datasetSuffix = DATASET === "test" ? "-test" : "";
+  const outputFile = `/eval/data/results/${AGENT}/${MCP_TOOL}${datasetSuffix}.jsonl`;
 
   // Build command array
   const cmd = ["bunx", "@plaited/agent-eval-harness", "capture", promptFile, "--schema", schemaFile];

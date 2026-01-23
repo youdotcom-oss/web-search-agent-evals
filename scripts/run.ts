@@ -58,43 +58,39 @@ const parseArgs = (args: string[]): RunOptions => {
 };
 
 const detectCurrentMode = async (): Promise<Mode> => {
-  // Check TypeScript entrypoint since docker-compose.yml no longer has hardcoded paths
+  // Check TypeScript entrypoint for DATASET variable default
   const entrypointFile = join(process.cwd(), "docker", "entrypoint");
   const content = await readFile(entrypointFile, "utf-8");
 
-  if (content.includes("/eval/data/prompts/test.jsonl")) {
+  const datasetMatch = content.match(/const DATASET = process\.env\.DATASET \|\| "(\w+)"/);
+  if (datasetMatch && datasetMatch[1]) {
+    return datasetMatch[1] as Mode;
+  }
+
+  // Fallback: check for test or full patterns in prompt paths
+  if (content.includes("/eval/data/prompts/${DATASET}.jsonl") || content.includes("prompts/test.jsonl")) {
     return "test";
   }
-  if (content.includes("/eval/data/prompts/full.jsonl")) {
+  if (content.includes("prompts/full.jsonl")) {
     return "full";
   }
   throw new Error("Could not detect current mode from docker/entrypoint");
 };
 
-const toggleMode = async (mode: Mode): Promise<void> => {
-  console.log(`Toggling to ${mode} mode first...\n`);
-
-  return new Promise((resolve, reject) => {
-    const toggleProcess = spawn("bun", ["scripts/toggle-prompts.ts", "--mode", mode], {
-      stdio: "inherit",
-    });
-
-    toggleProcess.on("close", (code) => {
-      if (code === 0) {
-        console.log("");
-        resolve();
-      } else {
-        reject(new Error(`Toggle failed with exit code ${code}`));
-      }
-    });
-  });
-};
-
-const runService = (agent: Agent, mcpTool: McpTool): Promise<number> => {
+const runService = (agent: Agent, mcpTool: McpTool, dataset: Mode): Promise<number> => {
   return new Promise((resolve) => {
-    console.log(`Starting: ${agent} (${mcpTool})`);
+    console.log(`Starting: ${agent} (${mcpTool}, ${dataset})`);
 
-    const proc = spawn("docker", ["compose", "run", "--rm", "-e", `MCP_TOOL=${mcpTool}`, agent], {
+    const proc = spawn("docker", [
+      "compose",
+      "run",
+      "--rm",
+      "-e",
+      `MCP_TOOL=${mcpTool}`,
+      "-e",
+      `DATASET=${dataset}`,
+      agent,
+    ], {
       stdio: "inherit",
     });
 
@@ -119,17 +115,8 @@ const main = async () => {
       console.log("[DRY RUN] Validation mode - no docker commands will run\n");
     }
 
-    // Check if mode override is requested
-    if (options.mode) {
-      if (options.dryRun) {
-        console.log(`[DRY RUN] Would toggle to ${options.mode} mode\n`);
-      } else {
-        await toggleMode(options.mode);
-      }
-    }
-
-    // Detect current mode
-    const currentMode = await detectCurrentMode();
+    // Determine dataset mode (use override if provided, otherwise detect from entrypoint default)
+    const currentMode = options.mode || (await detectCurrentMode());
 
     console.log(`${options.dryRun ? "[DRY RUN] " : ""}Running in ${currentMode} mode`);
     console.log(`Agents: ${options.agents.join(", ")}`);
@@ -153,14 +140,14 @@ const main = async () => {
     if (options.dryRun) {
       console.log("[DRY RUN] Execution plan:");
       for (const { agent, mcpTool } of runs) {
-        console.log(`  - docker compose run --rm -e MCP_TOOL=${mcpTool} ${agent}`);
+        console.log(`  - docker compose run --rm -e MCP_TOOL=${mcpTool} -e DATASET=${currentMode} ${agent}`);
       }
       console.log("\n[DRY RUN] No services were executed.");
       process.exit(0);
     }
 
     // Run all scenarios in parallel
-    const results = await Promise.all(runs.map(({ agent, mcpTool }) => runService(agent, mcpTool)));
+    const results = await Promise.all(runs.map(({ agent, mcpTool }) => runService(agent, mcpTool, currentMode)));
 
     // Report results
     console.log(`\n${"=".repeat(80)}`);

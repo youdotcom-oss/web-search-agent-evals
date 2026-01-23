@@ -150,14 +150,16 @@ bunx @plaited/agent-eval-harness summarize \
 
 ### Convert Prompts to MCP Format
 
-Create new MCP prompt sets from existing prompts:
+Create new MCP prompt sets by modifying the `<web-search>` tags:
 
 ```bash
-# Convert any prompts to MCP format
-bun scripts/convert-to-mcp-format.ts -i custom.jsonl -o custom-mcp.jsonl
+# Manually edit or use sed to add MCP server attribute
+sed 's/<web-search>/<web-search mcp-server="ydc-server">/g' \
+  custom.jsonl > custom-mcp.jsonl
 
-# Example: Convert new test prompts
-bun scripts/convert-to-mcp-format.ts -i data/prompts/test.jsonl -o data/prompts/test-mcp-new.jsonl
+# For different MCP server
+sed 's/<web-search>/<web-search mcp-server="exa-server">/g' \
+  test.jsonl > test-exa.jsonl
 ```
 
 ### Create Custom Prompts
@@ -295,4 +297,3 @@ jobs:
 ## Skills Reference
 
 - **@.claude/skills/playoffs** - Development assistant for running and extending playoffs
-- **@scripts/convert-to-mcp-format.ts** - Convert prompts to MCP format

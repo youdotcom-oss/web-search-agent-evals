@@ -215,8 +215,10 @@ See [references/agent-schemas.md](references/agent-schemas.md) for detailed agen
    - Add `"exa"` to `McpTool` type union
 
 5. **Create MCP prompt set**
+   - Copy existing MCP prompts and update server name:
    ```bash
-   bun scripts/convert-to-mcp-format.ts -i test.jsonl -o test-exa.jsonl
+   sed 's/mcp-server="ydc-server"/mcp-server="exa-server"/g' \
+     data/prompts/test-mcp.jsonl > data/prompts/test-exa.jsonl
    ```
 
 6. **Test**

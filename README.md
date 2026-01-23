@@ -730,8 +730,10 @@ See `.claude/skills/playoffs/SKILL.md` for detailed scaffolding guide.
    - Add `"exa"` to `McpTool` type union
 
 5. **Create MCP prompt set**
+   - Copy existing MCP prompts and update server name:
    ```bash
-   bun scripts/convert-to-mcp-format.ts -i test.jsonl -o test-exa.jsonl
+   sed 's/mcp-server="ydc-server"/mcp-server="exa-server"/g' \
+     data/prompts/test-mcp.jsonl > data/prompts/test-exa.jsonl
    ```
 
 See `.claude/skills/playoffs/references/mcp-tools.md` for detailed guide.

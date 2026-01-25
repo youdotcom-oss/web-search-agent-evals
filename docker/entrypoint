@@ -12,7 +12,7 @@ import type { McpServerKey } from "/eval/mcp-servers.ts";
  *
  * **Environment variables:**
  * - `AGENT` - Agent name (claude-code, gemini, droid, codex)
- * - `MCP_TOOL` - MCP tool to use (builtin, you, exa, etc.) or "builtin" for no MCP
+ * - `SEARCH_PROVIDER` - Search provider to use (builtin, you, exa, etc.) or "builtin" for no MCP
  * - `YOU_API_KEY` - API key for You.com MCP server
  * - `OPENAI_API_KEY` - API key for Codex agent
  *
@@ -24,7 +24,7 @@ import type { McpServerKey } from "/eval/mcp-servers.ts";
  */
 
 const AGENT = process.env.AGENT;
-const MCP_TOOL = (process.env.MCP_TOOL || "builtin") as McpServerKey | "builtin";
+const SEARCH_PROVIDER = (process.env.SEARCH_PROVIDER || "builtin") as McpServerKey | "builtin";
 const DATASET = process.env.DATASET || "test"; // test | full
 
 /**
@@ -120,30 +120,41 @@ bearer_token_env_var = "${server.auth?.envVar}"
  *
  * @remarks
  * Derives:
- * - Prompt file based on DATASET and MCP_TOOL (e.g., test.jsonl, full-mcp.jsonl)
+ * - Prompt file based on DATASET and SEARCH_PROVIDER (e.g., test.jsonl, full-mcp.jsonl)
  * - Schema file (always base schema, no -mcp suffix)
- * - Output file (includes MCP_TOOL in filename)
+ * - Output file (versioned: test-runs/ or runs/YYYY-MM-DD/)
  * - Grader flag (only for non-builtin modes)
  * - Timeout flag (agent-specific: claude-code 90s, codex 180s)
  *
  * @returns Command arguments array
  */
-const buildCaptureCommand = (): string[] => {
+const buildCaptureCommand = async (): Promise<string[]> => {
   if (!AGENT) {
     throw new Error("AGENT environment variable is required");
   }
 
-  // Derive prompt file based on DATASET and MCP mode
-  const promptFile = MCP_TOOL === "builtin"
+  // Derive prompt file based on DATASET and search provider mode
+  const promptFile = SEARCH_PROVIDER === "builtin"
     ? `/eval/data/prompts/${DATASET}.jsonl`
     : `/eval/data/prompts/${DATASET}-mcp.jsonl`;
 
   // Schema file: Always use base schema (no -mcp suffix)
   const schemaFile = `/eval/agent-schemas/${AGENT}.json`;
 
-  // Output file (include DATASET suffix if not "test")
-  const datasetSuffix = DATASET === "test" ? "-test" : "";
-  const outputFile = `/eval/data/results/${AGENT}/${MCP_TOOL}${datasetSuffix}.jsonl`;
+  // Output file path based on dataset mode
+  let outputFile: string;
+  if (DATASET === "test") {
+    // Test results: test-runs directory
+    const outputDir = `/eval/data/results/test-runs/${AGENT}`;
+    await $`mkdir -p ${outputDir}`.quiet();
+    outputFile = `${outputDir}/${SEARCH_PROVIDER}.jsonl`;
+  } else {
+    // Full results: dated directory (use current date)
+    const runDate = new Date().toISOString().split('T')[0];
+    const outputDir = `/eval/data/results/runs/${runDate}/${AGENT}`;
+    await $`mkdir -p ${outputDir}`.quiet();
+    outputFile = `${outputDir}/${SEARCH_PROVIDER}.jsonl`;
+  }
 
   // Build command array
   const cmd = ["bunx", "@plaited/agent-eval-harness", "capture", promptFile, "--schema", schemaFile];
@@ -173,7 +184,7 @@ const buildCaptureCommand = (): string[] => {
  *
  * @remarks
  * 1. Configure Codex if needed
- * 2. Configure MCP if MCP_TOOL is set and not "builtin"
+ * 2. Configure MCP if SEARCH_PROVIDER is set and not "builtin"
  * 3. If args provided: execute them directly
  * 4. If no args: build and execute capture command
  */
@@ -182,8 +193,8 @@ const main = async (): Promise<void> => {
   await configureCodex();
 
   // Configure MCP if needed
-  if (MCP_TOOL !== "builtin" && AGENT) {
-    await configureMcp(AGENT, MCP_TOOL as McpServerKey);
+  if (SEARCH_PROVIDER !== "builtin" && AGENT) {
+    await configureMcp(AGENT, SEARCH_PROVIDER as McpServerKey);
   }
 
   // If arguments provided, execute them directly
@@ -194,12 +205,12 @@ const main = async (): Promise<void> => {
   }
 
   // Build and execute capture command
-  const cmd = buildCaptureCommand();
+  const cmd = await buildCaptureCommand();
 
   console.log("Running: bunx @plaited/agent-eval-harness capture", cmd[3]);
   console.log(`  Schema: ${cmd[5]}`);
   console.log(`  Output: ${cmd[cmd.length - 2]}`);
-  console.log(`  Mode: ${MCP_TOOL}`);
+  console.log(`  Search Provider: ${SEARCH_PROVIDER}`);
   console.log("");
   console.log("Executing command:");
   cmd.forEach((arg) => console.log(`  ${arg}`));

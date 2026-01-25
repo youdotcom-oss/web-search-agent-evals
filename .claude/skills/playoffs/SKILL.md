@@ -44,23 +44,26 @@ docker compose run --rm -e MCP_TOOL=builtin -e DATASET=full droid
 
 ### Compare Results
 
+Comparisons are versioned alongside the results they analyze.
+
+**Test mode:** Outputs to `data/comparisons/test-runs/`
+**Full mode:** Outputs to `data/comparisons/runs/YYYY-MM-DD/`
+
 ```bash
 # Flexible CLI tool (recommended)
 bun scripts/compare.ts                          # All agents, test, weighted
-bun scripts/compare.ts --mode full              # Full dataset
-bun scripts/compare.ts --agent gemini           # Filter by agent
-bun scripts/compare.ts --mcp builtin            # Filter by MCP mode
-bun scripts/compare.ts --strategy statistical   # Statistical analysis
+bun scripts/compare.ts --mode full              # Latest full run
+bun scripts/compare.ts --mode full --run-date 2026-01-24  # Specific run
 
 # Quick shortcuts (test data only)
-bun run compare:all-weighted
-bun run compare:all-statistical
-bun run compare:builtin-agents
-bun run compare:you-agents
+bun run compare:all-weighted        # → test-runs/all-weighted.json
+bun run compare:all-statistical     # → test-runs/all-statistical.json
+bun run compare:builtin-agents      # → test-runs/builtin-weighted.json
+bun run compare:you-agents          # → test-runs/you-weighted.json
 
 # View results
-cat data/comparison-all-weighted-test.json | jq '.meta, .quality'
-cat data/comparison-all-weighted-test.json | jq '.headToHead.pairwise'
+cat data/comparisons/test-runs/all-weighted.json | jq '.meta, .quality'
+cat data/comparisons/runs/2026-01-24/all-weighted.json | jq '.headToHead.pairwise'
 ```
 
 **Comparison strategies:**
@@ -102,37 +105,34 @@ The entrypoint automatically selects the correct prompt file based on `MCP_TOOL`
 
 ## Results
 
-Results are written to `data/results/<agent>/<tool>[-<dataset>].jsonl`:
+### Test Results (Rapid Iteration)
+Written to `data/results/test-runs/<agent>/<searchProvider>.jsonl` for quick development cycles. Not versioned.
 
-**Naming convention:**
-- Test mode: `<tool>-test.jsonl` (e.g., `builtin-test.jsonl`)
-- Full mode: `<tool>.jsonl` (e.g., `builtin.jsonl`, no suffix)
+### Full Run Results (Historical Archive)
+Stored in dated directories: `data/results/runs/YYYY-MM-DD/<agent>/<searchProvider>.jsonl`
 
+**Latest run pointer:** `data/results/latest.json` points to most recent full run.
+
+**Versioning workflow:**
+1. Run full evaluation: `bun run run:full`
+2. Finalize run metadata: `bun run finalize-run`
+3. Commit results: `git add data/results/ && git commit -m "feat: full evaluation run YYYY-MM-DD"`
+
+**Directory structure:**
+- Test mode: `test-runs/<agent>/<searchProvider>.jsonl`
+- Full mode: `runs/YYYY-MM-DD/<agent>/<searchProvider>.jsonl`
+
+**Compare historical runs:**
+```bash
+# Latest run (default)
+bun scripts/compare.ts --mode full
+
+# Specific run
+bun scripts/compare.ts --mode full --run-date 2026-01-24
+
+# View run manifest
+cat data/results/MANIFEST.jsonl | jq .
 ```
-data/results/
-├── claude-code/
-│   ├── builtin-test.jsonl    # Test dataset
-│   ├── builtin.jsonl         # Full dataset
-│   ├── you-test.jsonl        # Test dataset
-│   └── you.jsonl             # Full dataset
-├── gemini/
-│   ├── builtin-test.jsonl
-│   ├── builtin.jsonl
-│   ├── you-test.jsonl
-│   └── you.jsonl
-├── droid/
-│   ├── builtin-test.jsonl
-│   ├── builtin.jsonl
-│   ├── you-test.jsonl
-│   └── you.jsonl
-└── codex/
-    ├── builtin-test.jsonl
-    ├── builtin.jsonl
-    ├── you-test.jsonl
-    └── you.jsonl
-```
-
-Results are committed to git for downstream data science analysis.
 
 ## Adding a New Agent
 

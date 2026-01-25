@@ -11,7 +11,7 @@ describe("run.ts", () => {
 
       expect(exitCode).toBe(0);
       expect(stdout).toContain("Agents: claude-code, gemini, droid, codex");
-      expect(stdout).toContain("MCP tools: builtin, you");
+      expect(stdout).toContain("Search providers: builtin, you");
     });
 
     test("accepts single --agent flag", async () => {
@@ -46,14 +46,14 @@ describe("run.ts", () => {
       const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--mcp", "builtin", "--dry-run"]);
 
       expect(exitCode).toBe(0);
-      expect(stdout).toContain("MCP tools: builtin");
+      expect(stdout).toContain("Search providers: builtin");
     });
 
     test("accepts --mcp you", async () => {
       const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--mcp", "you", "--dry-run"]);
 
       expect(exitCode).toBe(0);
-      expect(stdout).toContain("MCP tools: you");
+      expect(stdout).toContain("Search providers: you");
     });
 
     test("accepts all flags combined", async () => {
@@ -70,7 +70,7 @@ describe("run.ts", () => {
       expect(exitCode).toBe(0);
       expect(stdout).toContain("Running in full mode");
       expect(stdout).toContain("Agents: gemini");
-      expect(stdout).toContain("MCP tools: builtin");
+      expect(stdout).toContain("Search providers: builtin");
     });
   });
 
@@ -95,7 +95,7 @@ describe("run.ts", () => {
       const { stderr, exitCode } = await runScript(SCRIPT_PATH, ["--mcp", "invalid"]);
 
       expect(exitCode).toBe(1);
-      expect(stderr).toContain("Invalid MCP tool: invalid");
+      expect(stderr).toContain("Invalid search provider: invalid");
       expect(stderr).toContain('Must be "builtin" or "you"');
     });
   });
@@ -158,7 +158,7 @@ describe("run.ts", () => {
     test("shows MCP tools list", async () => {
       const { stdout } = await runScript(SCRIPT_PATH, ["--dry-run"]);
 
-      expect(stdout).toContain("MCP tools:");
+      expect(stdout).toContain("Search providers:");
     });
 
     test("shows scenario count for default (4 agents × 2 MCP = 8)", async () => {
@@ -202,8 +202,8 @@ describe("run.ts", () => {
     test("shows docker compose commands with MCP_TOOL env var", async () => {
       const { stdout } = await runScript(SCRIPT_PATH, ["--agent", "gemini", "--dry-run"]);
 
-      expect(stdout).toContain("-e MCP_TOOL=builtin");
-      expect(stdout).toContain("-e MCP_TOOL=you");
+      expect(stdout).toContain("-e SEARCH_PROVIDER=builtin");
+      expect(stdout).toContain("-e SEARCH_PROVIDER=you");
     });
 
     test("shows docker compose commands with DATASET env var", async () => {
@@ -224,7 +224,7 @@ describe("run.ts", () => {
       ]);
 
       expect(stdout).toContain("[1/1] gemini-builtin");
-      expect(stdout).toContain("-e MCP_TOOL=builtin");
+      expect(stdout).toContain("-e SEARCH_PROVIDER=builtin");
       expect(stdout).toContain("-e DATASET=full");
       expect(stdout).toContain("gemini");
     });
@@ -246,11 +246,11 @@ describe("run.ts", () => {
       expect(stdout).toContain("[DRY RUN]");
       expect(stdout).toContain("Running in full mode");
       expect(stdout).toContain("Agents: gemini, droid");
-      expect(stdout).toContain("MCP tools: you");
+      expect(stdout).toContain("Search providers: you");
       expect(stdout).toContain("[DRY RUN] Would run 2 scenarios");
       expect(stdout).toContain("[1/2] gemini-you");
       expect(stdout).toContain("[2/2] droid-you");
-      expect(stdout).toContain("-e MCP_TOOL=you");
+      expect(stdout).toContain("-e SEARCH_PROVIDER=you");
       expect(stdout).toContain("-e DATASET=full");
     });
   });

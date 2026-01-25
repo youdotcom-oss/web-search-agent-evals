@@ -207,37 +207,83 @@ Prompts are designed to trigger web search with time-sensitive queries and recen
 
 ## Results
 
-Results are written to `data/results/<agent>/<tool>[-<dataset>].jsonl`:
+Results are organized into two tiers:
 
-**Naming convention:**
-- Test mode: `<tool>-test.jsonl` (e.g., `builtin-test.jsonl`)
-- Full mode: `<tool>.jsonl` (e.g., `builtin.jsonl`, no suffix)
+### Test Results (Rapid Iteration)
+Quick development cycles, not versioned:
+```
+data/results/test-runs/
+├── claude-code/
+│   ├── builtin.jsonl
+│   └── you.jsonl
+├── gemini/
+├── droid/
+└── codex/
+```
 
+### Full Runs (Historical Archive)
+Dated snapshots for long-term analysis:
 ```
 data/results/
-├── claude-code/
-│   ├── builtin-test.jsonl    # Test dataset
-│   ├── builtin.jsonl         # Full dataset
-│   ├── you-test.jsonl        # Test dataset
-│   └── you.jsonl             # Full dataset
-├── gemini/
-│   ├── builtin-test.jsonl
-│   ├── builtin.jsonl
-│   ├── you-test.jsonl
-│   └── you.jsonl
-├── droid/
-│   ├── builtin-test.jsonl
-│   ├── builtin.jsonl
-│   ├── you-test.jsonl
-│   └── you.jsonl
-└── codex/
-    ├── builtin-test.jsonl
-    ├── builtin.jsonl
-    ├── you-test.jsonl
-    └── you.jsonl
+├── runs/
+│   ├── 2026-01-24/
+│   │   ├── claude-code/
+│   │   │   ├── builtin.jsonl
+│   │   │   └── you.jsonl
+│   │   ├── gemini/
+│   │   ├── droid/
+│   │   └── codex/
+│   └── 2026-02-15/
+├── latest.json           # Pointer to most recent run
+└── MANIFEST.jsonl        # Run metadata
+```
+
+**Versioning:** Each full run is committed with a dated directory. See `MANIFEST.jsonl` for run metadata and commit history.
+
+**Usage:**
+```bash
+# Compare latest run (default)
+bun scripts/compare.ts --mode full
+
+# Compare specific historical run
+bun scripts/compare.ts --mode full --run-date 2026-01-24
+
+# View run history
+cat data/results/MANIFEST.jsonl | jq .
 ```
 
 Each result includes full trajectory (messages, tool calls, timing, token usage).
+
+## Comparisons
+
+Comparison analyses are versioned alongside the raw results they evaluate:
+
+### Test Comparisons (Rapid Iteration)
+```
+data/comparisons/test-runs/
+├── all-weighted.json
+├── all-statistical.json
+├── builtin-weighted.json
+└── you-weighted.json
+```
+
+### Full Run Comparisons (Historical Archive)
+```
+data/comparisons/runs/
+└── 2026-01-24/
+    ├── all-weighted.json
+    ├── all-statistical.json
+    └── ...
+```
+
+**Usage:**
+```bash
+# Generate comparison (outputs to versioned directory)
+bun scripts/compare.ts --mode full
+
+# View comparison results
+cat data/comparisons/runs/2026-01-24/all-weighted.json | jq '.quality.rankings'
+```
 
 ## Inline Grader
 

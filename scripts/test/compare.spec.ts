@@ -13,7 +13,7 @@ describe("compare.ts", () => {
       expect(stdout).toContain("[DRY RUN]");
       expect(stdout).toContain("Mode: test");
       expect(stdout).toContain("Agents: claude-code, gemini, droid, codex");
-      expect(stdout).toContain("MCP: all");
+      expect(stdout).toContain("Search Provider: all");
       expect(stdout).toContain("Strategy: weighted");
     });
 
@@ -49,14 +49,14 @@ describe("compare.ts", () => {
       const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--mcp", "builtin", "--dry-run"]);
 
       expect(exitCode).toBe(0);
-      expect(stdout).toContain("MCP: builtin");
+      expect(stdout).toContain("Search Provider: builtin");
     });
 
     test("accepts --mcp you", async () => {
       const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--mcp", "you", "--dry-run"]);
 
       expect(exitCode).toBe(0);
-      expect(stdout).toContain("MCP: you");
+      expect(stdout).toContain("Search Provider: you");
     });
 
     test("accepts --strategy weighted", async () => {
@@ -89,7 +89,7 @@ describe("compare.ts", () => {
       expect(exitCode).toBe(0);
       expect(stdout).toContain("Mode: full");
       expect(stdout).toContain("Agents: gemini");
-      expect(stdout).toContain("MCP: builtin");
+      expect(stdout).toContain("Search Provider: builtin");
       expect(stdout).toContain("Strategy: statistical");
     });
   });
@@ -115,7 +115,7 @@ describe("compare.ts", () => {
       const { stderr, exitCode } = await runScript(SCRIPT_PATH, ["--mcp", "invalid"]);
 
       expect(exitCode).toBe(1);
-      expect(stderr).toContain("Invalid MCP tool: invalid");
+      expect(stderr).toContain("Invalid search provider: invalid");
       expect(stderr).toContain('Must be "builtin" or "you"');
     });
 
@@ -141,7 +141,7 @@ describe("compare.ts", () => {
       ]);
 
       expect(exitCode).toBe(0);
-      expect(stdout).toContain("data/results/claude-code/builtin-test.jsonl");
+      expect(stdout).toContain("data/results/test-runs/claude-code/builtin.jsonl");
     });
 
     test("generates path for gemini you test", async () => {
@@ -156,7 +156,7 @@ describe("compare.ts", () => {
       ]);
 
       expect(exitCode).toBe(0);
-      expect(stdout).toContain("data/results/gemini/you-test.jsonl");
+      expect(stdout).toContain("data/results/test-runs/gemini/you.jsonl");
     });
 
     test("generates path for droid builtin full", async () => {
@@ -171,7 +171,7 @@ describe("compare.ts", () => {
       ]);
 
       expect(exitCode).toBe(0);
-      expect(stdout).toContain("data/results/droid/builtin.jsonl");
+      expect(stdout).toContain("data/results/runs/2026-01-24/droid/builtin.jsonl");
     });
 
     test("generates path for codex you full", async () => {
@@ -186,7 +186,7 @@ describe("compare.ts", () => {
       ]);
 
       expect(exitCode).toBe(0);
-      expect(stdout).toContain("data/results/codex/you.jsonl");
+      expect(stdout).toContain("data/results/runs/2026-01-24/codex/you.jsonl");
     });
   });
 
@@ -237,7 +237,7 @@ describe("compare.ts", () => {
       ]);
 
       expect(exitCode).toBe(0);
-      expect(stdout).toContain("data/comparison-all-weighted-test.json");
+      expect(stdout).toContain("data/comparisons/test-runs/all-weighted.json");
     });
 
     test("all agents, no MCP filter, statistical, test mode", async () => {
@@ -250,7 +250,7 @@ describe("compare.ts", () => {
       ]);
 
       expect(exitCode).toBe(0);
-      expect(stdout).toContain("data/comparison-all-statistical-test.json");
+      expect(stdout).toContain("data/comparisons/test-runs/all-statistical.json");
     });
 
     test("all agents, builtin only, weighted, test mode", async () => {
@@ -265,7 +265,7 @@ describe("compare.ts", () => {
       ]);
 
       expect(exitCode).toBe(0);
-      expect(stdout).toContain("data/comparison-builtin-weighted-test.json");
+      expect(stdout).toContain("data/comparisons/test-runs/builtin-weighted.json");
     });
 
     test("all agents, you only, statistical, test mode", async () => {
@@ -280,7 +280,7 @@ describe("compare.ts", () => {
       ]);
 
       expect(exitCode).toBe(0);
-      expect(stdout).toContain("data/comparison-you-statistical-test.json");
+      expect(stdout).toContain("data/comparisons/test-runs/you-statistical.json");
     });
 
     test("specific agents (gemini + droid), no MCP filter, weighted, test mode", async () => {
@@ -297,7 +297,7 @@ describe("compare.ts", () => {
       ]);
 
       expect(exitCode).toBe(0);
-      expect(stdout).toContain("data/comparison-gemini-droid-weighted-test.json");
+      expect(stdout).toContain("data/comparisons/test-runs/gemini-droid-weighted.json");
     });
 
     test("full mode output path", async () => {
@@ -310,7 +310,7 @@ describe("compare.ts", () => {
       ]);
 
       expect(exitCode).toBe(0);
-      expect(stdout).toContain("data/comparison-all-weighted-full.json");
+      expect(stdout).toContain("data/comparisons/runs/2026-01-24/all-weighted.json");
     });
   });
 
@@ -333,7 +333,7 @@ describe("compare.ts", () => {
       expect(stdout).toContain("Configuration:");
       expect(stdout).toContain("Mode:");
       expect(stdout).toContain("Agents:");
-      expect(stdout).toContain("MCP:");
+      expect(stdout).toContain("Search Provider:");
       expect(stdout).toContain("Strategy:");
     });
 
@@ -341,7 +341,7 @@ describe("compare.ts", () => {
       const { stdout } = await runScript(SCRIPT_PATH, ["--dry-run"]);
 
       expect(stdout).toContain("Output:");
-      expect(stdout).toContain("data/comparison-");
+      expect(stdout).toContain("data/comparisons/");
     });
 
     test("lists runs to compare", async () => {
@@ -389,10 +389,10 @@ describe("compare.ts", () => {
       expect(stdout).toContain("[DRY RUN]");
       expect(stdout).toContain("Mode: full");
       expect(stdout).toContain("Agents: gemini");
-      expect(stdout).toContain("MCP: you");
+      expect(stdout).toContain("Search Provider: you");
       expect(stdout).toContain("Strategy: statistical");
       expect(stdout).toContain("gemini-you:");
-      expect(stdout).toContain("data/comparison-gemini-statistical-full.json");
+      expect(stdout).toContain("data/comparisons/runs/2026-01-24/gemini-statistical.json");
     });
   });
 });

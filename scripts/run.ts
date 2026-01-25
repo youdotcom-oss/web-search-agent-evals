@@ -5,12 +5,12 @@ import { join } from "node:path";
 
 type Agent = "claude-code" | "gemini" | "droid" | "codex";
 type Mode = "test" | "full";
-type McpTool = "builtin" | "you";
+type SearchProvider = "builtin" | "you";
 
 interface RunOptions {
   agents: Agent[];
   mode?: Mode;
-  mcp?: McpTool;
+  searchProvider?: SearchProvider;
   dryRun?: boolean;
 }
 
@@ -19,7 +19,7 @@ const ALL_AGENTS: Agent[] = ["claude-code", "gemini", "droid", "codex"];
 const parseArgs = (args: string[]): RunOptions => {
   const agents: Agent[] = [];
   let mode: Mode | undefined;
-  let mcp: McpTool | undefined;
+  let searchProvider: SearchProvider | undefined;
   let dryRun = false;
 
   for (let i = 0; i < args.length; i++) {
@@ -40,9 +40,9 @@ const parseArgs = (args: string[]): RunOptions => {
     } else if (args[i] === "--mcp" && i + 1 < args.length) {
       const tool = args[i + 1];
       if (tool !== "builtin" && tool !== "you") {
-        throw new Error(`Invalid MCP tool: ${tool}. Must be "builtin" or "you"`);
+        throw new Error(`Invalid search provider: ${tool}. Must be "builtin" or "you"`);
       }
-      mcp = tool;
+      searchProvider = tool;
       i++;
     } else if (args[i] === "--dry-run") {
       dryRun = true;
@@ -52,7 +52,7 @@ const parseArgs = (args: string[]): RunOptions => {
   return {
     agents: agents.length > 0 ? agents : ALL_AGENTS,
     mode,
-    mcp,
+    searchProvider,
     dryRun,
   };
 };
@@ -79,13 +79,13 @@ const detectCurrentMode = async (): Promise<Mode> => {
 
 const runService = (
   agent: Agent,
-  mcpTool: McpTool,
+  searchProvider: SearchProvider,
   dataset: Mode,
   scenarioId: number,
   totalScenarios: number,
 ): Promise<number> => {
   return new Promise((resolve) => {
-    const label = `[${scenarioId}/${totalScenarios}] ${agent}-${mcpTool}`;
+    const label = `[${scenarioId}/${totalScenarios}] ${agent}-${searchProvider}`;
     const startTime = Date.now();
 
     console.log(`\n${"=".repeat(80)}`);
@@ -94,7 +94,7 @@ const runService = (
 
     const proc = spawn(
       "docker",
-      ["compose", "run", "--rm", "-e", `MCP_TOOL=${mcpTool}`, "-e", `DATASET=${dataset}`, agent],
+      ["compose", "run", "--rm", "-e", `SEARCH_PROVIDER=${searchProvider}`, "-e", `DATASET=${dataset}`, agent],
       {
         stdio: "pipe", // Capture output instead of inherit
       },
@@ -189,17 +189,17 @@ const main = async () => {
     console.log(`${options.dryRun ? "[DRY RUN] " : ""}Running in ${currentMode} mode`);
     console.log(`Agents: ${options.agents.join(", ")}`);
 
-    // Determine which MCP tools to test
-    const mcpTools: McpTool[] = options.mcp ? [options.mcp] : ["builtin", "you"];
-    console.log(`MCP tools: ${mcpTools.join(", ")}`);
+    // Determine which search providers to test
+    const searchProviders: SearchProvider[] = options.searchProvider ? [options.searchProvider] : ["builtin", "you"];
+    console.log(`Search providers: ${searchProviders.join(", ")}`);
     console.log("");
 
-    // Build execution list (each agent runs with each MCP tool)
-    type RunConfig = { agent: Agent; mcpTool: McpTool };
+    // Build execution list (each agent runs with each search provider)
+    type RunConfig = { agent: Agent; searchProvider: SearchProvider };
     const runs: RunConfig[] = [];
     for (const agent of options.agents) {
-      for (const tool of mcpTools) {
-        runs.push({ agent, mcpTool: tool });
+      for (const provider of searchProviders) {
+        runs.push({ agent, searchProvider: provider });
       }
     }
 
@@ -211,8 +211,8 @@ const main = async () => {
         const run = runs[i];
         if (!run) continue;
         console.log(
-          `  [${i + 1}/${runs.length}] ${run.agent}-${run.mcpTool}: docker compose run --rm -e MCP_TOOL=${
-            run.mcpTool
+          `  [${i + 1}/${runs.length}] ${run.agent}-${run.searchProvider}: docker compose run --rm -e SEARCH_PROVIDER=${
+            run.searchProvider
           } -e DATASET=${currentMode} ${run.agent}`,
         );
       }
@@ -236,7 +236,7 @@ const main = async () => {
 
         const stillRunning = runs
           .map((run, index) =>
-            completed.has(index + 1) ? null : `[${index + 1}/${runs.length}] ${run.agent}-${run.mcpTool}`,
+            completed.has(index + 1) ? null : `[${index + 1}/${runs.length}] ${run.agent}-${run.searchProvider}`,
           )
           .filter((x) => x !== null);
 
@@ -249,8 +249,8 @@ const main = async () => {
 
     // Run all scenarios in parallel
     const results = await Promise.all(
-      runs.map(({ agent, mcpTool }, index) =>
-        runService(agent, mcpTool, currentMode, index + 1, runs.length).then((result) => {
+      runs.map(({ agent, searchProvider }, index) =>
+        runService(agent, searchProvider, currentMode, index + 1, runs.length).then((result) => {
           completed.add(index + 1);
           return result;
         }),
@@ -276,7 +276,7 @@ const main = async () => {
         continue;
       }
 
-      const label = `[${i + 1}/${runs.length}] ${run.agent}-${run.mcpTool}`;
+      const label = `[${i + 1}/${runs.length}] ${run.agent}-${run.searchProvider}`;
 
       if (exitCode === 0) {
         successes.push(label);

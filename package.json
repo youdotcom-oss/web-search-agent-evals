@@ -31,7 +31,7 @@
     "typecheck": "tsc --noEmit"
   },
   "lint-staged": {
-    "*.{ts,tsx,js,jsx,json,md}": [
+    "*.{ts,tsx,js,jsx,json}": [
       "biome format --write",
       "biome lint --write"
     ],

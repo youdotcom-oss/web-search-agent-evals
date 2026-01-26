@@ -23,6 +23,7 @@
     "run": "bun scripts/run.ts",
     "run:full": "bun run run --mode full",
     "run:test": "bun run run --mode test",
+    "sample:test": "bun scripts/sample-test-prompts.ts",
     "test": "bun test",
     "trials": "bun scripts/run-trials.ts",
     "trials:capability": "bun scripts/run-trials.ts --type capability",

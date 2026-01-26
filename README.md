@@ -1,10 +1,10 @@
-# Agentic Web Search Playoffs
+# Web Search Agent Evaluations
 
 Evaluate multiple agents (Claude Code, Gemini, Droid, Codex) with different web search tools (builtin, You.com MCP) in isolated Docker containers.
 
 ## Overview
 
-The **playoffs** system runs a matrix evaluation: 4 agents × 2 tools = 8 pairings, capturing full trajectories for comparison.
+This evaluation system runs a matrix comparison: 4 agents × 2 tools = 8 pairings, capturing full trajectories for analysis.
 
 **Key Features:**
 - **Headless adapters** - No custom code, just JSON schemas ([@plaited/agent-eval-harness](https://www.npmjs.com/package/@plaited/agent-eval-harness))
@@ -166,7 +166,7 @@ Single source of truth for MCP server configurations. The TypeScript entrypoint 
 - `builtin` - Agent's native search (no MCP config)
 - `you` - You.com MCP server (requires `YOU_API_KEY`)
 
-To add new MCP tools, see `.claude/skills/playoffs/references/mcp-tools.md`.
+To add new MCP tools, see `.claude/skills/web-search-agent-evals/SKILL.md`.
 
 ### CLI Scripts (scripts/)
 
@@ -324,7 +324,7 @@ bun test
 3. **Add Docker Compose service**
 4. **Update TypeScript entrypoint** (`docker/entrypoint`)
 
-See `.claude/skills/playoffs/SKILL.md` for detailed guide.
+See `.claude/skills/web-search-agent-evals/SKILL.md` for detailed guide.
 
 ### Adding MCP Tools
 
@@ -334,7 +334,7 @@ See `.claude/skills/playoffs/SKILL.md` for detailed guide.
 4. **Update scripts/run.ts** (add to `McpTool` type)
 5. **Create MCP prompt set**
 
-See `.claude/skills/playoffs/references/mcp-tools.md` for detailed guide.
+See `.claude/skills/web-search-agent-evals/SKILL.md` for detailed guide.
 
 ## Troubleshooting
 
@@ -396,14 +396,14 @@ evals/
 │   ├── prompts/            # Evaluation prompts
 │   └── results/            # Agent outputs (gitignored)
 │
-└── .claude/skills/playoffs/  # Development assistant skill
+└── .claude/skills/web-search-agent-evals/  # Development assistant skill
 ```
 
 ## Skills
 
 This project uses [AgentSkills](https://agentskills.io) for agent-first development:
 
-- **playoffs** - Development assistant for extending playoffs
+- **web-search-agent-evals** - Development assistant for this evaluation system
 - **agent-eval-harness** - Capture, trials, and analysis commands
 
 See `@AGENTS.md` for development rules and conventions.

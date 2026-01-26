@@ -1,12 +1,12 @@
 ---
-name: playoffs
-description: Development assistant for running and extending the ACP evaluation playoffs system
+name: web-search-agent-evals
+description: Development assistant for web search agent evaluations across multiple CLI agents
 compatibility: Bun >= 1.2.9
 ---
 
-# Playoffs
+# Web Search Agent Evaluations
 
-Development assistant for running and extending the agent evaluation playoffs system.
+Development assistant for running and comparing web search capabilities across CLI agents.
 
 ## Overview
 

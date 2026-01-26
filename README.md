@@ -64,7 +64,7 @@ docker compose run --rm -e MCP_TOOL=builtin claude-code
 docker compose run --rm -e MCP_TOOL=you gemini
 ```
 
-#### Full Workflow (1,254 prompts, ~10+ hours)
+#### Full Workflow (151 prompts, ~2 hours)
 
 ```bash
 # Run all agents with full dataset
@@ -206,8 +206,8 @@ The entrypoint script:
 |------|---------|--------|----------|
 | `test.jsonl` | 5 | `<web-search>` | `SEARCH_PROVIDER=builtin` |
 | `test-you.jsonl` | 5 | `<web-search mcp-server="ydc-server">` | `SEARCH_PROVIDER=you` |
-| `full.jsonl` | 1,254 | `<web-search>` | `SEARCH_PROVIDER=builtin` |
-| `full-you.jsonl` | 1,254 | `<web-search mcp-server="ydc-server">` | `SEARCH_PROVIDER=you` |
+| `full.jsonl` | 151 | `<web-search>` | `SEARCH_PROVIDER=builtin` |
+| `full-you.jsonl` | 151 | `<web-search mcp-server="ydc-server">` | `SEARCH_PROVIDER=you` |
 
 Prompts are designed to trigger web search with time-sensitive queries and recent events.
 

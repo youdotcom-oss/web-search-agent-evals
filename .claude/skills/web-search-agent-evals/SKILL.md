@@ -33,7 +33,7 @@ Evaluate 4 agents (Claude Code, Gemini, Droid, Codex) with 2 tools (builtin, You
 # Test workflow (5 prompts, ~5 minutes)
 bun run run                 # All 8 scenarios in parallel
 
-# Full workflow (1,254 prompts, ~10+ hours)
+# Full workflow (151 prompts, ~2 hours)
 bun run run:full            # All agents with full dataset
 
 # Specific combinations
@@ -96,8 +96,8 @@ See [@agent-eval-harness](../agent-eval-harness@plaited_agent-eval-harness/SKILL
 |------|---------|--------|----------|
 | `test.jsonl` | 5 | `<web-search>` | `SEARCH_PROVIDER=builtin` |
 | `test-you.jsonl` | 5 | `<web-search mcp-server="ydc-server">` | `SEARCH_PROVIDER=you` |
-| `full.jsonl` | 1,254 | `<web-search>` | `SEARCH_PROVIDER=builtin` |
-| `full-you.jsonl` | 1,254 | `<web-search mcp-server="ydc-server">` | `SEARCH_PROVIDER=you` |
+| `full.jsonl` | 151 | `<web-search>` | `SEARCH_PROVIDER=builtin` |
+| `full-you.jsonl` | 151 | `<web-search mcp-server="ydc-server">` | `SEARCH_PROVIDER=you` |
 
 **You.com MCP format is 39-45% faster** than builtin due to explicit server specification.
 

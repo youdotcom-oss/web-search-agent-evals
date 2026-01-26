@@ -5,13 +5,13 @@ type Agent = "claude-code" | "gemini" | "droid" | "codex";
 type Mode = "test" | "full";
 type TrialType = "default" | "capability" | "regression";
 
-interface TrialsOptions {
+type TrialsOptions = {
   agent: Agent;
   mode: Mode;
   trialType: TrialType;
   k?: number;
   dryRun?: boolean;
-}
+};
 
 const ALL_AGENTS: Agent[] = ["claude-code", "gemini", "droid", "codex"];
 

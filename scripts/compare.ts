@@ -6,14 +6,14 @@ type Agent = "claude-code" | "gemini" | "droid" | "codex";
 type SearchProvider = "builtin" | "you";
 type Strategy = "weighted" | "statistical";
 
-interface CompareOptions {
+type CompareOptions = {
   agents: Agent[];
   mode: Mode;
   searchProvider?: SearchProvider;
   strategy: Strategy;
   dryRun?: boolean;
   runDate?: string;
-}
+};
 
 const ALL_AGENTS: Agent[] = ["claude-code", "gemini", "droid", "codex"];
 const ALL_STRATEGIES: Strategy[] = ["weighted", "statistical"];
@@ -149,7 +149,12 @@ const runComparison = async (options: CompareOptions): Promise<void> => {
 
   for (const { agent, searchProvider: provider } of runs) {
     const label = buildRunLabel(agent, provider);
-    const path = await buildResultPath({ agent, searchProvider: provider, mode, runDate });
+    const path = await buildResultPath({
+      agent,
+      searchProvider: provider,
+      mode,
+      runDate,
+    });
     args.push("--run", `${label}:${path}`);
   }
 

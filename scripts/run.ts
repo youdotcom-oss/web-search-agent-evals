@@ -7,12 +7,12 @@ type Agent = "claude-code" | "gemini" | "droid" | "codex";
 type Mode = "test" | "full";
 type SearchProvider = "builtin" | "you";
 
-interface RunOptions {
+type RunOptions = {
   agents: Agent[];
   mode?: Mode;
   searchProvider?: SearchProvider;
   dryRun?: boolean;
-}
+};
 
 const ALL_AGENTS: Agent[] = ["claude-code", "gemini", "droid", "codex"];
 

@@ -79,7 +79,12 @@ export const finalizeRun = async (options: FinalizeOptions): Promise<ManifestEnt
     throw new Error("No search providers found");
   }
 
-  const samplePath = join(runDir, agents[0]!, `${firstProvider}.jsonl`);
+  const firstAgent = agents[0];
+  if (!firstAgent) {
+    throw new Error("No agents available");
+  }
+
+  const samplePath = join(runDir, firstAgent, `${firstProvider}.jsonl`);
   if (!(await Bun.file(samplePath).exists())) {
     throw new Error(`No full run found at ${runDir}`);
   }

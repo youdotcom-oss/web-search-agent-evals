@@ -75,7 +75,10 @@ describe("finalize-run.ts", () => {
       expect(await manifestFile.exists()).toBe(true);
 
       const content = await manifestFile.text();
-      const entries = content.trim().split("\n").map(JSON.parse);
+      const entries = content
+        .trim()
+        .split("\n")
+        .map((line) => JSON.parse(line));
 
       expect(entries).toHaveLength(1);
       expect(entries[0].date).toBe("2026-01-15");
@@ -130,7 +133,10 @@ describe("finalize-run.ts", () => {
 
       const manifestFile = Bun.file(join(TEST_DATA_DIR, "MANIFEST.jsonl"));
       const content = await manifestFile.text();
-      const entries = content.trim().split("\n").map(JSON.parse);
+      const entries = content
+        .trim()
+        .split("\n")
+        .map((line) => JSON.parse(line));
 
       // Should have 2 entries (not 3)
       expect(entries).toHaveLength(2);

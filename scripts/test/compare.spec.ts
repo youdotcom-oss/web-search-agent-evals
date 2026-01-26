@@ -392,7 +392,7 @@ describe("compare.ts", () => {
       expect(stdout).toContain("Search Provider: you");
       expect(stdout).toContain("Strategy: statistical");
       expect(stdout).toContain("gemini-you:");
-      expect(stdout).toContain("data/comparisons/runs/2026-01-24/gemini-statistical.json");
+      expect(stdout).toContain("data/comparisons/runs/2026-01-24/gemini-you-statistical.json");
     });
   });
 });

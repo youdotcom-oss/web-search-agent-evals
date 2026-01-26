@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "name": "codex-headless",
+  "name": "codex",
   "command": ["codex", "exec", "--json", "--skip-git-repo-check", "--dangerously-bypass-approvals-and-sandbox", "-"],
   "sessionMode": "iterative",
   "prompt": {

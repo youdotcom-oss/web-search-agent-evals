@@ -82,27 +82,33 @@ bun scripts/compare.ts
 # Compare full dataset
 bun scripts/compare.ts --mode full
 
-# Filter by agent or MCP mode
+# Filter by agent or search provider
 bun scripts/compare.ts --agent gemini --agent claude-code
-bun scripts/compare.ts --mcp builtin
+bun scripts/compare.ts --search-provider builtin
 
 # Use statistical strategy
 bun scripts/compare.ts --strategy statistical
 
 # Combine flags
-bun scripts/compare.ts --mode full --mcp you --strategy statistical
+bun scripts/compare.ts --mode full --search-provider you --strategy statistical
 
 # Preview configuration
 bun scripts/compare.ts --dry-run
 ```
 
-Or use npm shortcuts for common test data comparisons:
+Or use npm shortcuts for common comparisons:
 
 ```bash
-bun run compare:all-weighted        # All agents, both modes
-bun run compare:all-statistical     # Statistical analysis
-bun run compare:builtin-agents      # Builtin only
-bun run compare:you-agents          # MCP only
+# Test data comparisons
+bun run compare:test-weighted       # All agents, both modes
+bun run compare:test-statistical    # Statistical analysis
+bun run compare:test-builtin        # Builtin only
+bun run compare:test-you            # MCP only
+
+# Flexible CLI shortcuts
+bun run compare                     # Test mode, all agents, weighted
+bun run compare:full                # Full mode, latest run
+bun run compare:statistical         # Test mode, statistical strategy
 ```
 
 View results:
@@ -198,46 +204,92 @@ The entrypoint script:
 
 | File | Prompts | Format | Use With |
 |------|---------|--------|----------|
-| `test.jsonl` | 5 | `<web-search>` | Builtin |
-| `test-mcp.jsonl` | 5 | `<web-search mcp-server="ydc-server">` | MCP |
-| `full.jsonl` | 1,254 | `<web-search>` | Builtin |
-| `full-mcp.jsonl` | 1,254 | `<web-search mcp-server="ydc-server">` | MCP |
+| `test.jsonl` | 5 | `<web-search>` | `SEARCH_PROVIDER=builtin` |
+| `test-you.jsonl` | 5 | `<web-search mcp-server="ydc-server">` | `SEARCH_PROVIDER=you` |
+| `full.jsonl` | 1,254 | `<web-search>` | `SEARCH_PROVIDER=builtin` |
+| `full-you.jsonl` | 1,254 | `<web-search mcp-server="ydc-server">` | `SEARCH_PROVIDER=you` |
 
 Prompts are designed to trigger web search with time-sensitive queries and recent events.
 
 ## Results
 
-Results are written to `data/results/<agent>/<tool>[-<dataset>].jsonl`:
+Results are organized into two tiers:
 
-**Naming convention:**
-- Test mode: `<tool>-test.jsonl` (e.g., `builtin-test.jsonl`)
-- Full mode: `<tool>.jsonl` (e.g., `builtin.jsonl`, no suffix)
+### Test Results (Rapid Iteration)
+Quick development cycles, not versioned:
+```
+data/results/test-runs/
+├── claude-code/
+│   ├── builtin.jsonl
+│   └── you.jsonl
+├── gemini/
+├── droid/
+└── codex/
+```
 
+### Full Runs (Historical Archive)
+Dated snapshots for long-term analysis:
 ```
 data/results/
-├── claude-code/
-│   ├── builtin-test.jsonl    # Test dataset
-│   ├── builtin.jsonl         # Full dataset
-│   ├── you-test.jsonl        # Test dataset
-│   └── you.jsonl             # Full dataset
-├── gemini/
-│   ├── builtin-test.jsonl
-│   ├── builtin.jsonl
-│   ├── you-test.jsonl
-│   └── you.jsonl
-├── droid/
-│   ├── builtin-test.jsonl
-│   ├── builtin.jsonl
-│   ├── you-test.jsonl
-│   └── you.jsonl
-└── codex/
-    ├── builtin-test.jsonl
-    ├── builtin.jsonl
-    ├── you-test.jsonl
-    └── you.jsonl
+├── runs/
+│   ├── 2026-01-24/
+│   │   ├── claude-code/
+│   │   │   ├── builtin.jsonl
+│   │   │   └── you.jsonl
+│   │   ├── gemini/
+│   │   ├── droid/
+│   │   └── codex/
+│   └── 2026-02-15/
+├── latest.json           # Pointer to most recent run
+└── MANIFEST.jsonl        # Run metadata
+```
+
+**Versioning:** Each full run is committed with a dated directory. See `MANIFEST.jsonl` for run metadata and commit history.
+
+**Usage:**
+```bash
+# Compare latest run (default)
+bun scripts/compare.ts --mode full
+
+# Compare specific historical run
+bun scripts/compare.ts --mode full --run-date 2026-01-24
+
+# View run history
+cat data/results/MANIFEST.jsonl | jq .
 ```
 
 Each result includes full trajectory (messages, tool calls, timing, token usage).
+
+## Comparisons
+
+Comparison analyses are versioned alongside the raw results they evaluate:
+
+### Test Comparisons (Rapid Iteration)
+```
+data/comparisons/test-runs/
+├── all-weighted.json
+├── all-statistical.json
+├── builtin-weighted.json
+└── you-weighted.json
+```
+
+### Full Run Comparisons (Historical Archive)
+```
+data/comparisons/runs/
+└── 2026-01-24/
+    ├── all-weighted.json
+    ├── all-statistical.json
+    └── ...
+```
+
+**Usage:**
+```bash
+# Generate comparison (outputs to versioned directory)
+bun scripts/compare.ts --mode full
+
+# View comparison results
+cat data/comparisons/runs/2026-01-24/all-weighted.json | jq '.quality.rankings'
+```
 
 ## Inline Grader
 

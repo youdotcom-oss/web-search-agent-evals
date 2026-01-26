@@ -1,16 +1,16 @@
 services:
   # Gemini AI Agent
-  # Run with: docker compose run --rm -e MCP_TOOL=builtin gemini
-  #       or: docker compose run --rm -e MCP_TOOL=you gemini
+  # Run with: docker compose run --rm -e SEARCH_PROVIDER=builtin gemini
+  #       or: docker compose run --rm -e SEARCH_PROVIDER=you gemini
   gemini:
     build:
       context: .
       dockerfile: docker/gemini.Dockerfile
-    image: acp-evals-gemini:latest
+    image: evals-gemini:latest
     env_file: .env
     environment:
       - AGENT=gemini
-      # MCP_TOOL will be injected by `docker compose run -e MCP_TOOL=...`
+      # SEARCH_PROVIDER will be injected by `docker compose run -e SEARCH_PROVIDER=...`
     volumes:
       - ./data:/eval/data:ro
       - ./agent-schemas:/eval/agent-schemas:ro
@@ -19,17 +19,17 @@ services:
     working_dir: /workspace
 
   # Claude Code Agent
-  # Run with: docker compose run --rm -e MCP_TOOL=builtin claude-code
-  #       or: docker compose run --rm -e MCP_TOOL=you claude-code
+  # Run with: docker compose run --rm -e SEARCH_PROVIDER=builtin claude-code
+  #       or: docker compose run --rm -e SEARCH_PROVIDER=you claude-code
   claude-code:
     build:
       context: .
       dockerfile: docker/claude-code.Dockerfile
-    image: acp-evals-claude-code:latest
+    image: evals-claude-code:latest
     env_file: .env
     environment:
       - AGENT=claude-code
-      # MCP_TOOL will be injected by `docker compose run -e MCP_TOOL=...`
+      # SEARCH_PROVIDER will be injected by `docker compose run -e SEARCH_PROVIDER=...`
     volumes:
       - ./data:/eval/data:ro
       - ./agent-schemas:/eval/agent-schemas:ro
@@ -38,17 +38,17 @@ services:
     working_dir: /workspace
 
   # Droid Agent
-  # Run with: docker compose run --rm -e MCP_TOOL=builtin droid
-  #       or: docker compose run --rm -e MCP_TOOL=you droid
+  # Run with: docker compose run --rm -e SEARCH_PROVIDER=builtin droid
+  #       or: docker compose run --rm -e SEARCH_PROVIDER=you droid
   droid:
     build:
       context: .
       dockerfile: docker/droid.Dockerfile
-    image: acp-evals-droid:latest
+    image: evals-droid:latest
     env_file: .env
     environment:
       - AGENT=droid
-      # MCP_TOOL will be injected by `docker compose run -e MCP_TOOL=...`
+      # SEARCH_PROVIDER will be injected by `docker compose run -e SEARCH_PROVIDER=...`
     deploy:
       resources:
         limits:
@@ -61,17 +61,17 @@ services:
     working_dir: /workspace
 
   # Codex Agent
-  # Run with: docker compose run --rm -e MCP_TOOL=builtin codex
-  #       or: docker compose run --rm -e MCP_TOOL=you codex
+  # Run with: docker compose run --rm -e SEARCH_PROVIDER=builtin codex
+  #       or: docker compose run --rm -e SEARCH_PROVIDER=you codex
   codex:
     build:
       context: .
       dockerfile: docker/codex.Dockerfile
-    image: acp-evals-codex:latest
+    image: evals-codex:latest
     env_file: .env
     environment:
       - AGENT=codex
-      # MCP_TOOL will be injected by `docker compose run -e MCP_TOOL=...`
+      # SEARCH_PROVIDER will be injected by `docker compose run -e SEARCH_PROVIDER=...`
     volumes:
       - ./data:/eval/data:ro
       - ./agent-schemas:/eval/agent-schemas:ro

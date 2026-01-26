@@ -64,7 +64,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: results-${{ matrix.agent }}-${{ matrix.tool }}
-          path: data/results/${{ matrix.agent }}/${{ matrix.tool }}.jsonl
+          path: data/results/test-runs/${{ matrix.agent }}/${{ matrix.tool }}.jsonl
           retention-days: 30
 
   # Full run with 1,254 prompts (manual trigger only)
@@ -117,7 +117,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: full-results-${{ matrix.agent }}-${{ matrix.tool }}
-          path: data/results/${{ matrix.agent }}/${{ matrix.tool }}.jsonl
+          path: data/results/runs/*/${{ matrix.agent }}/${{ matrix.tool }}.jsonl
           retention-days: 90
 
   # Commit results back to repo (only for full runs)
@@ -130,6 +130,14 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
       - name: Download all results
         uses: actions/download-artifact@v4
         with:
@@ -137,46 +145,61 @@ jobs:
           path: data/results/
           merge-multiple: true
 
-      - name: Create results branch
+      - name: Create results branch and commit (three-step workflow)
         id: create-results-branch
         run: |
-          BRANCH_NAME="results/full-workflow-$(date +%Y%m%d-%H%M%S)"
+          RUN_DATE=$(date +%Y-%m-%d)
+          BRANCH_NAME="results/full-workflow-${RUN_DATE}"
+
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git checkout -b "$BRANCH_NAME"
-          git add data/results/
-          git commit -m "results: full workflow evaluation from CI
+
+          # Step 1: Commit raw results
+          git add data/results/runs/
+          git commit -m "feat: add ${RUN_DATE} evaluation results
 
           Completed full evaluation of 4 agents × 2 tools × 1,254 prompts.
 
           - Trigger: ${{ github.event_name }}
           - Agents: Claude Code, Gemini, Droid, Codex
-          - Tools: builtin, You.com MCP
+          - Search Providers: builtin, You.com MCP
           - Prompts: 1,254 web search queries
 
           Results ready for downstream data science analysis."
+
+          # Step 2: Run finalize-run to create manifest
+          bun run finalize-run "${RUN_DATE}"
+
+          # Step 3: Commit manifest
+          git add data/results/latest.json data/results/MANIFEST.jsonl
+          git commit -m "chore: update manifest for ${RUN_DATE} run [skip ci]"
+
           git push -u origin "$BRANCH_NAME"
 
           echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+          echo "run_date=$RUN_DATE" >> $GITHUB_OUTPUT
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:
           branch: ${{ steps.create-results-branch.outputs.branch_name }}
-          title: "Results: Full workflow evaluation"
+          title: "Results: Full workflow evaluation (${{ steps.create-results-branch.outputs.run_date }})"
           body: |
             ## Full Workflow Results
 
             This PR contains results from a full playoff evaluation run.
 
             **Configuration:**
+            - **Run Date:** ${{ steps.create-results-branch.outputs.run_date }}
             - **Agents:** Claude Code, Gemini, Droid, Codex
-            - **Tools:** builtin, You.com MCP
+            - **Search Providers:** builtin, You.com MCP
             - **Prompts:** 1,254 web search queries
             - **Trigger:** ${{ github.event_name }}
 
             **Results:**
-            - `data/results/*/builtin.jsonl` - Native search results
-            - `data/results/*/you.jsonl` - MCP (You.com) results
+            - `data/results/runs/${{ steps.create-results-branch.outputs.run_date }}/` - Raw results
+            - `data/results/MANIFEST.jsonl` - Run metadata
+            - `data/results/latest.json` - Pointer to this run
 
             Ready for downstream data science analysis.

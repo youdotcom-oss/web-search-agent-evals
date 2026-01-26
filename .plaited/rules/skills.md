@@ -50,7 +50,7 @@ bunx @plaited/agent-eval-harness trials prompts.jsonl ...  # Generic usage
 
 ```markdown
 # agent-eval-harness skill (generic)
-### acp-evals Project Scripts  ❌ Don't add project-specific content
+### evals Project Scripts  ❌ Don't add project-specific content
 ```bash
 bun run trials  # Wrong - this belongs in playoffs skill
 ```

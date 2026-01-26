@@ -1,0 +1,3 @@
+
+# Enable Jupyter notebook rendering on GitHub
+*.ipynb linguist-detectable=true

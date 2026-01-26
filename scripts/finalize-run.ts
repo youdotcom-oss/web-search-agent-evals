@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 import { $ } from "bun";
+import { Glob } from "bun";
 import { z } from "zod";
-import { readdirSync } from "node:fs";
 import { join } from "node:path";
 import { MCP_SERVERS } from "../mcp-servers.ts";
 
@@ -31,7 +31,8 @@ type FinalizeOptions = {
  * This ensures the manifest stays in sync with the actual agent schemas.
  */
 const getAgents = async (schemasDir = "agent-schemas"): Promise<string[]> => {
-  const schemaFiles = readdirSync(schemasDir).filter((f) => f.endsWith(".json"));
+  const glob = new Glob("*.json");
+  const schemaFiles = await Array.fromAsync(glob.scan({ cwd: schemasDir }));
 
   const agents = await Promise.all(
     schemaFiles.map(async (file) => {

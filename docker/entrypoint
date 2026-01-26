@@ -136,7 +136,7 @@ const buildCaptureCommand = async (): Promise<string[]> => {
   // Derive prompt file based on DATASET and search provider mode
   const promptFile = SEARCH_PROVIDER === "builtin"
     ? `/eval/data/prompts/${DATASET}.jsonl`
-    : `/eval/data/prompts/${DATASET}-mcp.jsonl`;
+    : `/eval/data/prompts/${DATASET}-${SEARCH_PROVIDER}.jsonl`;
 
   // Schema file: Always use base schema (no -mcp suffix)
   const schemaFile = `/eval/agent-schemas/${AGENT}.json`;

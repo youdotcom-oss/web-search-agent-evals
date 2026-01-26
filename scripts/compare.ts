@@ -41,7 +41,7 @@ const parseArgs = (args: string[]): CompareOptions => {
       }
       mode = m;
       i++;
-    } else if (args[i] === "--mcp" && i + 1 < args.length) {
+    } else if ((args[i] === "--search-provider" || args[i] === "--mcp") && i + 1 < args.length) {
       const tool = args[i + 1];
       if (tool !== "builtin" && tool !== "you") {
         throw new Error(`Invalid search provider: ${tool}. Must be "builtin" or "you"`);
@@ -110,8 +110,8 @@ const buildOutputPath = async (options: CompareOptions): Promise<string> => {
 
   let scope: string;
   if (agents.length < ALL_AGENTS.length) {
-    // Specific agents: gemini-claude-code
-    scope = agents.join("-");
+    // Specific agents: gemini-claude-code (include searchProvider if specified)
+    scope = searchProvider ? `${agents.join("-")}-${searchProvider}` : agents.join("-");
   } else if (searchProvider) {
     // All agents, specific search provider: builtin or you
     scope = searchProvider;

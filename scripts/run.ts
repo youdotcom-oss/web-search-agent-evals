@@ -37,7 +37,7 @@ const parseArgs = (args: string[]): RunOptions => {
       }
       mode = m;
       i++;
-    } else if (args[i] === "--mcp" && i + 1 < args.length) {
+    } else if ((args[i] === "--search-provider" || args[i] === "--mcp") && i + 1 < args.length) {
       const tool = args[i + 1];
       if (tool !== "builtin" && tool !== "you") {
         throw new Error(`Invalid search provider: ${tool}. Must be "builtin" or "you"`);

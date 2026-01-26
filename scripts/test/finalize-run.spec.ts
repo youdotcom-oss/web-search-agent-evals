@@ -108,15 +108,14 @@ describe("finalize-run.ts", () => {
       const content = await manifestFile.text();
       const lastLine = content.trim().split("\n").pop();
 
-      if (lastLine) {
-        const entry = JSON.parse(lastLine);
-        expect(entry.date).toBeDefined();
-        expect(entry.mode).toBe("full");
-        expect(Array.isArray(entry.agents)).toBe(true);
-        expect(Array.isArray(entry.searchProviders)).toBe(true);
-        expect(typeof entry.promptCount).toBe("number");
-        expect(typeof entry.commit).toBe("string");
-      }
+      expect(lastLine).toBeDefined();
+      const entry = JSON.parse(lastLine!);
+      expect(entry.date).toBeDefined();
+      expect(entry.mode).toBe("full");
+      expect(Array.isArray(entry.agents)).toBe(true);
+      expect(Array.isArray(entry.searchProviders)).toBe(true);
+      expect(typeof entry.promptCount).toBe("number");
+      expect(typeof entry.commit).toBe("string");
     });
   });
 

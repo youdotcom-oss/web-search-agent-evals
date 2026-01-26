@@ -2,6 +2,7 @@
 import { $ } from "bun";
 import { z } from "zod";
 import { readdirSync } from "node:fs";
+import { join } from "node:path";
 import { MCP_SERVERS } from "../mcp-servers.ts";
 
 const ManifestEntrySchema = z.object({
@@ -16,6 +17,12 @@ const ManifestEntrySchema = z.object({
 
 type ManifestEntry = z.infer<typeof ManifestEntrySchema>;
 
+type FinalizeOptions = {
+  runDate: string;
+  dataDir?: string;
+  agentSchemasDir?: string;
+};
+
 /**
  * Read agent list from agent-schemas directory
  *
@@ -23,12 +30,12 @@ type ManifestEntry = z.infer<typeof ManifestEntrySchema>;
  * Reads the name field from each schema JSON file to get the canonical agent name.
  * This ensures the manifest stays in sync with the actual agent schemas.
  */
-const getAgents = async (): Promise<string[]> => {
-  const schemaFiles = readdirSync("agent-schemas").filter((f) => f.endsWith(".json"));
+const getAgents = async (schemasDir = "agent-schemas"): Promise<string[]> => {
+  const schemaFiles = readdirSync(schemasDir).filter((f) => f.endsWith(".json"));
 
   const agents = await Promise.all(
     schemaFiles.map(async (file) => {
-      const schema = await Bun.file(`agent-schemas/${file}`).json();
+      const schema = await Bun.file(join(schemasDir, file)).json();
       return schema.name;
     }),
   );
@@ -48,28 +55,32 @@ const getSearchProviders = (): string[] => {
   return ["builtin", ...mcpProviders].sort();
 };
 
-const main = async () => {
-  const runDate = (process.argv[2] ?? new Date().toISOString().split("T")[0]) as string;
-  const runDir = `data/results/runs/${runDate}`;
-  const agents = await getAgents();
+/**
+ * Finalize a full evaluation run by creating/updating manifest and latest pointer
+ *
+ * @param options - Configuration for the finalization
+ * @returns The manifest entry created
+ *
+ * @public
+ */
+export const finalizeRun = async (options: FinalizeOptions): Promise<ManifestEntry> => {
+  const { runDate, dataDir = "data/results", agentSchemasDir = "agent-schemas" } = options;
+  const runDir = join(dataDir, "runs", runDate);
+  const agents = await getAgents(agentSchemasDir);
   const searchProviders = getSearchProviders();
 
   if (agents.length === 0) {
-    console.error("Error: No agent schemas found in agent-schemas/");
-    process.exit(1);
+    throw new Error(`No agent schemas found in ${agentSchemasDir}/`);
   }
 
   const firstProvider = searchProviders.includes("builtin") ? "builtin" : searchProviders[0];
   if (!firstProvider) {
-    console.error("Error: No search providers found");
-    process.exit(1);
+    throw new Error("No search providers found");
   }
 
-  const samplePath = `${runDir}/${agents[0]}/${firstProvider}.jsonl`;
+  const samplePath = join(runDir, agents[0]!, `${firstProvider}.jsonl`);
   if (!(await Bun.file(samplePath).exists())) {
-    console.error(`Error: No full run found at ${runDir}`);
-    console.error(`Expected: ${samplePath}`);
-    process.exit(1);
+    throw new Error(`No full run found at ${runDir}`);
   }
 
   const sampleFile = await Bun.file(samplePath).text();
@@ -80,8 +91,7 @@ const main = async () => {
   const commit = commitOutput.trim();
 
   if (!commit) {
-    console.error("Error: Failed to get git commit hash");
-    process.exit(1);
+    throw new Error("Failed to get git commit hash");
   }
 
   const entry: ManifestEntry = {
@@ -93,16 +103,12 @@ const main = async () => {
     commit: commit as string,
   };
 
-  try {
-    ManifestEntrySchema.parse(entry);
-  } catch (error) {
-    console.error("Error: Invalid manifest entry");
-    console.error(error);
-    process.exit(1);
-  }
+  // Validate entry
+  ManifestEntrySchema.parse(entry);
 
   // Check for existing entry with same date and update it instead of appending
-  const manifestFile = Bun.file("data/results/MANIFEST.jsonl");
+  const manifestPath = join(dataDir, "MANIFEST.jsonl");
+  const manifestFile = Bun.file(manifestPath);
   let existingEntries: ManifestEntry[] = [];
 
   if (await manifestFile.exists()) {
@@ -135,7 +141,8 @@ const main = async () => {
     promptCount,
     commit: commit as string,
   };
-  await Bun.write(Bun.file("data/results/latest.json"), JSON.stringify(latestPointer, null, 2));
+  const latestPath = join(dataDir, "latest.json");
+  await Bun.write(Bun.file(latestPath), JSON.stringify(latestPointer, null, 2));
 
   console.log(`✓ Manifest ${isUpdate ? "updated" : "entry created"} for ${runDate}`);
   if (isUpdate) {
@@ -148,11 +155,37 @@ const main = async () => {
 
   console.log(`\nRecommended workflow:`);
   console.log(`  1. Commit results first:`);
-  console.log(`     git add data/results/runs/${runDate}/`);
+  console.log(`     git add ${dataDir}/runs/${runDate}/`);
   console.log(`     git commit -m "feat: add ${runDate} evaluation results"`);
   console.log(`\n  2. Then commit manifest (references commit from step 1):`);
-  console.log(`     git add data/results/latest.json data/results/MANIFEST.jsonl`);
+  console.log(`     git add ${dataDir}/latest.json ${dataDir}/MANIFEST.jsonl`);
   console.log(`     git commit -m "chore: update manifest for ${runDate} run"`);
   console.log(`\n  For CI (single commit): Add [skip ci] to prevent infinite loops`);
+
+  return entry;
 };
-main();
+
+const main = async () => {
+  const runDate = (process.argv[2] ?? new Date().toISOString().split("T")[0]) as string;
+  const dataDir = process.argv.includes("--data-dir")
+    ? process.argv[process.argv.indexOf("--data-dir") + 1]
+    : undefined;
+  const agentSchemasDir = process.argv.includes("--schemas-dir")
+    ? process.argv[process.argv.indexOf("--schemas-dir") + 1]
+    : undefined;
+
+  try {
+    await finalizeRun({ runDate, dataDir, agentSchemasDir });
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error(`Error: ${error.message}`);
+    } else {
+      console.error("Error:", error);
+    }
+    process.exit(1);
+  }
+};
+
+if (import.meta.main) {
+  main();
+}

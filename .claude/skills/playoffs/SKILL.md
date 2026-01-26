@@ -94,14 +94,14 @@ See [@agent-eval-harness](../agent-eval-harness@plaited_agent-eval-harness/SKILL
 
 | File | Prompts | Format | Use With |
 |------|---------|--------|----------|
-| `test.jsonl` | 5 | `<web-search>` | `MCP_TOOL=builtin` |
-| `test-mcp.jsonl` | 5 | `<web-search mcp-server="ydc-server">` | `MCP_TOOL=you` |
-| `full.jsonl` | 1,254 | `<web-search>` | `MCP_TOOL=builtin` |
-| `full-mcp.jsonl` | 1,254 | `<web-search mcp-server="ydc-server">` | `MCP_TOOL=you` |
+| `test.jsonl` | 5 | `<web-search>` | `SEARCH_PROVIDER=builtin` |
+| `test-you.jsonl` | 5 | `<web-search mcp-server="ydc-server">` | `SEARCH_PROVIDER=you` |
+| `full.jsonl` | 1,254 | `<web-search>` | `SEARCH_PROVIDER=builtin` |
+| `full-you.jsonl` | 1,254 | `<web-search mcp-server="ydc-server">` | `SEARCH_PROVIDER=you` |
 
-**MCP format is 39-45% faster** than builtin due to explicit server specification.
+**You.com MCP format is 39-45% faster** than builtin due to explicit server specification.
 
-The entrypoint automatically selects the correct prompt file based on `MCP_TOOL` and `DATASET` environment variables.
+The entrypoint automatically selects the correct prompt file based on `SEARCH_PROVIDER` and `DATASET` environment variables.
 
 ## Results
 
@@ -365,19 +365,19 @@ type McpTool = "builtin" | "you" | "exa"
 ```bash
 # Convert test prompts
 sed 's/mcp-server="ydc-server"/mcp-server="exa-server"/g' \
-  data/prompts/test-mcp.jsonl > data/prompts/test-exa.jsonl
+  data/prompts/test-you.jsonl > data/prompts/test-exa.jsonl
 
 # Convert full prompts
 sed 's/mcp-server="ydc-server"/mcp-server="exa-server"/g' \
-  data/prompts/full-mcp.jsonl > data/prompts/full-exa.jsonl
+  data/prompts/full-you.jsonl > data/prompts/full-exa.jsonl
 ```
 
-Update `docker/entrypoint` to handle the new prompt files:
+The entrypoint automatically handles provider-specific prompt files:
 
 ```typescript
-const promptFile = MCP_TOOL === "builtin"
+const promptFile = SEARCH_PROVIDER === "builtin"
   ? `/eval/data/prompts/${DATASET}.jsonl`
-  : `/eval/data/prompts/${DATASET}-${MCP_TOOL}.jsonl`  // e.g., test-exa.jsonl
+  : `/eval/data/prompts/${DATASET}-${SEARCH_PROVIDER}.jsonl`  // e.g., test-exa.jsonl
 ```
 
 ### 6. Test

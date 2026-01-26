@@ -1,6 +1,6 @@
 {
   "meta": {
-    "generatedAt": "2026-01-26T17:01:34.886Z",
+    "generatedAt": "2026-01-26T17:09:38.991Z",
     "runs": ["claude-code-you", "gemini-you", "droid-you", "codex-you"],
     "promptCount": 1254,
     "promptsWithAllRuns": 1254
@@ -57,29 +57,7 @@
         "0.6-0.8": 1188,
         "0.8-1.0": 15
       }
-    },
-    "rankings": [
-      {
-        "run": "gemini-you",
-        "score": 0.5963716108453084,
-        "rank": 1
-      },
-      {
-        "run": "droid-you",
-        "score": 0.591068580542278,
-        "rank": 2
-      },
-      {
-        "run": "claude-code-you",
-        "score": 0.5868022328548775,
-        "rank": 3
-      },
-      {
-        "run": "codex-you",
-        "score": 0.5844098883572699,
-        "rank": 4
-      }
-    ]
+    }
   },
   "performance": {
     "claude-code-you": {
@@ -27840,68 +27818,6 @@
         "aWins": 308,
         "bWins": 426,
         "ties": 520
-      }
-    ],
-    "enhanced": [
-      {
-        "runA": "claude-code-you",
-        "runB": "gemini-you",
-        "aWins": 62,
-        "bWins": 458,
-        "ties": 734,
-        "winner": "gemini-you",
-        "loser": "claude-code-you",
-        "confidence": 0.8807692307692307
-      },
-      {
-        "runA": "claude-code-you",
-        "runB": "droid-you",
-        "aWins": 62,
-        "bWins": 308,
-        "ties": 884,
-        "winner": "droid-you",
-        "loser": "claude-code-you",
-        "confidence": 0.8324324324324325
-      },
-      {
-        "runA": "claude-code-you",
-        "runB": "codex-you",
-        "aWins": 62,
-        "bWins": 426,
-        "ties": 766,
-        "winner": "codex-you",
-        "loser": "claude-code-you",
-        "confidence": 0.8729508196721312
-      },
-      {
-        "runA": "gemini-you",
-        "runB": "droid-you",
-        "aWins": 458,
-        "bWins": 308,
-        "ties": 488,
-        "winner": "gemini-you",
-        "loser": "droid-you",
-        "confidence": 0.597911227154047
-      },
-      {
-        "runA": "gemini-you",
-        "runB": "codex-you",
-        "aWins": 458,
-        "bWins": 426,
-        "ties": 370,
-        "winner": "gemini-you",
-        "loser": "codex-you",
-        "confidence": 0.5180995475113123
-      },
-      {
-        "runA": "droid-you",
-        "runB": "codex-you",
-        "aWins": 308,
-        "bWins": 426,
-        "ties": 520,
-        "winner": "codex-you",
-        "loser": "droid-you",
-        "confidence": 0.5803814713896458
       }
     ]
   }

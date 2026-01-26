@@ -1,6 +1,6 @@
 {
   "meta": {
-    "generatedAt": "2026-01-26T17:01:32.139Z",
+    "generatedAt": "2026-01-26T17:09:38.787Z",
     "runs": ["claude-code-builtin", "gemini-builtin", "droid-builtin", "codex-builtin"],
     "promptCount": 1254,
     "promptsWithAllRuns": 1254
@@ -57,29 +57,7 @@
         "0.6-0.8": 626,
         "0.8-1.0": 263
       }
-    },
-    "rankings": [
-      {
-        "run": "claude-code-builtin",
-        "score": 0.5959728867623739,
-        "rank": 1
-      },
-      {
-        "run": "gemini-builtin",
-        "score": 0.5957735247209065,
-        "rank": 2
-      },
-      {
-        "run": "droid-builtin",
-        "score": 0.5927830940988966,
-        "rank": 3
-      },
-      {
-        "run": "codex-builtin",
-        "score": 0.5654704944178716,
-        "rank": 4
-      }
-    ]
+    }
   },
   "performance": {
     "claude-code-builtin": {
@@ -27840,68 +27818,6 @@
         "aWins": 157,
         "bWins": 313,
         "ties": 784
-      }
-    ],
-    "enhanced": [
-      {
-        "runA": "claude-code-builtin",
-        "runB": "gemini-builtin",
-        "aWins": 103,
-        "bWins": 681,
-        "ties": 470,
-        "winner": "gemini-builtin",
-        "loser": "claude-code-builtin",
-        "confidence": 0.8686224489795918
-      },
-      {
-        "runA": "claude-code-builtin",
-        "runB": "droid-builtin",
-        "aWins": 103,
-        "bWins": 157,
-        "ties": 994,
-        "winner": "droid-builtin",
-        "loser": "claude-code-builtin",
-        "confidence": 0.6038461538461538
-      },
-      {
-        "runA": "claude-code-builtin",
-        "runB": "codex-builtin",
-        "aWins": 103,
-        "bWins": 313,
-        "ties": 838,
-        "winner": "codex-builtin",
-        "loser": "claude-code-builtin",
-        "confidence": 0.7524038461538461
-      },
-      {
-        "runA": "gemini-builtin",
-        "runB": "droid-builtin",
-        "aWins": 681,
-        "bWins": 157,
-        "ties": 416,
-        "winner": "gemini-builtin",
-        "loser": "droid-builtin",
-        "confidence": 0.8126491646778043
-      },
-      {
-        "runA": "gemini-builtin",
-        "runB": "codex-builtin",
-        "aWins": 681,
-        "bWins": 313,
-        "ties": 260,
-        "winner": "gemini-builtin",
-        "loser": "codex-builtin",
-        "confidence": 0.6851106639839034
-      },
-      {
-        "runA": "droid-builtin",
-        "runB": "codex-builtin",
-        "aWins": 157,
-        "bWins": 313,
-        "ties": 784,
-        "winner": "codex-builtin",
-        "loser": "droid-builtin",
-        "confidence": 0.6659574468085107
       }
     ]
   }

@@ -82,27 +82,33 @@ bun scripts/compare.ts
 # Compare full dataset
 bun scripts/compare.ts --mode full
 
-# Filter by agent or MCP mode
+# Filter by agent or search provider
 bun scripts/compare.ts --agent gemini --agent claude-code
-bun scripts/compare.ts --mcp builtin
+bun scripts/compare.ts --search-provider builtin
 
 # Use statistical strategy
 bun scripts/compare.ts --strategy statistical
 
 # Combine flags
-bun scripts/compare.ts --mode full --mcp you --strategy statistical
+bun scripts/compare.ts --mode full --search-provider you --strategy statistical
 
 # Preview configuration
 bun scripts/compare.ts --dry-run
 ```
 
-Or use npm shortcuts for common test data comparisons:
+Or use npm shortcuts for common comparisons:
 
 ```bash
-bun run compare:all-weighted        # All agents, both modes
-bun run compare:all-statistical     # Statistical analysis
-bun run compare:builtin-agents      # Builtin only
-bun run compare:you-agents          # MCP only
+# Test data comparisons
+bun run compare:test-weighted       # All agents, both modes
+bun run compare:test-statistical    # Statistical analysis
+bun run compare:test-builtin        # Builtin only
+bun run compare:test-you            # MCP only
+
+# Flexible CLI shortcuts
+bun run compare                     # Test mode, all agents, weighted
+bun run compare:full                # Full mode, latest run
+bun run compare:statistical         # Test mode, statistical strategy
 ```
 
 View results:
@@ -198,10 +204,10 @@ The entrypoint script:
 
 | File | Prompts | Format | Use With |
 |------|---------|--------|----------|
-| `test.jsonl` | 5 | `<web-search>` | Builtin |
-| `test-mcp.jsonl` | 5 | `<web-search mcp-server="ydc-server">` | MCP |
-| `full.jsonl` | 1,254 | `<web-search>` | Builtin |
-| `full-mcp.jsonl` | 1,254 | `<web-search mcp-server="ydc-server">` | MCP |
+| `test.jsonl` | 5 | `<web-search>` | `SEARCH_PROVIDER=builtin` |
+| `test-you.jsonl` | 5 | `<web-search mcp-server="ydc-server">` | `SEARCH_PROVIDER=you` |
+| `full.jsonl` | 1,254 | `<web-search>` | `SEARCH_PROVIDER=builtin` |
+| `full-you.jsonl` | 1,254 | `<web-search mcp-server="ydc-server">` | `SEARCH_PROVIDER=you` |
 
 Prompts are designed to trigger web search with time-sensitive queries and recent events.
 

@@ -55,11 +55,11 @@ bun scripts/compare.ts                          # All agents, test, weighted
 bun scripts/compare.ts --mode full              # Latest full run
 bun scripts/compare.ts --mode full --run-date 2026-01-24  # Specific run
 
-# Quick shortcuts (test data only)
-bun run compare:all-weighted        # → test-runs/all-weighted.json
-bun run compare:all-statistical     # → test-runs/all-statistical.json
-bun run compare:builtin-agents      # → test-runs/builtin-weighted.json
-bun run compare:you-agents          # → test-runs/you-weighted.json
+# Quick shortcuts
+bun run compare:test-weighted       # → test-runs/all-weighted.json
+bun run compare:test-statistical    # → test-runs/all-statistical.json
+bun run compare:test-builtin        # → test-runs/builtin-weighted.json
+bun run compare:test-you            # → test-runs/you-weighted.json
 
 # View results
 cat data/comparisons/test-runs/all-weighted.json | jq '.meta, .quality'

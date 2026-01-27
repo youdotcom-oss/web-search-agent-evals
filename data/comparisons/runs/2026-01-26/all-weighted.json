@@ -1,0 +1,5705 @@
+{
+  "meta": {
+    "generatedAt": "2026-01-26T23:28:43.702Z",
+    "runs": [
+      "claude-code-builtin",
+      "claude-code-you",
+      "gemini-builtin",
+      "gemini-you",
+      "droid-builtin",
+      "droid-you",
+      "codex-builtin",
+      "codex-you"
+    ],
+    "promptCount": 151,
+    "promptsWithAllRuns": 151
+  },
+  "quality": {
+    "claude-code-builtin": {
+      "avgScore": 0.7135761589403952,
+      "passRate": 0.3509933774834437,
+      "passCount": 53,
+      "failCount": 98,
+      "scoreDistribution": {
+        "0.0-0.2": 2,
+        "0.2-0.4": 0,
+        "0.4-0.6": 1,
+        "0.6-0.8": 95,
+        "0.8-1.0": 53
+      }
+    },
+    "claude-code-you": {
+      "avgScore": 0.6615894039735083,
+      "passRate": 0.1986754966887417,
+      "passCount": 30,
+      "failCount": 121,
+      "scoreDistribution": {
+        "0.0-0.2": 2,
+        "0.2-0.4": 0,
+        "0.4-0.6": 0,
+        "0.6-0.8": 119,
+        "0.8-1.0": 30
+      }
+    },
+    "gemini-builtin": {
+      "avgScore": 0.7539735099337737,
+      "passRate": 0.44370860927152317,
+      "passCount": 67,
+      "failCount": 84,
+      "scoreDistribution": {
+        "0.0-0.2": 0,
+        "0.2-0.4": 0,
+        "0.4-0.6": 0,
+        "0.6-0.8": 85,
+        "0.8-1.0": 66
+      }
+    },
+    "gemini-you": {
+      "avgScore": 0.7062913907284757,
+      "passRate": 0.33774834437086093,
+      "passCount": 51,
+      "failCount": 100,
+      "scoreDistribution": {
+        "0.0-0.2": 3,
+        "0.2-0.4": 0,
+        "0.4-0.6": 0,
+        "0.6-0.8": 97,
+        "0.8-1.0": 51
+      }
+    },
+    "droid-builtin": {
+      "avgScore": 0.6890728476821174,
+      "passRate": 0.2847682119205298,
+      "passCount": 43,
+      "failCount": 108,
+      "scoreDistribution": {
+        "0.0-0.2": 2,
+        "0.2-0.4": 0,
+        "0.4-0.6": 2,
+        "0.6-0.8": 104,
+        "0.8-1.0": 43
+      }
+    },
+    "droid-you": {
+      "avgScore": 0.7125827814569523,
+      "passRate": 0.3708609271523179,
+      "passCount": 56,
+      "failCount": 95,
+      "scoreDistribution": {
+        "0.0-0.2": 4,
+        "0.2-0.4": 0,
+        "0.4-0.6": 1,
+        "0.6-0.8": 90,
+        "0.8-1.0": 56
+      }
+    },
+    "codex-builtin": {
+      "avgScore": 0.5604635761589405,
+      "passRate": 0.07947019867549669,
+      "passCount": 12,
+      "failCount": 139,
+      "scoreDistribution": {
+        "0.0-0.2": 0,
+        "0.2-0.4": 18,
+        "0.4-0.6": 15,
+        "0.6-0.8": 106,
+        "0.8-1.0": 12
+      }
+    },
+    "codex-you": {
+      "avgScore": 0.6790066225165546,
+      "passRate": 0.25165562913907286,
+      "passCount": 38,
+      "failCount": 113,
+      "scoreDistribution": {
+        "0.0-0.2": 1,
+        "0.2-0.4": 2,
+        "0.4-0.6": 0,
+        "0.6-0.8": 110,
+        "0.8-1.0": 38
+      }
+    }
+  },
+  "performance": {
+    "claude-code-builtin": {
+      "latency": {
+        "p50": 26489,
+        "p90": 34499,
+        "p99": 46079,
+        "mean": 27009.960264900663,
+        "min": 6999,
+        "max": 58081
+      },
+      "firstResponse": {
+        "p50": 26489,
+        "p90": 34499,
+        "p99": 46079,
+        "mean": 27009.98013245033,
+        "min": 6999,
+        "max": 58081
+      },
+      "totalDuration": 4078504
+    },
+    "claude-code-you": {
+      "latency": {
+        "p50": 34821,
+        "p90": 63729,
+        "p99": 90020,
+        "mean": 37880.37086092715,
+        "min": 10221,
+        "max": 90464
+      },
+      "firstResponse": {
+        "p50": 34821,
+        "p90": 63729,
+        "p99": 90020,
+        "mean": 37880.39072847682,
+        "min": 10221,
+        "max": 90464
+      },
+      "totalDuration": 5719936
+    },
+    "gemini-builtin": {
+      "latency": {
+        "p50": 16129,
+        "p90": 27922,
+        "p99": 60032,
+        "mean": 18946.27152317881,
+        "min": 5846,
+        "max": 60036
+      },
+      "firstResponse": {
+        "p50": 16129,
+        "p90": 27922,
+        "p99": 60032,
+        "mean": 18946.29139072848,
+        "min": 5846,
+        "max": 60036
+      },
+      "totalDuration": 2860887
+    },
+    "gemini-you": {
+      "latency": {
+        "p50": 15885,
+        "p90": 26014,
+        "p99": 60013,
+        "mean": 18321.298013245032,
+        "min": 7337,
+        "max": 60014
+      },
+      "firstResponse": {
+        "p50": 15885,
+        "p90": 26014,
+        "p99": 60013,
+        "mean": 18321.3178807947,
+        "min": 7337,
+        "max": 60014
+      },
+      "totalDuration": 2766516
+    },
+    "droid-builtin": {
+      "latency": {
+        "p50": 25086,
+        "p90": 34889,
+        "p99": 60028,
+        "mean": 27243.07284768212,
+        "min": 5429,
+        "max": 60041
+      },
+      "firstResponse": {
+        "p50": 25086,
+        "p90": 34889,
+        "p99": 60028,
+        "mean": 27243.079470198674,
+        "min": 5429,
+        "max": 60041
+      },
+      "totalDuration": 4113704
+    },
+    "droid-you": {
+      "latency": {
+        "p50": 18109,
+        "p90": 30786,
+        "p99": 60024,
+        "mean": 20579.649006622516,
+        "min": 9649,
+        "max": 60030
+      },
+      "firstResponse": {
+        "p50": 18109,
+        "p90": 30786,
+        "p99": 60024,
+        "mean": 20579.655629139073,
+        "min": 9649,
+        "max": 60030
+      },
+      "totalDuration": 3107527
+    },
+    "codex-builtin": {
+      "latency": {
+        "p50": 82483,
+        "p90": 180012,
+        "p99": 180030,
+        "mean": 83734.66887417219,
+        "min": 1750,
+        "max": 180033
+      },
+      "firstResponse": {
+        "p50": 82483,
+        "p90": 180012,
+        "p99": 180030,
+        "mean": 83734.72185430463,
+        "min": 1750,
+        "max": 180033
+      },
+      "totalDuration": 12643935
+    },
+    "codex-you": {
+      "latency": {
+        "p50": 20228,
+        "p90": 59364,
+        "p99": 180012,
+        "mean": 29364.298013245032,
+        "min": 4228,
+        "max": 180018
+      },
+      "firstResponse": {
+        "p50": 20228,
+        "p90": 59365,
+        "p99": 180012,
+        "mean": 29364.3178807947,
+        "min": 4228,
+        "max": 180018
+      },
+      "totalDuration": 4434009
+    }
+  },
+  "reliability": {
+    "claude-code-builtin": {
+      "toolErrors": 0,
+      "toolErrorRate": 0,
+      "timeouts": 0,
+      "timeoutRate": 0,
+      "completionRate": 1
+    },
+    "claude-code-you": {
+      "toolErrors": 1,
+      "toolErrorRate": 0.006622516556291391,
+      "timeouts": 0,
+      "timeoutRate": 0,
+      "completionRate": 1
+    },
+    "gemini-builtin": {
+      "toolErrors": 6,
+      "toolErrorRate": 0.039735099337748346,
+      "timeouts": 0,
+      "timeoutRate": 0,
+      "completionRate": 1
+    },
+    "gemini-you": {
+      "toolErrors": 2,
+      "toolErrorRate": 0.013245033112582781,
+      "timeouts": 0,
+      "timeoutRate": 0,
+      "completionRate": 1
+    },
+    "droid-builtin": {
+      "toolErrors": 6,
+      "toolErrorRate": 0.039735099337748346,
+      "timeouts": 0,
+      "timeoutRate": 0,
+      "completionRate": 1
+    },
+    "droid-you": {
+      "toolErrors": 3,
+      "toolErrorRate": 0.019867549668874173,
+      "timeouts": 0,
+      "timeoutRate": 0,
+      "completionRate": 1
+    },
+    "codex-builtin": {
+      "toolErrors": 18,
+      "toolErrorRate": 0.11920529801324503,
+      "timeouts": 0,
+      "timeoutRate": 0,
+      "completionRate": 0.8807947019867549
+    },
+    "codex-you": {
+      "toolErrors": 2,
+      "toolErrorRate": 0.013245033112582781,
+      "timeouts": 0,
+      "timeoutRate": 0,
+      "completionRate": 0.9867549668874173
+    }
+  },
+  "trajectoryInfo": {
+    "claude-code-builtin": {
+      "richness": "full",
+      "avgStepCount": 4.066225165562914
+    },
+    "claude-code-you": {
+      "richness": "full",
+      "avgStepCount": 13.059602649006623
+    },
+    "gemini-builtin": {
+      "richness": "full",
+      "avgStepCount": 12.887417218543046
+    },
+    "gemini-you": {
+      "richness": "full",
+      "avgStepCount": 13.913907284768213
+    },
+    "droid-builtin": {
+      "richness": "full",
+      "avgStepCount": 4.695364238410596
+    },
+    "droid-you": {
+      "richness": "full",
+      "avgStepCount": 5.456953642384106
+    },
+    "codex-builtin": {
+      "richness": "full",
+      "avgStepCount": 14.331125827814569
+    },
+    "codex-you": {
+      "richness": "full",
+      "avgStepCount": 5.039735099337748
+    }
+  },
+  "headToHead": {
+    "prompts": [
+      {
+        "id": "websearch-2",
+        "winner": "droid-you",
+        "scores": {
+          "droid-you": 0.6903688524590164,
+          "droid-builtin": 0.6874734938256206,
+          "gemini-builtin": 0.6865942028985508,
+          "claude-code-builtin": 0.6845672417641994,
+          "codex-you": 0.6814427454686023,
+          "codex-builtin": 0.6787221767289511,
+          "gemini-you": 0.511436849529183,
+          "claude-code-you": 0.511154489682097
+        },
+        "latencies": {
+          "claude-code-builtin": 30357,
+          "claude-code-you": 25895,
+          "gemini-builtin": 24875,
+          "gemini-you": 25231,
+          "droid-builtin": 23051,
+          "droid-you": 18520,
+          "codex-builtin": 79598,
+          "codex-you": 45564
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-7",
+        "winner": "claude-code-you",
+        "scores": {
+          "claude-code-you": 0.694962736225712,
+          "gemini-builtin": 0.6932603932071337,
+          "droid-you": 0.6915343915343914,
+          "droid-builtin": 0.6860635786989231,
+          "codex-you": 0.5334075723830736,
+          "gemini-you": 0.5129455424182273,
+          "claude-code-builtin": 0.5104373238701596,
+          "codex-builtin": 0.4870322019147085
+        },
+        "latencies": {
+          "claude-code-builtin": 27743,
+          "claude-code-you": 14028,
+          "gemini-builtin": 15429,
+          "gemini-you": 22174,
+          "droid-builtin": 26116,
+          "droid-you": 17144,
+          "codex-builtin": 2447,
+          "codex-you": 7980
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-26",
+        "winner": "gemini-builtin",
+        "scores": {
+          "gemini-builtin": 0.7017713724790291,
+          "codex-you": 0.5524475524475525,
+          "gemini-you": 0.5219394471259324,
+          "droid-you": 0.5187758167480285,
+          "claude-code-you": 0.51449835685289,
+          "claude-code-builtin": 0.5136017410228509,
+          "droid-builtin": 0.5113571834185122,
+          "codex-builtin": 0.5033594248664628
+        },
+        "latencies": {
+          "claude-code-builtin": 21056,
+          "claude-code-you": 19692,
+          "gemini-builtin": 10206,
+          "gemini-you": 12674,
+          "droid-builtin": 25415,
+          "droid-you": 14978,
+          "codex-builtin": 88301,
+          "codex-you": 4720
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-49",
+        "winner": "gemini-you",
+        "scores": {
+          "gemini-you": 0.6907795076793604,
+          "droid-builtin": 0.6837384579534531,
+          "claude-code-you": 0.6806797743236335,
+          "codex-you": 0.5179662234998204,
+          "gemini-builtin": 0.516476274165202,
+          "droid-you": 0.5164167669913539,
+          "claude-code-builtin": 0.5050777745806605,
+          "codex-builtin": 0.10165734868406515
+        },
+        "latencies": {
+          "claude-code-builtin": 58081,
+          "claude-code-you": 51819,
+          "gemini-builtin": 17208,
+          "gemini-you": 18012,
+          "droid-builtin": 33331,
+          "droid-you": 17274,
+          "codex-builtin": 180012,
+          "codex-you": 15698
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": true,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-50",
+        "winner": "codex-you",
+        "scores": {
+          "codex-you": 0.6970140983376587,
+          "droid-you": 0.6912990329240465,
+          "gemini-you": 0.6897754137115839,
+          "gemini-builtin": 0.6870695204377213,
+          "claude-code-builtin": 0.6846370061034373,
+          "droid-builtin": 0.5125433791863527,
+          "claude-code-you": 0.303295978905735,
+          "codex-builtin": 0.101657302905252
+        },
+        "latencies": {
+          "claude-code-builtin": 30130,
+          "claude-code-you": 90020,
+          "gemini-builtin": 23856,
+          "gemini-you": 19304,
+          "droid-builtin": 22917,
+          "droid-you": 17406,
+          "codex-builtin": 180017,
+          "codex-you": 41771
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": true,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": true,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-88",
+        "winner": "droid-you",
+        "scores": {
+          "droid-you": 0.690225334957369,
+          "droid-builtin": 0.6865375740327667,
+          "gemini-you": 0.6858675964499185,
+          "claude-code-builtin": 0.6827704102776626,
+          "codex-you": 0.5520562207183759,
+          "gemini-builtin": 0.5148463403770971,
+          "claude-code-you": 0.504512296006618,
+          "codex-builtin": 0.5030089667208281
+        },
+        "latencies": {
+          "claude-code-builtin": 37608,
+          "claude-code-you": 65485,
+          "gemini-builtin": 19207,
+          "gemini-you": 26605,
+          "droid-builtin": 25002,
+          "droid-you": 18704,
+          "codex-builtin": 98702,
+          "codex-you": 4763
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-120",
+        "winner": "codex-builtin",
+        "scores": {
+          "codex-builtin": 0.7006169413372043,
+          "claude-code-you": 0.6927053824362606,
+          "droid-builtin": 0.6886023577420086,
+          "claude-code-builtin": 0.6872754613527559,
+          "codex-you": 0.6805483632328463,
+          "gemini-you": 0.5331968573641694,
+          "gemini-builtin": 0.5221483942414176,
+          "droid-you": 0.5182581705313127
+        },
+        "latencies": {
+          "claude-code-builtin": 23439,
+          "claude-code-you": 15944,
+          "gemini-builtin": 12545,
+          "gemini-you": 8037,
+          "droid-builtin": 21055,
+          "droid-you": 15431,
+          "codex-builtin": 10711,
+          "codex-you": 53070
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-132",
+        "winner": "gemini-builtin",
+        "scores": {
+          "gemini-builtin": 0.6975022502250225,
+          "codex-builtin": 0.6945548402769344,
+          "droid-you": 0.6944199896426722,
+          "claude-code-you": 0.6811713157245125,
+          "droid-builtin": 0.6809600675474322,
+          "codex-you": 0.549390846229832,
+          "gemini-you": 0.5359841669665347,
+          "claude-code-builtin": 0.512911555842479
+        },
+        "latencies": {
+          "claude-code-builtin": 22235,
+          "claude-code-you": 47612,
+          "gemini-builtin": 12332,
+          "gemini-you": 7337,
+          "droid-builtin": 49335,
+          "droid-you": 14448,
+          "codex-builtin": 64864,
+          "codex-you": 5074
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-135",
+        "winner": "gemini-builtin",
+        "scores": {
+          "gemini-builtin": 0.697583559168925,
+          "droid-you": 0.6943560874895154,
+          "gemini-you": 0.6937605528109562,
+          "claude-code-builtin": 0.6867201234519671,
+          "droid-builtin": 0.6859966643451486,
+          "codex-you": 0.543661766846165,
+          "claude-code-you": 0.5079222562585824,
+          "codex-builtin": 0.506792094002581
+        },
+        "latencies": {
+          "claude-code-builtin": 24597,
+          "claude-code-you": 36868,
+          "gemini-builtin": 12284,
+          "gemini-you": 14991,
+          "droid-builtin": 26281,
+          "droid-you": 14499,
+          "codex-builtin": 43169,
+          "codex-you": 5871
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-150",
+        "winner": "droid-you",
+        "scores": {
+          "droid-you": 0.6927598863367275,
+          "claude-code-you": 0.6873046634674542,
+          "codex-you": 0.6847595887959921,
+          "gemini-builtin": 0.5195477943572033,
+          "gemini-you": 0.5194577766247244,
+          "claude-code-builtin": 0.5141917782298122,
+          "droid-builtin": 0.5124378109452736,
+          "codex-builtin": 0.5074990626171729
+        },
+        "latencies": {
+          "claude-code-builtin": 20139,
+          "claude-code-you": 23381,
+          "gemini-builtin": 14347,
+          "gemini-you": 14418,
+          "droid-builtin": 23120,
+          "droid-you": 15892,
+          "codex-builtin": 39005,
+          "codex-you": 29739
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-151",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 0.6871753246753247,
+          "droid-builtin": 0.6825528700906345,
+          "gemini-you": 0.5177168841906337,
+          "droid-you": 0.5171840989804102,
+          "gemini-builtin": 0.5169414953693245,
+          "claude-code-you": 0.5060981807094217,
+          "codex-you": 0.5058135028292381,
+          "codex-builtin": 0.5026104889445793
+        },
+        "latencies": {
+          "claude-code-builtin": 23640,
+          "claude-code-you": 48195,
+          "gemini-builtin": 16708,
+          "gemini-you": 15933,
+          "droid-builtin": 38720,
+          "droid-you": 16458,
+          "codex-builtin": 113921,
+          "codex-you": 50604
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-171",
+        "winner": "gemini-you",
+        "scores": {
+          "gemini-you": 0.6957411504424779,
+          "gemini-builtin": 0.6943598347960764,
+          "droid-builtin": 0.6875187781672509,
+          "claude-code-builtin": 0.686609457838319,
+          "droid-you": 0.5200360649168503,
+          "codex-you": 0.5141322781232335,
+          "codex-builtin": 0.5085920494902051,
+          "claude-code-you": 0.5054752518615857
+        },
+        "latencies": {
+          "claude-code-builtin": 24841,
+          "claude-code-you": 53792,
+          "gemini-builtin": 14496,
+          "gemini-you": 13464,
+          "droid-builtin": 22964,
+          "droid-you": 13973,
+          "codex-builtin": 33916,
+          "codex-you": 20228
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-210",
+        "winner": "gemini-you",
+        "scores": {
+          "gemini-you": 0.689226774790155,
+          "claude-code-you": 0.6791868449332198,
+          "codex-builtin": 0.6782561269455358,
+          "codex-you": 0.5550155877498624,
+          "gemini-builtin": 0.5225090036014406,
+          "claude-code-builtin": 0.5173200161653484,
+          "droid-builtin": 0.5106458481192335,
+          "droid-you": 0.217688679245283
+        },
+        "latencies": {
+          "claude-code-builtin": 16321,
+          "claude-code-you": 70653,
+          "gemini-builtin": 12328,
+          "gemini-you": 20087,
+          "droid-builtin": 27180,
+          "droid-you": 15960,
+          "codex-builtin": 91134,
+          "codex-you": 4453
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-212",
+        "winner": "gemini-builtin",
+        "scores": {
+          "gemini-builtin": 0.6906756191869579,
+          "droid-builtin": 0.6848827249967058,
+          "claude-code-builtin": 0.6825498288705456,
+          "claude-code-you": 0.682136909718092,
+          "codex-you": 0.6806237698003561,
+          "codex-builtin": 0.6772952625780388,
+          "droid-you": 0.5114133536237397,
+          "gemini-you": 0.51110535278004
+        },
+        "latencies": {
+          "claude-code-builtin": 38736,
+          "claude-code-you": 41035,
+          "gemini-builtin": 18138,
+          "gemini-you": 26014,
+          "droid-builtin": 29356,
+          "droid-you": 25285,
+          "codex-builtin": 129704,
+          "codex-you": 52345
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-218",
+        "winner": "claude-code-you",
+        "scores": {
+          "claude-code-you": 0.6914889524018908,
+          "droid-you": 0.6878545719427542,
+          "gemini-you": 0.6875554532518624,
+          "droid-builtin": 0.6871615047835252,
+          "claude-code-builtin": 0.6851567525476521,
+          "gemini-builtin": 0.6811991155928421,
+          "codex-builtin": 0.6795974193152909,
+          "codex-you": 0.5035355261452159
+        },
+        "latencies": {
+          "claude-code-builtin": 28537,
+          "claude-code-you": 17194,
+          "gemini-builtin": 47394,
+          "gemini-you": 22894,
+          "droid-builtin": 23668,
+          "droid-you": 22338,
+          "codex-builtin": 64254,
+          "codex-you": 83853
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-225",
+        "winner": "codex-you",
+        "scores": {
+          "codex-you": 0.7038322921672273,
+          "gemini-builtin": 0.6982720502676285,
+          "claude-code-builtin": 0.6892490738102024,
+          "droid-you": 0.6878292849811838,
+          "claude-code-you": 0.6816330591668878,
+          "codex-builtin": 0.6774882430515813,
+          "gemini-you": 0.5157703832203122,
+          "droid-builtin": 0.5140957571770897
+        },
+        "latencies": {
+          "claude-code-builtin": 20054,
+          "claude-code-you": 44228,
+          "gemini-builtin": 11891,
+          "gemini-you": 18023,
+          "droid-builtin": 20283,
+          "droid-you": 22384,
+          "codex-builtin": 119567,
+          "codex-you": 9405
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-232",
+        "winner": "codex-you",
+        "scores": {
+          "codex-you": 0.6904265439399393,
+          "gemini-you": 0.6904114866947498,
+          "droid-you": 0.6896727966350387,
+          "gemini-builtin": 0.6853727266440772,
+          "claude-code-builtin": 0.6843487067622311,
+          "droid-builtin": 0.5095132392579673,
+          "claude-code-you": 0.5094807698385109,
+          "codex-builtin": 0.5019160758766047
+        },
+        "latencies": {
+          "claude-code-builtin": 31090,
+          "claude-code-you": 30643,
+          "gemini-builtin": 27922,
+          "gemini-you": 18466,
+          "droid-builtin": 30535,
+          "droid-you": 19446,
+          "codex-builtin": 155570,
+          "codex-you": 18447
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-245",
+        "winner": "droid-you",
+        "scores": {
+          "droid-you": 0.6881101691211817,
+          "gemini-builtin": 0.6874470998257406,
+          "codex-builtin": 0.6778294145941204,
+          "droid-builtin": 0.5109114715938023,
+          "claude-code-builtin": 0.5104935464689215,
+          "codex-you": 0.5103366295696516,
+          "claude-code-you": 0.5058337384540593,
+          "gemini-you": 0.505716572343223
+        },
+        "latencies": {
+          "claude-code-builtin": 27589,
+          "claude-code-you": 50425,
+          "gemini-builtin": 23102,
+          "gemini-you": 51479,
+          "droid-builtin": 26494,
+          "droid-you": 21883,
+          "codex-builtin": 105029,
+          "codex-you": 28023
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-261",
+        "winner": "gemini-you",
+        "scores": {
+          "gemini-you": 0.6996366100024636,
+          "claude-code-builtin": 0.6859481059776659,
+          "codex-you": 0.6839570955124952,
+          "codex-builtin": 0.6778334230583969,
+          "gemini-builtin": 0.5245398773006136,
+          "droid-you": 0.5198176773682124,
+          "droid-builtin": 0.5161177671519905,
+          "claude-code-you": 0.5113391540991041
+        },
+        "latencies": {
+          "claude-code-builtin": 26402,
+          "claude-code-you": 25457,
+          "gemini-builtin": 11225,
+          "gemini-you": 11177,
+          "droid-builtin": 17613,
+          "droid-you": 14138,
+          "codex-builtin": 104879,
+          "codex-you": 32493
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-293",
+        "winner": "codex-you",
+        "scores": {
+          "codex-you": 0.7230076812289967,
+          "gemini-you": 0.6912751586827972,
+          "claude-code-you": 0.6860188790127084,
+          "codex-builtin": 0.6815482167023181,
+          "gemini-builtin": 0.5179168657429527,
+          "droid-you": 0.5137243240770393,
+          "claude-code-builtin": 0.5121862052156958,
+          "droid-builtin": 0.30491674314933787
+        },
+        "latencies": {
+          "claude-code-builtin": 23618,
+          "claude-code-you": 26226,
+          "gemini-builtin": 15744,
+          "gemini-you": 17433,
+          "droid-builtin": 60016,
+          "droid-you": 20859,
+          "codex-builtin": 44814,
+          "codex-you": 5249
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": true,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-300",
+        "winner": "gemini-builtin",
+        "scores": {
+          "gemini-builtin": 0.6948085176625949,
+          "droid-you": 0.6919750466813783,
+          "claude-code-builtin": 0.6880117973629424,
+          "codex-you": 0.680523742888181,
+          "gemini-you": 0.5189885435787075,
+          "droid-builtin": 0.5115700566932778,
+          "claude-code-you": 0.5114648221041771,
+          "codex-builtin": 0.101657302905252
+        },
+        "latencies": {
+          "claude-code-builtin": 22056,
+          "claude-code-you": 25167,
+          "gemini-builtin": 14145,
+          "gemini-you": 14799,
+          "droid-builtin": 24929,
+          "droid-you": 16673,
+          "codex-builtin": 180017,
+          "codex-you": 53311
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": true,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-304",
+        "winner": "codex-you",
+        "scores": {
+          "codex-you": 0.7246606522098991,
+          "gemini-builtin": 0.6890851683177615,
+          "gemini-you": 0.6867647058823529,
+          "claude-code-builtin": 0.6825,
+          "droid-you": 0.6813675340663072,
+          "codex-builtin": 0.6785935459913994,
+          "droid-builtin": 0.5090579710144927,
+          "claude-code-you": 0.5073751751604101
+        },
+        "latencies": {
+          "claude-code-builtin": 39000,
+          "claude-code-you": 39677,
+          "gemini-builtin": 20299,
+          "gemini-you": 24500,
+          "droid-builtin": 32120,
+          "droid-you": 46114,
+          "codex-builtin": 82483,
+          "codex-you": 5041
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-315",
+        "winner": "droid-you",
+        "scores": {
+          "droid-you": 0.6906829944063986,
+          "gemini-builtin": 0.6899231457991344,
+          "droid-builtin": 0.6870024004800961,
+          "gemini-you": 0.5152524276780721,
+          "codex-you": 0.5128002730724922,
+          "claude-code-builtin": 0.5084748156727591,
+          "claude-code-you": 0.5081076698556835,
+          "codex-builtin": 0.10165735784013127
+        },
+        "latencies": {
+          "claude-code-builtin": 34399,
+          "claude-code-you": 36002,
+          "gemini-builtin": 19103,
+          "gemini-you": 18669,
+          "droid-builtin": 23995,
+          "droid-you": 18129,
+          "codex-builtin": 180011,
+          "codex-you": 22437
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": true,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-341",
+        "winner": "droid-builtin",
+        "scores": {
+          "droid-builtin": 0.699313153415998,
+          "claude-code-you": 0.6915892501658925,
+          "claude-code-builtin": 0.6848080884035701,
+          "gemini-builtin": 0.6846246390760347,
+          "droid-you": 0.5130713258681538,
+          "gemini-you": 0.5089755864049785,
+          "codex-you": 0.5062284599094797,
+          "codex-builtin": 0.5022363693289401
+        },
+        "latencies": {
+          "claude-code-builtin": 29587,
+          "claude-code-you": 17084,
+          "gemini-builtin": 30170,
+          "gemini-you": 32424,
+          "droid-builtin": 11339,
+          "droid-you": 21951,
+          "codex-builtin": 133146,
+          "codex-you": 47166
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-387",
+        "winner": "gemini-you",
+        "scores": {
+          "gemini-you": 0.7045741324921135,
+          "droid-you": 0.6905408205553253,
+          "claude-code-builtin": 0.6878463152485762,
+          "codex-you": 0.5473709142586451,
+          "gemini-builtin": 0.5133552953746161,
+          "droid-builtin": 0.5112718391884276,
+          "codex-builtin": 0.5106292517006803,
+          "claude-code-you": 0.5087981699806441
+        },
+        "latencies": {
+          "claude-code-builtin": 22353,
+          "claude-code-you": 33098,
+          "gemini-builtin": 21463,
+          "gemini-you": 9144,
+          "droid-builtin": 25615,
+          "droid-you": 18304,
+          "codex-builtin": 27224,
+          "codex-you": 5333
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-389",
+        "winner": "gemini-builtin",
+        "scores": {
+          "gemini-builtin": 0.6930147721131328,
+          "droid-you": 0.691813316146388,
+          "droid-builtin": 0.6863088057901086,
+          "claude-code-builtin": 0.6853971719692243,
+          "codex-you": 0.6847329915971839,
+          "gemini-you": 0.5131555867391686,
+          "claude-code-you": 0.5035154739444789,
+          "codex-builtin": 0.5025644532585652
+        },
+        "latencies": {
+          "claude-code-builtin": 27854,
+          "claude-code-you": 84337,
+          "gemini-builtin": 15653,
+          "gemini-you": 21804,
+          "droid-builtin": 25528,
+          "droid-you": 16843,
+          "codex-builtin": 115984,
+          "codex-you": 29823
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-396",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 0.6879137790021953,
+          "codex-you": 0.5266524520255864,
+          "gemini-you": 0.5181906378850352,
+          "claude-code-you": 0.5179200764589929,
+          "droid-you": 0.5145292522278186,
+          "droid-builtin": 0.5122744568552842,
+          "gemini-builtin": 0.5112726862811408,
+          "codex-builtin": 0.5020617848183911
+        },
+        "latencies": {
+          "claude-code-builtin": 22231,
+          "claude-code-you": 15741,
+          "gemini-builtin": 25613,
+          "gemini-you": 15492,
+          "droid-builtin": 23441,
+          "droid-you": 19648,
+          "codex-builtin": 144505,
+          "codex-you": 10256
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-411",
+        "winner": "droid-you",
+        "scores": {
+          "droid-you": 0.6913283078430306,
+          "droid-builtin": 0.6887337483977294,
+          "gemini-builtin": 0.6857054919173535,
+          "claude-code-builtin": 0.6851375325245834,
+          "codex-you": 0.6815844343970853,
+          "gemini-you": 0.5303951367781155,
+          "codex-builtin": 0.5133838947133615,
+          "claude-code-you": 0.5109150445697653
+        },
+        "latencies": {
+          "claude-code-builtin": 28593,
+          "claude-code-you": 26485,
+          "gemini-builtin": 27023,
+          "gemini-you": 8870,
+          "droid-builtin": 20844,
+          "droid-you": 17373,
+          "codex-builtin": 21415,
+          "codex-you": 44562
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-426",
+        "winner": "gemini-builtin",
+        "scores": {
+          "gemini-builtin": 0.697892025944296,
+          "gemini-you": 0.6970896841175171,
+          "droid-you": 0.6935093780848963,
+          "claude-code-builtin": 0.6918947457340767,
+          "droid-builtin": 0.6819417127519263,
+          "codex-you": 0.5136942529785,
+          "codex-builtin": 0.5062715584822828,
+          "claude-code-you": 0.5049523746636513
+        },
+        "latencies": {
+          "claude-code-builtin": 16757,
+          "claude-code-you": 59577,
+          "gemini-builtin": 12105,
+          "gemini-you": 12581,
+          "droid-builtin": 42217,
+          "droid-you": 15208,
+          "codex-builtin": 46835,
+          "codex-you": 20907
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-435",
+        "winner": "gemini-you",
+        "scores": {
+          "gemini-you": 0.6913434299411636,
+          "gemini-builtin": 0.6911203653949489,
+          "claude-code-you": 0.6851211160217267,
+          "codex-you": 0.5369731328567907,
+          "droid-you": 0.516637089618456,
+          "droid-builtin": 0.5124018189334436,
+          "claude-code-builtin": 0.5103448275862069,
+          "codex-builtin": 0.5037365018869335
+        },
+        "latencies": {
+          "claude-code-builtin": 28000,
+          "claude-code-you": 28641,
+          "gemini-builtin": 17610,
+          "gemini-you": 17356,
+          "droid-builtin": 23190,
+          "droid-you": 17032,
+          "codex-builtin": 79289,
+          "codex-you": 7114
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-443",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 0.6880236596483611,
+          "claude-code-you": 0.684454774661204,
+          "codex-you": 0.6822500543754078,
+          "gemini-builtin": 0.5233390384316166,
+          "gemini-you": 0.5211550666384599,
+          "droid-you": 0.5190949016612565,
+          "droid-builtin": 0.5134529147982063,
+          "codex-builtin": 0.5118031238934571
+        },
+        "latencies": {
+          "claude-code-builtin": 22035,
+          "claude-code-you": 30730,
+          "gemini-builtin": 11854,
+          "gemini-you": 13181,
+          "droid-builtin": 21300,
+          "droid-you": 14711,
+          "codex-builtin": 24417,
+          "codex-you": 40379
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-446",
+        "winner": "codex-you",
+        "scores": {
+          "codex-you": 0.7207247370827619,
+          "gemini-builtin": 0.6971385875581138,
+          "gemini-you": 0.6929726815240833,
+          "droid-you": 0.6837703911594457,
+          "droid-builtin": 0.6816766073932299,
+          "claude-code-builtin": 0.5117196655988749,
+          "codex-builtin": 0.5103666332630705,
+          "claude-code-you": 0.5064088869899595
+        },
+        "latencies": {
+          "claude-code-builtin": 24598,
+          "claude-code-you": 45810,
+          "gemini-builtin": 12551,
+          "gemini-you": 15692,
+          "droid-builtin": 43933,
+          "droid-you": 33206,
+          "codex-builtin": 27939,
+          "codex-you": 5561
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-455",
+        "winner": "droid-you",
+        "scores": {
+          "droid-you": 0.6923631207315661,
+          "gemini-builtin": 0.6900247909049932,
+          "claude-code-builtin": 0.6894029958231311,
+          "codex-you": 0.6817596493995177,
+          "gemini-you": 0.5173822353554667,
+          "droid-builtin": 0.5146006716308951,
+          "claude-code-you": 0.5060499727751225,
+          "codex-builtin": 0.5052871821081757
+        },
+        "latencies": {
+          "claude-code-builtin": 19829,
+          "claude-code-you": 48587,
+          "gemini-builtin": 18967,
+          "gemini-you": 16259,
+          "droid-builtin": 19547,
+          "droid-you": 16278,
+          "codex-builtin": 55741,
+          "codex-you": 43381
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-557",
+        "winner": "codex-you",
+        "scores": {
+          "codex-you": 0.7008486989488196,
+          "claude-code-builtin": 0.6873385703709797,
+          "claude-code-you": 0.6803224518761644,
+          "gemini-you": 0.5148067716302256,
+          "droid-you": 0.5145271415427825,
+          "gemini-builtin": 0.5122749590834696,
+          "droid-builtin": 0.5118347863821058,
+          "codex-builtin": 0.5022727444904886
+        },
+        "latencies": {
+          "claude-code-builtin": 23314,
+          "claude-code-you": 55365,
+          "gemini-builtin": 23440,
+          "gemini-you": 19261,
+          "droid-builtin": 24349,
+          "droid-you": 19651,
+          "codex-builtin": 130999,
+          "codex-you": 10606
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-560",
+        "winner": "droid-you",
+        "scores": {
+          "droid-you": 0.6908111099399178,
+          "droid-builtin": 0.6852183316870466,
+          "codex-you": 0.6838626292466765,
+          "gemini-you": 0.5172602266843105,
+          "gemini-builtin": 0.514937263493328,
+          "claude-code-builtin": 0.5114512558210551,
+          "claude-code-you": 0.5099651220727455,
+          "codex-builtin": 0.5027434089599736
+        },
+        "latencies": {
+          "claude-code-builtin": 25198,
+          "claude-code-you": 29105,
+          "gemini-builtin": 19084,
+          "gemini-you": 16381,
+          "droid-builtin": 28359,
+          "droid-you": 17974,
+          "codex-builtin": 108353,
+          "codex-you": 32850
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-564",
+        "winner": "gemini-you",
+        "scores": {
+          "gemini-you": 0.6993249817562637,
+          "claude-code-builtin": 0.6955254515599343,
+          "droid-builtin": 0.6927263058378634,
+          "claude-code-you": 0.6893143429716576,
+          "codex-you": 0.6842985773176704,
+          "droid-you": 0.5225903614457832,
+          "gemini-builtin": 0.5195963158926122,
+          "codex-builtin": 0.5035180711588527
+        },
+        "latencies": {
+          "claude-code-builtin": 13616,
+          "claude-code-you": 19958,
+          "gemini-builtin": 14309,
+          "gemini-you": 11333,
+          "droid-builtin": 15924,
+          "droid-you": 12280,
+          "codex-builtin": 84274,
+          "codex-you": 31263
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-567",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 0.6857515320933233,
+          "claude-code-you": 0.6852976006590464,
+          "codex-you": 0.6787109423319562,
+          "gemini-builtin": 0.5213159016626403,
+          "droid-you": 0.5143116114874535,
+          "droid-builtin": 0.5091717875813997,
+          "gemini-you": 0.5072630432151071,
+          "codex-builtin": 0.5031433361274099
+        },
+        "latencies": {
+          "claude-code-builtin": 26903,
+          "claude-code-you": 28133,
+          "gemini-builtin": 13074,
+          "gemini-you": 40305,
+          "droid-builtin": 31709,
+          "droid-you": 19962,
+          "codex-builtin": 94440,
+          "codex-you": 79842
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-580",
+        "winner": "codex-you",
+        "scores": {
+          "codex-you": 0.7196030330062444,
+          "gemini-you": 0.6961729832733432,
+          "droid-you": 0.6947706603400554,
+          "claude-code-builtin": 0.6908562367864693,
+          "claude-code-you": 0.6904241645244216,
+          "gemini-builtin": 0.5242679178126517,
+          "droid-builtin": 0.5115696104897802,
+          "codex-builtin": 0.5077491346799607
+        },
+        "latencies": {
+          "claude-code-builtin": 17920,
+          "claude-code-you": 18450,
+          "gemini-builtin": 11362,
+          "gemini-you": 13169,
+          "droid-builtin": 24930,
+          "droid-you": 14174,
+          "codex-builtin": 37714,
+          "codex-you": 5726
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-585",
+        "winner": "codex-you",
+        "scores": {
+          "codex-you": 0.7214756003098373,
+          "gemini-builtin": 0.703988308049087,
+          "gemini-you": 0.6975563909774436,
+          "droid-you": 0.6953403620584446,
+          "droid-builtin": 0.6913265306122449,
+          "claude-code-builtin": 0.6881050148523502,
+          "claude-code-you": 0.5217754228061262,
+          "codex-builtin": 0.5048522490174197
+        },
+        "latencies": {
+          "claude-code-builtin": 21892,
+          "claude-code-you": 12777,
+          "gemini-builtin": 9349,
+          "gemini-you": 12300,
+          "droid-builtin": 17375,
+          "droid-you": 13749,
+          "codex-builtin": 60827,
+          "codex-you": 5455
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-608",
+        "winner": "codex-you",
+        "scores": {
+          "codex-you": 0.7259078567792296,
+          "gemini-builtin": 0.6940343252331704,
+          "gemini-you": 0.6900670483652253,
+          "droid-builtin": 0.6855719420657574,
+          "droid-you": 0.5163800163800164,
+          "claude-code-you": 0.509600921688482,
+          "claude-code-builtin": 0.5092075379043643,
+          "codex-builtin": 0.501953099569016
+        },
+        "latencies": {
+          "claude-code-builtin": 31582,
+          "claude-code-you": 30247,
+          "gemini-builtin": 14761,
+          "gemini-you": 18911,
+          "droid-builtin": 27377,
+          "droid-you": 17315,
+          "codex-builtin": 152602,
+          "codex-you": 4893
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-614",
+        "winner": "claude-code-you",
+        "scores": {
+          "claude-code-you": 0.6942246074975968,
+          "droid-you": 0.688437248051599,
+          "droid-builtin": 0.6843443388880237,
+          "codex-you": 0.6827275771469785,
+          "claude-code-builtin": 0.6819458915051746,
+          "gemini-builtin": 0.5129354949982753,
+          "gemini-you": 0.5052712034157398,
+          "codex-builtin": 0.5035085257174935
+        },
+        "latencies": {
+          "claude-code-builtin": 42191,
+          "claude-code-you": 14605,
+          "gemini-builtin": 22192,
+          "gemini-you": 55913,
+          "droid-builtin": 31105,
+          "droid-you": 21326,
+          "codex-builtin": 84506,
+          "codex-you": 37822
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-625",
+        "winner": "gemini-builtin",
+        "scores": {
+          "gemini-builtin": 0.6912092068294791,
+          "droid-you": 0.6898126203525403,
+          "claude-code-builtin": 0.6834509422800642,
+          "codex-you": 0.6789913786221761,
+          "claude-code-you": 0.517570575143493,
+          "droid-builtin": 0.5121207223950548,
+          "codex-builtin": 0.5019186492709133,
+          "gemini-you": 0.30491698490485636
+        },
+        "latencies": {
+          "claude-code-builtin": 34499,
+          "claude-code-you": 16074,
+          "gemini-builtin": 17508,
+          "gemini-you": 60013,
+          "droid-builtin": 23751,
+          "droid-you": 19253,
+          "codex-builtin": 155360,
+          "codex-you": 74162
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": true,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-650",
+        "winner": "gemini-builtin",
+        "scores": {
+          "gemini-builtin": 0.696457692582791,
+          "droid-builtin": 0.687911555842479,
+          "claude-code-you": 0.6813552589768033,
+          "gemini-you": 0.523689197725837,
+          "droid-you": 0.5177767243422612,
+          "claude-code-builtin": 0.5106507615294493,
+          "codex-you": 0.5040284678393985,
+          "codex-builtin": 0.5031136481577582
+        },
+        "latencies": {
+          "claude-code-builtin": 27167,
+          "claude-code-you": 46205,
+          "gemini-builtin": 12981,
+          "gemini-you": 11664,
+          "droid-builtin": 22235,
+          "droid-you": 15876,
+          "codex-builtin": 95350,
+          "codex-you": 73470
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-673",
+        "winner": "gemini-builtin",
+        "scores": {
+          "gemini-builtin": 0.7037935502447452,
+          "gemini-you": 0.6981320842007865,
+          "droid-builtin": 0.6881509731720148,
+          "claude-code-builtin": 0.6873833897465533,
+          "droid-you": 0.6844381174101806,
+          "codex-you": 0.5107480653482372,
+          "claude-code-you": 0.5106243581116974,
+          "codex-builtin": 0.10165731206081231
+        },
+        "latencies": {
+          "claude-code-builtin": 23226,
+          "claude-code-you": 27237,
+          "gemini-builtin": 9419,
+          "gemini-you": 11969,
+          "droid-builtin": 21812,
+          "droid-you": 30786,
+          "codex-builtin": 180016,
+          "codex-you": 26912
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": true,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-678",
+        "winner": "claude-code-you",
+        "scores": {
+          "claude-code-you": 0.700866528711847,
+          "gemini-builtin": 0.6988454812812972,
+          "gemini-you": 0.6986574402649633,
+          "droid-you": 0.693852510525985,
+          "codex-you": 0.6916657407921782,
+          "claude-code-builtin": 0.6880378096479791,
+          "codex-builtin": 0.5336134453781513,
+          "droid-builtin": 0.5126914290549116
+        },
+        "latencies": {
+          "claude-code-builtin": 22010,
+          "claude-code-you": 10598,
+          "gemini-builtin": 11581,
+          "gemini-you": 11681,
+          "droid-builtin": 22638,
+          "droid-you": 14913,
+          "codex-builtin": 7925,
+          "codex-you": 17001
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-680",
+        "winner": "codex-you",
+        "scores": {
+          "codex-you": 0.727029136316337,
+          "droid-you": 0.6962539851222105,
+          "gemini-you": 0.694807209824376,
+          "droid-builtin": 0.6889321042121395,
+          "gemini-builtin": 0.5270172910662825,
+          "claude-code-builtin": 0.5138914613817374,
+          "claude-code-you": 0.5112994350282486,
+          "codex-builtin": 0.5020830006318435
+        },
+        "latencies": {
+          "claude-code-builtin": 20596,
+          "claude-code-you": 25550,
+          "gemini-builtin": 10104,
+          "gemini-you": 14146,
+          "droid-builtin": 20533,
+          "droid-you": 13115,
+          "codex-builtin": 143023,
+          "codex-you": 4766
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-708",
+        "winner": "gemini-builtin",
+        "scores": {
+          "gemini-builtin": 0.6941558648872996,
+          "droid-builtin": 0.6862456423136034,
+          "claude-code-builtin": 0.6851698362656361,
+          "gemini-you": 0.5187114077215742,
+          "droid-you": 0.5145751348199971,
+          "codex-you": 0.5077611631396493,
+          "claude-code-you": 0.5064782223757801,
+          "codex-builtin": 0.10165734868406515
+        },
+        "latencies": {
+          "claude-code-builtin": 28499,
+          "claude-code-you": 45309,
+          "gemini-builtin": 14661,
+          "gemini-you": 15033,
+          "droid-builtin": 25677,
+          "droid-you": 19583,
+          "codex-builtin": 180012,
+          "codex-you": 37654
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": true,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-729",
+        "winner": "gemini-builtin",
+        "scores": {
+          "gemini-builtin": 0.6917401372691256,
+          "claude-code-you": 0.6876092804303968,
+          "codex-you": 0.6866243025418475,
+          "gemini-you": 0.5323869156860628,
+          "droid-builtin": 0.5135037810586964,
+          "claude-code-builtin": 0.5110489098408957,
+          "droid-you": 0.5073513195618613,
+          "codex-builtin": 0.5058782036209735
+        },
+        "latencies": {
+          "claude-code-builtin": 26152,
+          "claude-code-you": 22792,
+          "gemini-builtin": 16921,
+          "gemini-you": 8263,
+          "droid-builtin": 21216,
+          "droid-you": 39809,
+          "codex-builtin": 50036,
+          "codex-you": 24808
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-738",
+        "winner": "gemini-builtin",
+        "scores": {
+          "gemini-builtin": 0.6885372952484093,
+          "gemini-you": 0.6869664938173115,
+          "claude-code-builtin": 0.6855381480961079,
+          "droid-builtin": 0.6844936708860759,
+          "claude-code-you": 0.6816005148401576,
+          "droid-you": 0.5148089643597591,
+          "codex-you": 0.5058997050147492,
+          "codex-builtin": 0.5032971743216064
+        },
+        "latencies": {
+          "claude-code-builtin": 27468,
+          "claude-code-you": 44451,
+          "gemini-builtin": 21161,
+          "gemini-you": 24070,
+          "droid-builtin": 30600,
+          "droid-you": 19258,
+          "codex-builtin": 89987,
+          "codex-you": 49850
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-741",
+        "winner": "droid-builtin",
+        "scores": {
+          "droid-builtin": 0.6873487280810077,
+          "gemini-you": 0.6862229246941753,
+          "droid-you": 0.6859067112629971,
+          "gemini-builtin": 0.6849654530959342,
+          "claude-code-builtin": 0.6849157164105106,
+          "claude-code-you": 0.680773449828721,
+          "codex-you": 0.5088830984247306,
+          "codex-builtin": 0.502646622909168
+        },
+        "latencies": {
+          "claude-code-builtin": 29255,
+          "claude-code-you": 50962,
+          "gemini-builtin": 29104,
+          "gemini-you": 25731,
+          "droid-builtin": 23294,
+          "droid-you": 26506,
+          "codex-builtin": 112352,
+          "codex-you": 32772
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-749",
+        "winner": "codex-you",
+        "scores": {
+          "codex-you": 0.6875475762265255,
+          "claude-code-builtin": 0.6854785190359762,
+          "droid-builtin": 0.6837303204027587,
+          "gemini-builtin": 0.5198189865891525,
+          "gemini-you": 0.5190730497806599,
+          "droid-you": 0.5159320233669675,
+          "claude-code-you": 0.5090000900009,
+          "codex-builtin": 0.10165729374979285
+        },
+        "latencies": {
+          "claude-code-builtin": 27630,
+          "claude-code-you": 32333,
+          "gemini-builtin": 14137,
+          "gemini-you": 14729,
+          "droid-builtin": 33363,
+          "droid-you": 17830,
+          "codex-builtin": 180018,
+          "codex-you": 22909
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": true,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-754",
+        "winner": "gemini-you",
+        "scores": {
+          "gemini-you": 0.6960896309314587,
+          "claude-code-you": 0.6927872643187478,
+          "droid-you": 0.6885391280801516,
+          "claude-code-builtin": 0.6854880436302615,
+          "gemini-builtin": 0.5121946262347059,
+          "droid-builtin": 0.5120894620189402,
+          "codex-you": 0.5070516888794867,
+          "codex-builtin": 0.5032547845332639
+        },
+        "latencies": {
+          "claude-code-builtin": 27604,
+          "claude-code-you": 15866,
+          "gemini-builtin": 23601,
+          "gemini-you": 13225,
+          "droid-builtin": 23815,
+          "droid-you": 21158,
+          "codex-builtin": 91172,
+          "codex-you": 41543
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-784",
+        "winner": "gemini-builtin",
+        "scores": {
+          "gemini-builtin": 0.6967928228969926,
+          "claude-code-builtin": 0.6856875667972925,
+          "claude-code-you": 0.6843364869911615,
+          "gemini-you": 0.5231606577626804,
+          "droid-you": 0.5173220162826953,
+          "droid-builtin": 0.5136376034184926,
+          "codex-you": 0.5071086678356476,
+          "codex-builtin": 0.5059062093948103
+        },
+        "latencies": {
+          "claude-code-builtin": 27070,
+          "claude-code-you": 31132,
+          "gemini-builtin": 12766,
+          "gemini-you": 11953,
+          "droid-builtin": 20998,
+          "droid-you": 16319,
+          "codex-builtin": 49794,
+          "codex-you": 41202
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-787",
+        "winner": "gemini-builtin",
+        "scores": {
+          "gemini-builtin": 0.6929651476136296,
+          "claude-code-builtin": 0.686001100110011,
+          "codex-you": 0.6827198219294408,
+          "claude-code-you": 0.6807497700091996,
+          "gemini-you": 0.5181488203266787,
+          "droid-you": 0.5141456054319125,
+          "droid-builtin": 0.5090451352247716,
+          "codex-builtin": 0.1016572662840223
+        },
+        "latencies": {
+          "claude-code-builtin": 26270,
+          "claude-code-you": 51176,
+          "gemini-builtin": 15699,
+          "gemini-you": 15530,
+          "droid-builtin": 32167,
+          "droid-you": 20208,
+          "codex-builtin": 180021,
+          "codex-you": 37861
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": true,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-790",
+        "winner": "droid-you",
+        "scores": {
+          "droid-you": 0.6923701580684385,
+          "gemini-you": 0.6899917545350057,
+          "droid-builtin": 0.6882007392413976,
+          "claude-code-builtin": 0.6865194102061974,
+          "claude-code-you": 0.6819433193695466,
+          "gemini-builtin": 0.5167261373773417,
+          "codex-you": 0.5083930170098478,
+          "codex-builtin": 0.5049663118512755
+        },
+        "latencies": {
+          "claude-code-builtin": 25043,
+          "claude-code-you": 42207,
+          "gemini-builtin": 16936,
+          "gemini-you": 19011,
+          "droid-builtin": 21726,
+          "droid-you": 16271,
+          "codex-builtin": 59407,
+          "codex-you": 34744
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-801",
+        "winner": "gemini-you",
+        "scores": {
+          "gemini-you": 0.6944527298664246,
+          "droid-builtin": 0.6895426341558001,
+          "claude-code-builtin": 0.6861226457066587,
+          "claude-code-you": 0.6839296344802952,
+          "codex-you": 0.545475216007276,
+          "gemini-builtin": 0.5228102189781022,
+          "droid-you": 0.5184683575474021,
+          "codex-builtin": 0.5064829821717991
+        },
+        "latencies": {
+          "claude-code-builtin": 25972,
+          "claude-code-you": 32596,
+          "gemini-builtin": 12152,
+          "gemini-you": 14422,
+          "droid-builtin": 19629,
+          "droid-you": 15244,
+          "codex-builtin": 45275,
+          "codex-you": 5597
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-832",
+        "winner": "codex-you",
+        "scores": {
+          "codex-you": 0.7194444444444443,
+          "gemini-builtin": 0.6934116852829262,
+          "droid-you": 0.6907886427030157,
+          "claude-code-builtin": 0.6875923438549362,
+          "claude-code-you": 0.6859178251692263,
+          "gemini-you": 0.5126411596157088,
+          "droid-builtin": 0.5112561909049977,
+          "codex-builtin": 0.4864304235090752
+        },
+        "latencies": {
+          "claude-code-builtin": 22824,
+          "claude-code-you": 26478,
+          "gemini-builtin": 15294,
+          "gemini-you": 22732,
+          "droid-builtin": 25652,
+          "droid-you": 18001,
+          "codex-builtin": 2471,
+          "codex-you": 5750
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-842",
+        "winner": "droid-you",
+        "scores": {
+          "droid-you": 0.6903704272978788,
+          "claude-code-builtin": 0.6844029149036202,
+          "droid-builtin": 0.6833591072473459,
+          "claude-code-you": 0.6808358946426487,
+          "gemini-builtin": 0.5123685837971552,
+          "gemini-you": 0.5121408336705787,
+          "codex-you": 0.5055193729992273,
+          "codex-builtin": 0.502858422341429
+        },
+        "latencies": {
+          "claude-code-builtin": 30905,
+          "claude-code-you": 50406,
+          "gemini-builtin": 23255,
+          "gemini-you": 23710,
+          "droid-builtin": 34889,
+          "droid-you": 18518,
+          "codex-builtin": 103953,
+          "codex-you": 53354
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-844",
+        "winner": "gemini-you",
+        "scores": {
+          "gemini-you": 0.6912179695102173,
+          "droid-you": 0.6910737248178311,
+          "droid-builtin": 0.686011598884158,
+          "gemini-builtin": 0.5134228187919463,
+          "codex-you": 0.5117064034026613,
+          "claude-code-builtin": 0.5094357425929421,
+          "claude-code-you": 0.5046441066286882,
+          "codex-builtin": 0.5026194925169831
+        },
+        "latencies": {
+          "claude-code-builtin": 30794,
+          "claude-code-you": 63598,
+          "gemini-builtin": 21350,
+          "gemini-you": 17498,
+          "droid-builtin": 26244,
+          "droid-you": 17664,
+          "codex-builtin": 113526,
+          "codex-you": 24627
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-854",
+        "winner": "gemini-builtin",
+        "scores": {
+          "gemini-builtin": 0.7011415127222029,
+          "codex-you": 0.6922811059907834,
+          "droid-builtin": 0.6878298336398239,
+          "claude-code-builtin": 0.6872129946262824,
+          "gemini-you": 0.5206568890725056,
+          "droid-you": 0.5178901544516668,
+          "claude-code-you": 0.5072292640609186,
+          "codex-builtin": 0.5019645078907733
+        },
+        "latencies": {
+          "claude-code-builtin": 23564,
+          "claude-code-you": 40498,
+          "gemini-builtin": 10476,
+          "gemini-you": 13523,
+          "droid-builtin": 22383,
+          "droid-you": 15769,
+          "codex-builtin": 151710,
+          "codex-you": 16360
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-866",
+        "winner": "gemini-builtin",
+        "scores": {
+          "gemini-builtin": 0.6930962721679335,
+          "droid-builtin": 0.6875125125125126,
+          "codex-you": 0.6829630514413123,
+          "gemini-you": 0.5197550375345713,
+          "droid-you": 0.5160702806942361,
+          "claude-code-builtin": 0.5102887715206804,
+          "claude-code-you": 0.5080549887230158,
+          "codex-builtin": 0.5041644109440719
+        },
+        "latencies": {
+          "claude-code-builtin": 28158,
+          "claude-code-you": 36244,
+          "gemini-builtin": 15578,
+          "gemini-you": 14186,
+          "droid-builtin": 22976,
+          "droid-you": 17668,
+          "codex-builtin": 71039,
+          "codex-you": 36674
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-876",
+        "winner": "gemini-builtin",
+        "scores": {
+          "gemini-builtin": 0.7011301280376274,
+          "gemini-you": 0.5252631578947369,
+          "claude-code-you": 0.5204109402639815,
+          "codex-you": 0.5201153278798445,
+          "codex-builtin": 0.5130571030640669,
+          "droid-you": 0.21740240153141135,
+          "claude-code-builtin": 0.21504739930781963,
+          "droid-builtin": 0.21388310426211302
+        },
+        "latencies": {
+          "claude-code-builtin": 18937,
+          "claude-code-you": 13698,
+          "gemini-builtin": 10481,
+          "gemini-you": 10875,
+          "droid-builtin": 20609,
+          "droid-you": 16239,
+          "codex-builtin": 21976,
+          "codex-you": 13914
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-895",
+        "winner": "codex-you",
+        "scores": {
+          "codex-you": 0.7182027649769585,
+          "gemini-builtin": 0.6915690931183034,
+          "droid-builtin": 0.6857843842116615,
+          "gemini-you": 0.5323206205559147,
+          "droid-you": 0.515976993129893,
+          "claude-code-builtin": 0.5088456435205662,
+          "codex-builtin": 0.5053370786516854,
+          "claude-code-you": 0.5032799790081344
+        },
+        "latencies": {
+          "claude-code-builtin": 32915,
+          "claude-code-you": 90464,
+          "gemini-builtin": 17106,
+          "gemini-you": 8282,
+          "droid-builtin": 26818,
+          "droid-you": 17777,
+          "codex-builtin": 1848,
+          "codex-you": 5944
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-915",
+        "winner": "droid-you",
+        "scores": {
+          "droid-you": 0.688430029546065,
+          "gemini-builtin": 0.6882790368271954,
+          "claude-code-builtin": 0.6852877130413909,
+          "codex-you": 0.5195185426154847,
+          "gemini-you": 0.5128144889154671,
+          "droid-builtin": 0.5110525734075084,
+          "claude-code-you": 0.5090760573606825,
+          "codex-builtin": 0.5033135624109479
+        },
+        "latencies": {
+          "claude-code-builtin": 28161,
+          "claude-code-you": 32054,
+          "gemini-builtin": 21592,
+          "gemini-you": 22411,
+          "droid-builtin": 26143,
+          "droid-you": 21338,
+          "codex-builtin": 89537,
+          "codex-you": 14370
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-934",
+        "winner": "codex-you",
+        "scores": {
+          "codex-you": 0.7213105896881753,
+          "gemini-builtin": 0.68904099971918,
+          "gemini-you": 0.6831839757754317,
+          "claude-code-builtin": 0.5090702947845804,
+          "droid-you": 0.5082806591404676,
+          "claude-code-you": 0.5071191267204556,
+          "droid-builtin": 0.479916581992199,
+          "codex-builtin": 0.4436617668461651
+        },
+        "latencies": {
+          "claude-code-builtin": 32075,
+          "claude-code-you": 41140,
+          "gemini-builtin": 20366,
+          "gemini-you": 35657,
+          "droid-builtin": 60018,
+          "droid-you": 35229,
+          "codex-builtin": 5871,
+          "codex-you": 5478
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": true,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-936",
+        "winner": "gemini-you",
+        "scores": {
+          "gemini-you": 0.7068234857324704,
+          "claude-code-builtin": 0.6877194098193844,
+          "gemini-builtin": 0.5346380325597506,
+          "droid-you": 0.5213356091316408,
+          "droid-builtin": 0.5092095165003837,
+          "codex-you": 0.5062968326931554,
+          "claude-code-you": 0.5061975788125439,
+          "codex-builtin": 0.5053254752986704
+        },
+        "latencies": {
+          "claude-code-builtin": 22586,
+          "claude-code-you": 47406,
+          "gemini-builtin": 7661,
+          "gemini-you": 8427,
+          "droid-builtin": 31575,
+          "droid-you": 13061,
+          "codex-builtin": 55333,
+          "codex-you": 46643
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-953",
+        "winner": "codex-you",
+        "scores": {
+          "codex-you": 0.6931576080377678,
+          "droid-you": 0.6920716439993171,
+          "claude-code-builtin": 0.6897499877083435,
+          "droid-builtin": 0.6889178844815588,
+          "codex-builtin": 0.5232991612301957,
+          "gemini-builtin": 0.5227427791676142,
+          "gemini-you": 0.5207929026892154,
+          "claude-code-you": 0.512533422459893
+        },
+        "latencies": {
+          "claude-code-builtin": 19339,
+          "claude-code-you": 22936,
+          "gemini-builtin": 12191,
+          "gemini-you": 13428,
+          "droid-builtin": 20555,
+          "droid-you": 16573,
+          "codex-builtin": 11876,
+          "codex-you": 15522
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-965",
+        "winner": "gemini-you",
+        "scores": {
+          "gemini-you": 0.6843376494023905,
+          "gemini-builtin": 0.6833263946711075,
+          "droid-builtin": 0.5120438395760569,
+          "codex-builtin": 0.5025700113937172,
+          "droid-you": 0.21262095077829196,
+          "claude-code-builtin": 0.21134816159782116,
+          "claude-code-you": 0.20490075961774076,
+          "codex-you": 0.20482043865991806
+        },
+        "latencies": {
+          "claude-code-builtin": 25436,
+          "claude-code-you": 60215,
+          "gemini-builtin": 35030,
+          "gemini-you": 31128,
+          "droid-builtin": 23909,
+          "droid-you": 22770,
+          "codex-builtin": 115731,
+          "codex-you": 61235
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-972",
+        "winner": "gemini-builtin",
+        "scores": {
+          "gemini-builtin": 0.6883114434041797,
+          "gemini-you": 0.6878046438174912,
+          "claude-code-builtin": 0.6828702974972454,
+          "droid-builtin": 0.680625246104517,
+          "droid-you": 0.5150715900527505,
+          "claude-code-you": 0.5081586032471241,
+          "codex-you": 0.5068209722159065,
+          "codex-builtin": 0.5026597631037661
+        },
+        "latencies": {
+          "claude-code-builtin": 37118,
+          "claude-code-you": 35771,
+          "gemini-builtin": 21537,
+          "gemini-you": 22429,
+          "droid-builtin": 52331,
+          "droid-you": 18905,
+          "codex-builtin": 111792,
+          "codex-you": 42982
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-990",
+        "winner": "gemini-builtin",
+        "scores": {
+          "gemini-builtin": 0.6860448420587586,
+          "claude-code-builtin": 0.6836792998698105,
+          "droid-you": 0.6820716356693304,
+          "gemini-you": 0.5153280196198651,
+          "droid-builtin": 0.5085426277122843,
+          "codex-you": 0.5051104713558081,
+          "claude-code-you": 0.5034766082210196,
+          "codex-builtin": 0.101657229664411
+        },
+        "latencies": {
+          "claude-code-builtin": 33565,
+          "claude-code-you": 85291,
+          "gemini-builtin": 26162,
+          "gemini-you": 18572,
+          "droid-builtin": 34118,
+          "droid-you": 41423,
+          "codex-builtin": 180025,
+          "codex-you": 57703
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": true,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-995",
+        "winner": "gemini-you",
+        "scores": {
+          "gemini-you": 0.7011802949646566,
+          "droid-you": 0.6942926045016077,
+          "claude-code-builtin": 0.6875428547537419,
+          "droid-builtin": 0.68607869566823,
+          "gemini-builtin": 0.5258910848364546,
+          "claude-code-you": 0.5065723173991149,
+          "codex-you": 0.505153930731171,
+          "codex-builtin": 0.5024991669443519
+        },
+        "latencies": {
+          "claude-code-builtin": 22918,
+          "claude-code-you": 44646,
+          "gemini-builtin": 10587,
+          "gemini-you": 10459,
+          "droid-builtin": 26079,
+          "droid-you": 14550,
+          "codex-builtin": 119040,
+          "codex-you": 57208
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1002",
+        "winner": "droid-you",
+        "scores": {
+          "droid-you": 0.6884084204880665,
+          "codex-you": 0.6855414807266593,
+          "claude-code-builtin": 0.6854318798247444,
+          "gemini-you": 0.5351411502869861,
+          "gemini-builtin": 0.5244997958350347,
+          "claude-code-you": 0.5105042016806722,
+          "droid-builtin": 0.5092818910305993,
+          "codex-builtin": 0.5042770989863276
+        },
+        "latencies": {
+          "claude-code-builtin": 27758,
+          "claude-code-you": 27560,
+          "gemini-builtin": 11245,
+          "gemini-you": 7537,
+          "droid-builtin": 31321,
+          "droid-you": 21374,
+          "codex-builtin": 69141,
+          "codex-you": 27459
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1006",
+        "winner": "gemini-you",
+        "scores": {
+          "gemini-you": 0.6953431206347054,
+          "gemini-builtin": 0.690996587394689,
+          "droid-you": 0.6902199279590077,
+          "claude-code-builtin": 0.6855891073382514,
+          "droid-builtin": 0.5119703136222169,
+          "claude-code-you": 0.5075811179621955,
+          "codex-you": 0.5063998634695793,
+          "codex-builtin": 0.503286734738595
+        },
+        "latencies": {
+          "claude-code-builtin": 27331,
+          "claude-code-you": 38572,
+          "gemini-builtin": 17754,
+          "gemini-you": 13747,
+          "droid-builtin": 24062,
+          "droid-you": 18711,
+          "codex-builtin": 90276,
+          "codex-you": 45876
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1029",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 0.6850053361792956,
+          "droid-you": 0.5156994086556073,
+          "gemini-you": 0.514953643704516,
+          "codex-you": 0.5141502759303807,
+          "droid-builtin": 0.5127329060735961,
+          "claude-code-you": 0.5100160256410257,
+          "codex-builtin": 0.5025003750562584,
+          "gemini-builtin": 0.30491553472825283
+        },
+        "latencies": {
+          "claude-code-builtin": 28984,
+          "claude-code-you": 28952,
+          "gemini-builtin": 60031,
+          "gemini-you": 19062,
+          "droid-builtin": 22561,
+          "droid-you": 18109,
+          "codex-builtin": 118982,
+          "codex-you": 20201
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": true,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1031",
+        "winner": "droid-you",
+        "scores": {
+          "droid-you": 0.6905151013653289,
+          "gemini-builtin": 0.6868670886075949,
+          "droid-builtin": 0.6856025799611238,
+          "claude-code-builtin": 0.6850153568805502,
+          "codex-you": 0.5342935528120714,
+          "claude-code-you": 0.5171585449553877,
+          "gemini-you": 0.5112769236552268,
+          "codex-builtin": 0.5033197959432094
+        },
+        "latencies": {
+          "claude-code-builtin": 28954,
+          "claude-code-you": 16484,
+          "gemini-builtin": 24280,
+          "gemini-you": 25603,
+          "droid-builtin": 27295,
+          "droid-you": 18336,
+          "codex-builtin": 89367,
+          "codex-you": 7748
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1041",
+        "winner": "droid-you",
+        "scores": {
+          "droid-you": 0.689582928251993,
+          "droid-builtin": 0.6866067628738345,
+          "codex-you": 0.5343839541547277,
+          "gemini-builtin": 0.5150338261087446,
+          "gemini-you": 0.5147528891074502,
+          "claude-code-builtin": 0.5063722678901421,
+          "claude-code-you": 0.5062064257194282,
+          "codex-builtin": 0.5017915367802501
+        },
+        "latencies": {
+          "claude-code-builtin": 46079,
+          "claude-code-you": 47337,
+          "gemini-builtin": 18955,
+          "gemini-you": 19335,
+          "droid-builtin": 24847,
+          "droid-you": 19572,
+          "codex-builtin": 166454,
+          "codex-you": 7725
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1044",
+        "winner": "gemini-builtin",
+        "scores": {
+          "gemini-builtin": 0.7011164794985636,
+          "droid-builtin": 0.6843266181682521,
+          "codex-builtin": 0.5371241183021903,
+          "gemini-you": 0.5248180013236268,
+          "codex-you": 0.5204708290685773,
+          "claude-code-you": 0.5197550375345713,
+          "droid-you": 0.5194615634122608,
+          "claude-code-builtin": 0.5166343221513723
+        },
+        "latencies": {
+          "claude-code-builtin": 17035,
+          "claude-code-you": 14186,
+          "gemini-builtin": 10487,
+          "gemini-you": 11088,
+          "droid-builtin": 31166,
+          "droid-you": 14415,
+          "codex-builtin": 7081,
+          "codex-you": 13655
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1048",
+        "winner": "gemini-builtin",
+        "scores": {
+          "gemini-builtin": 0.6990423144734733,
+          "gemini-you": 0.6950910795606751,
+          "droid-you": 0.6908873060424721,
+          "claude-code-builtin": 0.5122639195486878,
+          "codex-you": 0.5115035085701138,
+          "droid-builtin": 0.5093990851557115,
+          "claude-code-you": 0.5061441415610215,
+          "codex-builtin": 0.502005763226337
+        },
+        "latencies": {
+          "claude-code-builtin": 23462,
+          "claude-code-you": 47827,
+          "gemini-builtin": 11478,
+          "gemini-you": 13932,
+          "droid-builtin": 30918,
+          "droid-you": 17883,
+          "codex-builtin": 148569,
+          "codex-you": 25079
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1049",
+        "winner": "droid-you",
+        "scores": {
+          "droid-you": 0.6895701796988829,
+          "gemini-you": 0.6890917844896425,
+          "gemini-builtin": 0.6875015626953369,
+          "codex-you": 0.5420462508759636,
+          "droid-builtin": 0.5111123458162018,
+          "claude-code-you": 0.5105928462978002,
+          "claude-code-builtin": 0.509778675967274,
+          "codex-builtin": 0.5028083313831032
+        },
+        "latencies": {
+          "claude-code-builtin": 29679,
+          "claude-code-you": 27321,
+          "gemini-builtin": 22997,
+          "gemini-you": 20289,
+          "droid-builtin": 25997,
+          "droid-you": 19590,
+          "codex-builtin": 105825,
+          "codex-you": 6135
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1063",
+        "winner": "droid-you",
+        "scores": {
+          "droid-you": 0.6943274062620797,
+          "gemini-builtin": 0.5228519195612431,
+          "gemini-you": 0.521128248468202,
+          "claude-code-builtin": 0.5142700851448414,
+          "codex-you": 0.5140957571770897,
+          "droid-builtin": 0.513156163662676,
+          "claude-code-you": 0.5083953657581015,
+          "codex-builtin": 0.5071335156342884
+        },
+        "latencies": {
+          "claude-code-builtin": 20023,
+          "claude-code-you": 34734,
+          "gemini-builtin": 12128,
+          "gemini-you": 13199,
+          "droid-builtin": 21803,
+          "droid-you": 14522,
+          "codex-builtin": 41055,
+          "codex-you": 20283
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1067",
+        "winner": "codex-you",
+        "scores": {
+          "codex-you": 0.528184892897407,
+          "gemini-builtin": 0.5198373338623289,
+          "droid-you": 0.5187687687687688,
+          "gemini-you": 0.5184865664283953,
+          "claude-code-you": 0.5149298297999403,
+          "codex-builtin": 0.5127345275490279,
+          "claude-code-builtin": 0.5126925029615841,
+          "droid-builtin": 0.3049160180253994
+        },
+        "latencies": {
+          "claude-code-builtin": 22636,
+          "claude-code-you": 19094,
+          "gemini-builtin": 14123,
+          "gemini-you": 15228,
+          "droid-builtin": 60025,
+          "droid-you": 14984,
+          "codex-builtin": 22558,
+          "codex-you": 9644
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": true,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1075",
+        "winner": "droid-you",
+        "scores": {
+          "droid-you": 0.6909846547314578,
+          "codex-you": 0.5503018108651911,
+          "gemini-you": 0.5351699882766705,
+          "claude-code-you": 0.5189250567751703,
+          "gemini-builtin": 0.5143499473835262,
+          "droid-builtin": 0.512569656848368,
+          "codex-builtin": 0.5108084738434933,
+          "claude-code-builtin": 0.5090738612304155
+        },
+        "latencies": {
+          "claude-code-builtin": 32062,
+          "claude-code-you": 14852,
+          "gemini-builtin": 19906,
+          "gemini-you": 7530,
+          "droid-builtin": 22867,
+          "droid-you": 17768,
+          "codex-builtin": 26756,
+          "codex-you": 4964
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1088",
+        "winner": "gemini-you",
+        "scores": {
+          "gemini-you": 0.6881758092142826,
+          "claude-code-builtin": 0.5121659434689161,
+          "droid-builtin": 0.5118633343878519,
+          "droid-you": 0.5083233915045917,
+          "codex-you": 0.5069200959586639,
+          "codex-builtin": 0.5025595304114872,
+          "gemini-builtin": 0.30491545418796695,
+          "claude-code-you": 0.20750713177518643
+        },
+        "latencies": {
+          "claude-code-builtin": 23659,
+          "claude-code-you": 38962,
+          "gemini-builtin": 60032,
+          "gemini-you": 21769,
+          "droid-builtin": 24288,
+          "droid-you": 35043,
+          "codex-builtin": 116209,
+          "codex-you": 42352
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": true,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1092",
+        "winner": "droid-you",
+        "scores": {
+          "droid-you": 0.6906911972383493,
+          "gemini-you": 0.6889288699043551,
+          "gemini-builtin": 0.6824445381904809,
+          "codex-you": 0.536923076923077,
+          "claude-code-builtin": 0.5123589025294554,
+          "droid-builtin": 0.5106970939561419,
+          "claude-code-you": 0.5066958307293992,
+          "codex-builtin": 0.10165728459443485
+        },
+        "latencies": {
+          "claude-code-builtin": 23274,
+          "claude-code-you": 43804,
+          "gemini-builtin": 39298,
+          "gemini-you": 20538,
+          "droid-builtin": 27045,
+          "droid-you": 18119,
+          "codex-builtin": 180019,
+          "codex-you": 7125
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": true,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1099",
+        "winner": "gemini-builtin",
+        "scores": {
+          "gemini-builtin": 0.6984009360374415,
+          "droid-you": 0.6913008041730059,
+          "gemini-you": 0.5200360649168503,
+          "claude-code-builtin": 0.5111536602595085,
+          "droid-builtin": 0.5102715102543911,
+          "codex-you": 0.5059444785701548,
+          "claude-code-you": 0.5043100351986207,
+          "codex-builtin": 0.10165728459443485
+        },
+        "latencies": {
+          "claude-code-builtin": 25897,
+          "claude-code-you": 68605,
+          "gemini-builtin": 11820,
+          "gemini-you": 13973,
+          "droid-builtin": 28207,
+          "droid-you": 17404,
+          "codex-builtin": 180019,
+          "codex-you": 49467
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": true,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1112",
+        "winner": "gemini-you",
+        "scores": {
+          "gemini-you": 0.6937511719482468,
+          "gemini-builtin": 0.6925141572771323,
+          "codex-builtin": 0.6777196576857526,
+          "claude-code-you": 0.5204317918681469,
+          "droid-you": 0.5151752744195457,
+          "droid-builtin": 0.5112233445566778,
+          "codex-you": 0.5104533258998571,
+          "claude-code-builtin": 0.5091603053435114
+        },
+        "latencies": {
+          "claude-code-builtin": 31750,
+          "claude-code-you": 13683,
+          "gemini-builtin": 16129,
+          "gemini-you": 14999,
+          "droid-builtin": 25730,
+          "droid-you": 18769,
+          "codex-builtin": 109308,
+          "codex-you": 27699
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1125",
+        "winner": "gemini-you",
+        "scores": {
+          "gemini-you": 0.6974433305902596,
+          "droid-you": 0.6941852657159302,
+          "gemini-builtin": 0.5292198305249829,
+          "droid-builtin": 0.5138985406532315,
+          "codex-you": 0.5120914110676715,
+          "claude-code-you": 0.511026979342792,
+          "claude-code-builtin": 0.5104752260902965,
+          "codex-builtin": 0.10165721135521222
+        },
+        "latencies": {
+          "claude-code-builtin": 27639,
+          "claude-code-you": 26206,
+          "gemini-builtin": 9267,
+          "gemini-you": 12367,
+          "droid-builtin": 20585,
+          "droid-you": 14637,
+          "codex-builtin": 180027,
+          "codex-you": 23811
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": true,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1139",
+        "winner": "gemini-builtin",
+        "scores": {
+          "gemini-builtin": 0.5274750435021522,
+          "gemini-you": 0.5240096038415366,
+          "codex-you": 0.521568768423323,
+          "droid-builtin": 0.5153586238673015,
+          "claude-code-you": 0.5144168388677977,
+          "codex-builtin": 0.5124156768613168,
+          "droid-you": 0.5110897530681651,
+          "claude-code-builtin": 0.5077865448504983
+        },
+        "latencies": {
+          "claude-code-builtin": 37528,
+          "claude-code-you": 19809,
+          "gemini-builtin": 9919,
+          "gemini-you": 11495,
+          "droid-builtin": 18533,
+          "droid-you": 26052,
+          "codex-builtin": 23163,
+          "codex-you": 12909
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1180",
+        "winner": "codex-you",
+        "scores": {
+          "codex-you": 0.5237906423473434,
+          "gemini-you": 0.522450048641772,
+          "droid-you": 0.5198570293884035,
+          "gemini-builtin": 0.5178189593727727,
+          "claude-code-builtin": 0.5135654533122316,
+          "droid-builtin": 0.5129802699896158,
+          "claude-code-you": 0.5112570356472795,
+          "codex-builtin": 0.5040754224854643
+        },
+        "latencies": {
+          "claude-code-builtin": 21115,
+          "claude-code-you": 25650,
+          "gemini-builtin": 15836,
+          "gemini-you": 12363,
+          "droid-builtin": 22112,
+          "droid-you": 14108,
+          "codex-builtin": 72612,
+          "codex-you": 11610
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1182",
+        "winner": "gemini-you",
+        "scores": {
+          "gemini-you": 0.7053060915243965,
+          "gemini-builtin": 0.6988549618320611,
+          "droid-you": 0.695987827060305,
+          "codex-builtin": 0.5386398763523956,
+          "codex-you": 0.5266004610746586,
+          "claude-code-builtin": 0.5216434600678161,
+          "claude-code-you": 0.514995501349595,
+          "droid-builtin": 0.5146965169254887
+        },
+        "latencies": {
+          "claude-code-builtin": 12861,
+          "claude-code-you": 19006,
+          "gemini-builtin": 11576,
+          "gemini-you": 8899,
+          "droid-builtin": 19413,
+          "droid-you": 13294,
+          "codex-builtin": 6764,
+          "codex-you": 10278
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1204",
+        "winner": "droid-you",
+        "scores": {
+          "droid-you": 0.6913880694854146,
+          "gemini-you": 0.6884752728742757,
+          "codex-you": 0.5386398763523956,
+          "gemini-builtin": 0.520976087260523,
+          "claude-code-you": 0.511591515011012,
+          "claude-code-builtin": 0.5103426877197821,
+          "droid-builtin": 0.5060963218857956,
+          "codex-builtin": 0.49693053311793217
+        },
+        "latencies": {
+          "claude-code-builtin": 28006,
+          "claude-code-you": 24881,
+          "gemini-builtin": 13302,
+          "gemini-you": 21263,
+          "droid-builtin": 48210,
+          "droid-you": 17306,
+          "codex-builtin": 2095,
+          "codex-you": 6764
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1206",
+        "winner": "gemini-builtin",
+        "scores": {
+          "gemini-builtin": 0.5201789197551625,
+          "codex-you": 0.5200080032012805,
+          "droid-you": 0.5176470588235293,
+          "gemini-you": 0.5167168171180208,
+          "droid-builtin": 0.5106841411731187,
+          "claude-code-builtin": 0.5098151480451496,
+          "claude-code-you": 0.5043182243461488,
+          "codex-builtin": 0.4973709834469328
+        },
+        "latencies": {
+          "claude-code-builtin": 29565,
+          "claude-code-you": 68473,
+          "gemini-builtin": 13867,
+          "gemini-you": 16946,
+          "droid-builtin": 27079,
+          "droid-you": 16000,
+          "codex-builtin": 2081,
+          "codex-you": 13994
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1253",
+        "winner": "codex-you",
+        "scores": {
+          "codex-you": 0.5402360515021459,
+          "gemini-you": 0.5148669408791318,
+          "gemini-builtin": 0.5140614014530115,
+          "claude-code-builtin": 0.5103259560114274,
+          "claude-code-you": 0.5061817432515969,
+          "codex-builtin": 0.5057781201848999,
+          "droid-you": 0.30491642084562437,
+          "droid-builtin": 0.3049157763649472
+        },
+        "latencies": {
+          "claude-code-builtin": 28053,
+          "claude-code-you": 47530,
+          "gemini-builtin": 20335,
+          "gemini-you": 19179,
+          "droid-builtin": 60028,
+          "droid-you": 60020,
+          "codex-builtin": 50920,
+          "codex-you": 6456
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": true,
+          "droid-you": true,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1267",
+        "winner": "gemini-builtin",
+        "scores": {
+          "gemini-builtin": 0.6827857365306758,
+          "codex-you": 0.5525670229542667,
+          "codex-builtin": 0.5161238310222509,
+          "droid-you": 0.5149246306153923,
+          "droid-builtin": 0.5113804483896666,
+          "gemini-you": 0.5093095422808378,
+          "claude-code-builtin": 0.5085785365016728,
+          "claude-code-you": 0.5050089325964637
+        },
+        "latencies": {
+          "claude-code-builtin": 33971,
+          "claude-code-you": 58893,
+          "gemini-builtin": 37532,
+          "gemini-you": 31225,
+          "droid-builtin": 25361,
+          "droid-you": 19101,
+          "codex-builtin": 17606,
+          "codex-you": 4707
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1268",
+        "winner": "gemini-builtin",
+        "scores": {
+          "gemini-builtin": 0.6973730330375121,
+          "droid-you": 0.6930962721679335,
+          "gemini-you": 0.5212389380530973,
+          "droid-builtin": 0.5141136620248401,
+          "claude-code-builtin": 0.5105786522796996,
+          "codex-you": 0.5101801893515219,
+          "claude-code-you": 0.5067459692833531,
+          "codex-builtin": 0.5037945863900835
+        },
+        "latencies": {
+          "claude-code-builtin": 27359,
+          "claude-code-you": 43471,
+          "gemini-builtin": 12409,
+          "gemini-you": 13125,
+          "droid-builtin": 20256,
+          "droid-you": 15578,
+          "codex-builtin": 78060,
+          "codex-you": 28469
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1302",
+        "winner": "droid-you",
+        "scores": {
+          "droid-you": 0.6875765070847657,
+          "codex-builtin": 0.5387096774193548,
+          "codex-you": 0.538163083577153,
+          "gemini-builtin": 0.5206171397154835,
+          "gemini-you": 0.5167373354162017,
+          "claude-code-builtin": 0.5114447030099569,
+          "claude-code-you": 0.5050011669389525,
+          "droid-builtin": 0.3049147294441441
+        },
+        "latencies": {
+          "claude-code-builtin": 25213,
+          "claude-code-you": 58986,
+          "gemini-builtin": 13551,
+          "gemini-you": 16924,
+          "droid-builtin": 60041,
+          "droid-you": 22854,
+          "codex-builtin": 6750,
+          "codex-you": 6861
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": true,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1309",
+        "winner": "droid-you",
+        "scores": {
+          "droid-you": 0.6882620131735997,
+          "gemini-you": 0.5349487418452936,
+          "gemini-builtin": 0.5187172448215622,
+          "droid-builtin": 0.5137639933932832,
+          "claude-code-you": 0.5105005250262513,
+          "claude-code-builtin": 0.5091751536838243,
+          "codex-you": 0.5063547204982101,
+          "codex-builtin": 0.504831229064674
+        },
+        "latencies": {
+          "claude-code-builtin": 31697,
+          "claude-code-you": 27570,
+          "gemini-builtin": 15028,
+          "gemini-you": 7584,
+          "droid-builtin": 20796,
+          "droid-you": 21621,
+          "codex-builtin": 61096,
+          "codex-you": 46209
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1330",
+        "winner": "gemini-builtin",
+        "scores": {
+          "gemini-builtin": 0.6856788167871,
+          "claude-code-you": 0.5189957576141329,
+          "gemini-you": 0.5100945523066052,
+          "claude-code-builtin": 0.5098918491163281,
+          "droid-builtin": 0.5097834594312549,
+          "codex-builtin": 0.5061571125265394,
+          "codex-you": 0.5033267537536872,
+          "droid-you": 0.3049160985841636
+        },
+        "latencies": {
+          "claude-code-builtin": 29328,
+          "claude-code-you": 14793,
+          "gemini-builtin": 27093,
+          "gemini-you": 28719,
+          "droid-builtin": 29664,
+          "droid-you": 60024,
+          "codex-builtin": 1826,
+          "codex-you": 89178
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": true,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1362",
+        "winner": "gemini-builtin",
+        "scores": {
+          "gemini-builtin": 0.6926304654442876,
+          "droid-you": 0.6877920859628177,
+          "claude-code-you": 0.5116972745350333,
+          "claude-code-builtin": 0.5110310339755846,
+          "codex-you": 0.5043997946762484,
+          "codex-builtin": 0.5031879622545269,
+          "gemini-you": 0.2148060408646728,
+          "droid-builtin": 0.2120520649204564
+        },
+        "latencies": {
+          "claude-code-builtin": 26196,
+          "claude-code-you": 24647,
+          "gemini-builtin": 16016,
+          "gemini-you": 19262,
+          "droid-builtin": 23892,
+          "droid-you": 22452,
+          "codex-builtin": 93104,
+          "codex-you": 67185
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1408",
+        "winner": "codex-you",
+        "scores": {
+          "codex-you": 0.5440270032286469,
+          "gemini-you": 0.5178837555886736,
+          "gemini-builtin": 0.5145348837209303,
+          "droid-you": 0.5122075279755849,
+          "droid-builtin": 0.5081614886555308,
+          "claude-code-builtin": 0.5081517308841911,
+          "claude-code-you": 0.5052056220718375,
+          "codex-builtin": 0.5031331592689294
+        },
+        "latencies": {
+          "claude-code-builtin": 35802,
+          "claude-code-you": 56630,
+          "gemini-builtin": 19640,
+          "gemini-you": 15775,
+          "droid-builtin": 35758,
+          "droid-you": 23575,
+          "codex-builtin": 94750,
+          "codex-you": 5814
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1460",
+        "winner": "droid-you",
+        "scores": {
+          "droid-you": 0.6899365197908887,
+          "codex-you": 0.5325697535555314,
+          "gemini-you": 0.5251677852348993,
+          "gemini-builtin": 0.5188619930839359,
+          "droid-builtin": 0.5096742986133505,
+          "claude-code-you": 0.5079065967372111,
+          "claude-code-builtin": 0.5075101386872278,
+          "codex-builtin": 0.5017934967806732
+        },
+        "latencies": {
+          "claude-code-builtin": 38946,
+          "claude-code-you": 36943,
+          "gemini-builtin": 14905,
+          "gemini-you": 10920,
+          "droid-builtin": 30010,
+          "droid-you": 19085,
+          "codex-builtin": 166271,
+          "codex-you": 8211
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1461",
+        "winner": "gemini-builtin",
+        "scores": {
+          "gemini-builtin": 0.6870743781695243,
+          "gemini-you": 0.5131943528169943,
+          "claude-code-builtin": 0.512947218505891,
+          "droid-you": 0.5112875310407103,
+          "droid-builtin": 0.511277347567852,
+          "claude-code-you": 0.5067838002849196,
+          "codex-builtin": 0.5036925803751662,
+          "codex-you": 0.5030223046080071
+        },
+        "latencies": {
+          "claude-code-builtin": 22171,
+          "claude-code-you": 43223,
+          "gemini-builtin": 23846,
+          "gemini-you": 21737,
+          "droid-builtin": 25602,
+          "droid-you": 25578,
+          "codex-builtin": 80244,
+          "codex-you": 98262
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1469",
+        "winner": "gemini-you",
+        "scores": {
+          "gemini-you": 0.6978937728937729,
+          "codex-you": 0.5478850758180367,
+          "droid-you": 0.5201979398101393,
+          "gemini-builtin": 0.5172781201405288,
+          "codex-builtin": 0.5122134918373162,
+          "claude-code-builtin": 0.509820931679052,
+          "claude-code-you": 0.5080158178806178,
+          "droid-builtin": 0.439925472451424
+        },
+        "latencies": {
+          "claude-code-builtin": 29547,
+          "claude-code-you": 36426,
+          "gemini-builtin": 16363,
+          "gemini-you": 12104,
+          "droid-builtin": 6514,
+          "droid-you": 13853,
+          "codex-builtin": 23563,
+          "codex-you": 5265
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1470",
+        "winner": "gemini-builtin",
+        "scores": {
+          "gemini-builtin": 0.6924246384387525,
+          "gemini-you": 0.6870923858277238,
+          "claude-code-you": 0.5190029771330842,
+          "droid-builtin": 0.5117329578786812,
+          "claude-code-builtin": 0.5097367823180032,
+          "droid-you": 0.5094200395641661,
+          "codex-you": 0.5074000986679823,
+          "codex-builtin": 0.10165718389217257
+        },
+        "latencies": {
+          "claude-code-builtin": 29811,
+          "claude-code-you": 14787,
+          "gemini-builtin": 16217,
+          "gemini-you": 23809,
+          "droid-builtin": 24569,
+          "droid-you": 30847,
+          "codex-builtin": 180030,
+          "codex-you": 39540
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": true,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1487",
+        "winner": "gemini-builtin",
+        "scores": {
+          "gemini-builtin": 0.6976346763241286,
+          "gemini-you": 0.5256937307297019,
+          "claude-code-builtin": 0.5123304562268804,
+          "droid-you": 0.5122870249017037,
+          "droid-builtin": 0.5121011657456335,
+          "claude-code-you": 0.5087232124683784,
+          "codex-you": 0.505305321237201,
+          "codex-builtin": 0.5043300665386892
+        },
+        "latencies": {
+          "claude-code-builtin": 23330,
+          "claude-code-you": 33391,
+          "gemini-builtin": 12254,
+          "gemini-you": 10676,
+          "droid-builtin": 23791,
+          "droid-you": 23416,
+          "codex-builtin": 68283,
+          "codex-you": 55547
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1488",
+        "winner": "gemini-builtin",
+        "scores": {
+          "gemini-builtin": 0.6998488362461691,
+          "gemini-you": 0.6937125748502995,
+          "codex-you": 0.5556999628666914,
+          "droid-you": 0.5187958147985715,
+          "droid-builtin": 0.5135056048260027,
+          "claude-code-builtin": 0.5121001895696367,
+          "claude-code-you": 0.5086460314715546,
+          "codex-builtin": 0.5036699941280094
+        },
+        "latencies": {
+          "claude-code-builtin": 23793,
+          "claude-code-you": 33698,
+          "gemini-builtin": 11073,
+          "gemini-you": 15032,
+          "droid-builtin": 21213,
+          "droid-you": 14961,
+          "codex-builtin": 80744,
+          "codex-you": 4386
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1491",
+        "winner": "gemini-you",
+        "scores": {
+          "gemini-you": 0.6929029659246881,
+          "gemini-builtin": 0.5185908161368284,
+          "droid-you": 0.5127075567604202,
+          "droid-builtin": 0.511719207781554,
+          "claude-code-builtin": 0.5095883405778574,
+          "claude-code-you": 0.506264617440695,
+          "codex-you": 0.5046908715639367,
+          "codex-builtin": 0.502164143035427
+        },
+        "latencies": {
+          "claude-code-builtin": 30288,
+          "claude-code-you": 46888,
+          "gemini-builtin": 15137,
+          "gemini-you": 15757,
+          "droid-builtin": 24599,
+          "droid-you": 22608,
+          "codex-builtin": 137623,
+          "codex-you": 62954
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1497",
+        "winner": "gemini-builtin",
+        "scores": {
+          "gemini-builtin": 0.6970377580254168,
+          "gemini-you": 0.516476274165202,
+          "droid-builtin": 0.5146477222791856,
+          "claude-code-builtin": 0.5118347863821058,
+          "codex-you": 0.5098087297694949,
+          "claude-code-you": 0.5096286548769138,
+          "droid-you": 0.5087468657064551,
+          "codex-builtin": 0.5036250709909735
+        },
+        "latencies": {
+          "claude-code-builtin": 24349,
+          "claude-code-you": 30157,
+          "gemini-builtin": 12613,
+          "gemini-you": 17208,
+          "droid-builtin": 19481,
+          "droid-you": 33298,
+          "codex-builtin": 81757,
+          "codex-you": 29585
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1506",
+        "winner": "gemini-builtin",
+        "scores": {
+          "gemini-builtin": 0.6973797090637821,
+          "codex-you": 0.5259807742270719,
+          "gemini-you": 0.5210290200476657,
+          "droid-you": 0.5168548794876117,
+          "claude-code-you": 0.511951238945104,
+          "claude-code-builtin": 0.5117435214906443,
+          "droid-builtin": 0.5115004216821284,
+          "codex-builtin": 0.505039729870479
+        },
+        "latencies": {
+          "claude-code-builtin": 24546,
+          "claude-code-you": 24102,
+          "gemini-builtin": 12405,
+          "gemini-you": 13266,
+          "droid-builtin": 25086,
+          "droid-you": 16799,
+          "codex-builtin": 58527,
+          "codex-you": 10547
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1520",
+        "winner": "gemini-you",
+        "scores": {
+          "gemini-you": 0.7058800823468863,
+          "gemini-builtin": 0.7041488534784299,
+          "codex-builtin": 0.5267737617135207,
+          "claude-code-you": 0.5267355850637199,
+          "codex-you": 0.5243466969647784,
+          "droid-you": 0.5235849056603774,
+          "droid-builtin": 0.5160085378868731,
+          "claude-code-builtin": 0.514557453416149
+        },
+        "latencies": {
+          "claude-code-builtin": 19608,
+          "claude-code-you": 10221,
+          "gemini-builtin": 9292,
+          "gemini-you": 8715,
+          "droid-builtin": 17740,
+          "droid-you": 11720,
+          "codex-builtin": 10205,
+          "codex-you": 11322
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1524",
+        "winner": "gemini-you",
+        "scores": {
+          "gemini-you": 0.5269784172661871,
+          "gemini-builtin": 0.5177630410326248,
+          "claude-code-builtin": 0.511004732034775,
+          "droid-builtin": 0.5106022052586938,
+          "claude-code-you": 0.5036563516922814,
+          "codex-you": 0.5023272050267629,
+          "codex-builtin": 0.502319539803303,
+          "droid-you": 0.3049156152711781
+        },
+        "latencies": {
+          "claude-code-builtin": 26261,
+          "claude-code-you": 81049,
+          "gemini-builtin": 15889,
+          "gemini-you": 10120,
+          "droid-builtin": 27296,
+          "droid-you": 60030,
+          "codex-builtin": 128336,
+          "codex-you": 127910
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": true,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1548",
+        "winner": "gemini-you",
+        "scores": {
+          "gemini-you": 0.6876753422342403,
+          "gemini-builtin": 0.685136847440446,
+          "droid-builtin": 0.5094568609526211,
+          "claude-code-builtin": 0.5080392314494735,
+          "claude-code-you": 0.5040689552279294,
+          "codex-builtin": 0.48782201405152226,
+          "droid-you": 0.4281716593107334,
+          "codex-you": 0.10165734868406515
+        },
+        "latencies": {
+          "claude-code-builtin": 36317,
+          "claude-code-you": 72729,
+          "gemini-builtin": 28595,
+          "gemini-you": 22668,
+          "droid-builtin": 30723,
+          "droid-you": 9649,
+          "codex-builtin": 2416,
+          "codex-you": 180012
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": true
+        }
+      },
+      {
+        "id": "websearch-1576",
+        "winner": "gemini-builtin",
+        "scores": {
+          "gemini-builtin": 0.6188212094653813,
+          "codex-you": 0.5573833205814843,
+          "gemini-you": 0.5175397567820392,
+          "claude-code-you": 0.5146412884333822,
+          "droid-you": 0.5107781849536538,
+          "droid-builtin": 0.5091066387396412,
+          "codex-builtin": 0.48479366873940083,
+          "claude-code-builtin": 0.4375046880860108
+        },
+        "latencies": {
+          "claude-code-builtin": 6999,
+          "claude-code-you": 19490,
+          "gemini-builtin": 5846,
+          "gemini-you": 16104,
+          "droid-builtin": 31943,
+          "droid-you": 26834,
+          "codex-builtin": 2538,
+          "codex-you": 4228
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1592",
+        "winner": "gemini-you",
+        "scores": {
+          "gemini-you": 0.6942468082376339,
+          "codex-you": 0.5361750874231279,
+          "gemini-builtin": 0.5243230095670504,
+          "droid-you": 0.5163585800752495,
+          "droid-builtin": 0.5121045836023241,
+          "claude-code-builtin": 0.5111041196283821,
+          "claude-code-you": 0.5064114893889851,
+          "codex-builtin": 0.5034090134315129
+        },
+        "latencies": {
+          "claude-code-builtin": 26017,
+          "claude-code-you": 45791,
+          "gemini-builtin": 11334,
+          "gemini-you": 14587,
+          "droid-builtin": 23784,
+          "droid-you": 17339,
+          "codex-builtin": 87002,
+          "codex-you": 7293
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1594",
+        "winner": "gemini-you",
+        "scores": {
+          "gemini-you": 0.6872794809872702,
+          "gemini-builtin": 0.5173220162826953,
+          "droid-you": 0.5167121608824021,
+          "droid-builtin": 0.5123456790123457,
+          "codex-you": 0.5104562406329511,
+          "claude-code-builtin": 0.5096153846153846,
+          "claude-code-you": 0.5088623674337538,
+          "codex-builtin": 0.5047527011184689
+        },
+        "latencies": {
+          "claude-code-builtin": 30200,
+          "claude-code-you": 32851,
+          "gemini-builtin": 16319,
+          "gemini-you": 23431,
+          "droid-builtin": 23300,
+          "droid-you": 16951,
+          "codex-builtin": 62122,
+          "codex-you": 27691
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1595",
+        "winner": "codex-you",
+        "scores": {
+          "codex-you": 0.5337952010814464,
+          "gemini-you": 0.5173310225303294,
+          "droid-you": 0.5165975103734439,
+          "claude-code-builtin": 0.5113481615978211,
+          "droid-builtin": 0.5109549023187876,
+          "gemini-builtin": 0.509788566953798,
+          "claude-code-you": 0.5043004587155964,
+          "codex-builtin": 0.5024650780608053
+        },
+        "latencies": {
+          "claude-code-builtin": 25436,
+          "claude-code-you": 68760,
+          "gemini-builtin": 29648,
+          "gemini-you": 16310,
+          "droid-builtin": 26385,
+          "droid-you": 17075,
+          "codex-builtin": 120700,
+          "codex-you": 7877
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1601",
+        "winner": "droid-you",
+        "scores": {
+          "droid-you": 0.5208449138410227,
+          "gemini-builtin": 0.5177935943060499,
+          "gemini-you": 0.515605493133583,
+          "droid-builtin": 0.5130810150867707,
+          "claude-code-builtin": 0.5113105112351078,
+          "claude-code-you": 0.507746133388417,
+          "codex-you": 0.507397179208995,
+          "codex-builtin": 0.4876680303915839
+        },
+        "latencies": {
+          "claude-code-builtin": 25524,
+          "claude-code-you": 37729,
+          "gemini-builtin": 15860,
+          "gemini-you": 18224,
+          "droid-builtin": 21934,
+          "droid-you": 13392,
+          "codex-builtin": 2422,
+          "codex-you": 39556
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1611",
+        "winner": "gemini-builtin",
+        "scores": {
+          "gemini-builtin": 0.6951829924650161,
+          "gemini-you": 0.6894885540423066,
+          "droid-you": 0.5211327134404058,
+          "codex-you": 0.5138818194438017,
+          "claude-code-builtin": 0.5121703853955375,
+          "droid-builtin": 0.5117237875649694,
+          "claude-code-you": 0.5092669817440459,
+          "codex-builtin": 0.5074204160379925
+        },
+        "latencies": {
+          "claude-code-builtin": 23650,
+          "claude-code-you": 31373,
+          "gemini-builtin": 13864,
+          "gemini-you": 19706,
+          "droid-builtin": 24589,
+          "droid-you": 13196,
+          "codex-builtin": 39429,
+          "codex-you": 20611
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1627",
+        "winner": "codex-you",
+        "scores": {
+          "codex-you": 0.5418585182084554,
+          "gemini-builtin": 0.5219796322074877,
+          "claude-code-you": 0.5205058099794941,
+          "gemini-you": 0.5178613955703739,
+          "droid-you": 0.5137463343108504,
+          "droid-builtin": 0.5109757436066293,
+          "claude-code-builtin": 0.50999900009999,
+          "codex-builtin": 0.4924214417744917
+        },
+        "latencies": {
+          "claude-code-builtin": 29003,
+          "claude-code-you": 13630,
+          "gemini-builtin": 12649,
+          "gemini-you": 15796,
+          "droid-builtin": 26333,
+          "droid-you": 20824,
+          "codex-builtin": 2246,
+          "codex-you": 6167
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1641",
+        "winner": "codex-you",
+        "scores": {
+          "codex-you": 0.5318708169552746,
+          "gemini-you": 0.5177672490376073,
+          "gemini-builtin": 0.5171047380124294,
+          "droid-you": 0.5148323939483832,
+          "droid-builtin": 0.5122804863072578,
+          "claude-code-builtin": 0.5101211160217267,
+          "claude-code-you": 0.5083749755729878,
+          "codex-builtin": 0.10165725712896775
+        },
+        "latencies": {
+          "claude-code-builtin": 28641,
+          "claude-code-you": 34821,
+          "gemini-builtin": 16539,
+          "gemini-you": 15885,
+          "droid-builtin": 23429,
+          "droid-you": 19226,
+          "codex-builtin": 180022,
+          "codex-you": 8413
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": true,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1671",
+        "winner": "codex-you",
+        "scores": {
+          "codex-you": 0.5352485019386677,
+          "gemini-builtin": 0.5204387518735523,
+          "droid-you": 0.5173430454387791,
+          "claude-code-you": 0.5151072615570551,
+          "droid-builtin": 0.5150996577410911,
+          "claude-code-builtin": 0.5111288348109952,
+          "codex-builtin": 0.5105470397974968,
+          "gemini-you": 0.22037074760643716
+        },
+        "latencies": {
+          "claude-code-builtin": 25957,
+          "claude-code-you": 18858,
+          "gemini-builtin": 13678,
+          "gemini-you": 13727,
+          "droid-builtin": 18868,
+          "droid-you": 16298,
+          "codex-builtin": 27444,
+          "codex-you": 7511
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1682",
+        "winner": "codex-you",
+        "scores": {
+          "codex-you": 0.5508302270416807,
+          "gemini-you": 0.5240751143567932,
+          "gemini-builtin": 0.5226705962366811,
+          "claude-code-you": 0.5196206671026815,
+          "droid-you": 0.517974835230677,
+          "droid-builtin": 0.5151095441954168,
+          "claude-code-builtin": 0.5138991845811712,
+          "codex-builtin": 0.5023850410227055
+        },
+        "latencies": {
+          "claude-code-builtin": 20584,
+          "claude-code-you": 14290,
+          "gemini-builtin": 12233,
+          "gemini-you": 11461,
+          "droid-builtin": 18855,
+          "droid-you": 15690,
+          "codex-builtin": 124784,
+          "codex-you": 4902
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1692",
+        "winner": "gemini-you",
+        "scores": {
+          "gemini-you": 0.5233299634497239,
+          "gemini-builtin": 0.5206284810561782,
+          "droid-you": 0.5178359096313911,
+          "droid-builtin": 0.5155722813392162,
+          "claude-code-builtin": 0.5114255246220056,
+          "claude-code-you": 0.5075522996752511,
+          "codex-you": 0.50647123535883,
+          "codex-builtin": 0.5046707873390525
+        },
+        "latencies": {
+          "claude-code-builtin": 25257,
+          "claude-code-you": 38723,
+          "gemini-builtin": 13543,
+          "gemini-you": 11859,
+          "droid-builtin": 18265,
+          "droid-you": 15820,
+          "codex-builtin": 63229,
+          "codex-you": 45359
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1710",
+        "winner": "gemini-you",
+        "scores": {
+          "gemini-you": 0.5335795836131632,
+          "codex-you": 0.5159872102318146,
+          "gemini-builtin": 0.515738943392267,
+          "droid-you": 0.5155545185876498,
+          "claude-code-you": 0.5112049002763875,
+          "claude-code-builtin": 0.5111404062534814,
+          "droid-builtin": 0.5111395789239166,
+          "codex-builtin": 0.5028224933906613
+        },
+        "latencies": {
+          "claude-code-builtin": 25929,
+          "claude-code-you": 25774,
+          "gemini-builtin": 18061,
+          "gemini-you": 7934,
+          "droid-builtin": 25931,
+          "droid-you": 18287,
+          "codex-builtin": 105289,
+          "codex-you": 17765
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1735",
+        "winner": "gemini-builtin",
+        "scores": {
+          "gemini-builtin": 0.5234576589256392,
+          "gemini-you": 0.5222057735011103,
+          "droid-you": 0.5192061459667093,
+          "claude-code-builtin": 0.5136736554238833,
+          "codex-you": 0.5127991808524255,
+          "droid-builtin": 0.5122784758318668,
+          "claude-code-you": 0.510307861462342,
+          "codex-builtin": 0.509090909090909
+        },
+        "latencies": {
+          "claude-code-builtin": 20940,
+          "claude-code-you": 28104,
+          "gemini-builtin": 11789,
+          "gemini-you": 12510,
+          "droid-builtin": 23433,
+          "droid-you": 14620,
+          "codex-builtin": 1750,
+          "codex-you": 22439
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1745",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 0.5130810150867707,
+          "gemini-you": 0.5109385254867644,
+          "droid-builtin": 0.5085592011412268,
+          "droid-you": 0.5079717269417798,
+          "codex-you": 0.505952735281862,
+          "claude-code-you": 0.503867873443181,
+          "codex-builtin": 0.50369900003699,
+          "gemini-builtin": 0.304916904317042
+        },
+        "latencies": {
+          "claude-code-builtin": 21934,
+          "claude-code-you": 76562,
+          "gemini-builtin": 60014,
+          "gemini-you": 26426,
+          "droid-builtin": 34050,
+          "droid-you": 36633,
+          "codex-builtin": 80103,
+          "codex-you": 49397
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": true,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1761",
+        "winner": "codex-you",
+        "scores": {
+          "codex-you": 0.712206994915044,
+          "droid-you": 0.5166592625499777,
+          "gemini-you": 0.5159591445898499,
+          "gemini-builtin": 0.5133827006289869,
+          "claude-code-builtin": 0.5120414224933771,
+          "claude-code-you": 0.5105544610188573,
+          "droid-builtin": 0.5092870631210724,
+          "codex-builtin": 0.5024048674517223
+        },
+        "latencies": {
+          "claude-code-builtin": 23914,
+          "claude-code-you": 27424,
+          "gemini-builtin": 21417,
+          "gemini-you": 17798,
+          "droid-builtin": 31303,
+          "droid-you": 17008,
+          "codex-builtin": 123747,
+          "codex-you": 7063
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1764",
+        "winner": "codex-you",
+        "scores": {
+          "codex-you": 0.5173570932654479,
+          "gemini-builtin": 0.5168255748738082,
+          "droid-you": 0.5112410071942446,
+          "gemini-you": 0.5111358574610245,
+          "droid-builtin": 0.5109393232205368,
+          "claude-code-builtin": 0.5081637095896375,
+          "claude-code-you": 0.5044092358794221,
+          "codex-builtin": 0.5041907050162739
+        },
+        "latencies": {
+          "claude-code-builtin": 35748,
+          "claude-code-you": 67039,
+          "gemini-builtin": 16830,
+          "gemini-you": 25940,
+          "droid-builtin": 26424,
+          "droid-you": 25688,
+          "codex-builtin": 70587,
+          "codex-you": 16284
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1770",
+        "winner": "droid-you",
+        "scores": {
+          "droid-you": 0.5225360576923077,
+          "gemini-you": 0.5159982935153584,
+          "gemini-builtin": 0.5159261028826246,
+          "claude-code-builtin": 0.5071365701643791,
+          "claude-code-you": 0.5038087016136199,
+          "codex-you": 0.503685232046778,
+          "codex-builtin": 0.47698229407236337,
+          "droid-builtin": 0.3049162597096129
+        },
+        "latencies": {
+          "claude-code-builtin": 41037,
+          "claude-code-you": 77767,
+          "gemini-builtin": 17837,
+          "gemini-you": 17752,
+          "droid-builtin": 60022,
+          "droid-you": 12312,
+          "codex-builtin": 2897,
+          "codex-you": 80406
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": true,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1788",
+        "winner": "gemini-builtin",
+        "scores": {
+          "gemini-builtin": 0.5240134475306171,
+          "gemini-you": 0.5186497575531518,
+          "droid-you": 0.5172671808449407,
+          "droid-builtin": 0.5160883788276935,
+          "claude-code-builtin": 0.5130005200208008,
+          "claude-code-you": 0.5103177878662815,
+          "codex-you": 0.5039928660792716,
+          "codex-builtin": 0.5037336187477442
+        },
+        "latencies": {
+          "claude-code-builtin": 22076,
+          "claude-code-you": 28076,
+          "gemini-builtin": 11493,
+          "gemini-you": 15086,
+          "droid-builtin": 17647,
+          "droid-you": 16374,
+          "codex-builtin": 79351,
+          "codex-you": 74134
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1804",
+        "winner": "codex-you",
+        "scores": {
+          "codex-you": 0.5532670454545454,
+          "claude-code-you": 0.5180635838150289,
+          "gemini-builtin": 0.5169548999660902,
+          "gemini-you": 0.5124636476942253,
+          "droid-builtin": 0.5105362975450427,
+          "claude-code-builtin": 0.5088250867800199,
+          "droid-you": 0.507879806682076,
+          "codex-builtin": 0.5038554464607001
+        },
+        "latencies": {
+          "claude-code-builtin": 32994,
+          "claude-code-you": 15608,
+          "gemini-builtin": 16694,
+          "gemini-you": 23070,
+          "droid-builtin": 27473,
+          "droid-you": 37072,
+          "codex-builtin": 76812,
+          "codex-you": 4632
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1806",
+        "winner": "gemini-you",
+        "scores": {
+          "gemini-you": 0.518067935437244,
+          "gemini-builtin": 0.5150293071489405,
+          "droid-you": 0.5130423441439875,
+          "droid-builtin": 0.511417262901507,
+          "claude-code-builtin": 0.5107119902877955,
+          "claude-code-you": 0.5104566050888811,
+          "codex-builtin": 0.5033547290497171,
+          "codex-you": 0.5018371096142069
+        },
+        "latencies": {
+          "claude-code-builtin": 27006,
+          "claude-code-you": 27690,
+          "gemini-builtin": 18961,
+          "gemini-you": 15604,
+          "droid-builtin": 25276,
+          "droid-you": 22002,
+          "codex-builtin": 88426,
+          "codex-you": 162300
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1824",
+        "winner": "codex-you",
+        "scores": {
+          "codex-you": 0.548820179007323,
+          "gemini-builtin": 0.5238530651188678,
+          "droid-you": 0.5186081131373279,
+          "gemini-you": 0.5180995475113122,
+          "claude-code-builtin": 0.514873574615766,
+          "droid-builtin": 0.5147449130050132,
+          "codex-builtin": 0.5109837806172886,
+          "claude-code-you": 0.5107446008380789
+        },
+        "latencies": {
+          "claude-code-builtin": 19170,
+          "claude-code-you": 26921,
+          "gemini-builtin": 11577,
+          "gemini-you": 15575,
+          "droid-builtin": 19346,
+          "droid-you": 15122,
+          "codex-builtin": 26313,
+          "codex-you": 5145
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1828",
+        "winner": "codex-you",
+        "scores": {
+          "codex-you": 0.5498504486540379,
+          "gemini-you": 0.517864586434824,
+          "gemini-builtin": 0.5160290660397521,
+          "droid-you": 0.5143568147013782,
+          "claude-code-builtin": 0.5103537532355479,
+          "droid-builtin": 0.5098736176935229,
+          "claude-code-you": 0.5076076482223462,
+          "codex-builtin": 0.5028885593791523
+        },
+        "latencies": {
+          "claude-code-builtin": 27975,
+          "claude-code-you": 38434,
+          "gemini-builtin": 17716,
+          "gemini-you": 15793,
+          "droid-builtin": 29384,
+          "droid-you": 19896,
+          "codex-builtin": 102858,
+          "codex-you": 5018
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1830",
+        "winner": "codex-builtin",
+        "scores": {
+          "codex-builtin": 0.5343563902885937,
+          "gemini-you": 0.5307408545957577,
+          "gemini-builtin": 0.5289379762708595,
+          "droid-you": 0.5185620591510951,
+          "codex-you": 0.5162698627908238,
+          "claude-code-you": 0.5146792582081519,
+          "claude-code-builtin": 0.5143719459614832,
+          "droid-builtin": 0.5135605478461329
+        },
+        "latencies": {
+          "claude-code-builtin": 19874,
+          "claude-code-you": 19437,
+          "gemini-builtin": 9367,
+          "gemini-you": 8759,
+          "droid-builtin": 21123,
+          "droid-you": 15162,
+          "codex-builtin": 7732,
+          "codex-you": 17439
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1846",
+        "winner": "gemini-you",
+        "scores": {
+          "gemini-you": 0.5199295821430944,
+          "gemini-builtin": 0.5164473684210527,
+          "droid-you": 0.5140673356466285,
+          "claude-code-builtin": 0.511250703168948,
+          "droid-builtin": 0.5102155480641537,
+          "claude-code-you": 0.5066420174020856,
+          "codex-you": 0.5049698495792194,
+          "codex-builtin": 0.5029970928199646
+        },
+        "latencies": {
+          "claude-code-builtin": 25665,
+          "claude-code-you": 44167,
+          "gemini-builtin": 17240,
+          "gemini-you": 14053,
+          "droid-builtin": 28367,
+          "droid-you": 20326,
+          "codex-builtin": 99097,
+          "codex-you": 59364
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1856",
+        "winner": "codex-builtin",
+        "scores": {
+          "codex-builtin": 0.5290416263310745,
+          "claude-code-builtin": 0.5131222115300499,
+          "gemini-builtin": 0.5127475142347242,
+          "droid-builtin": 0.5119846596356663,
+          "gemini-you": 0.5118198652535362,
+          "droid-you": 0.5069135574862305,
+          "codex-you": 0.5064625923612158,
+          "claude-code-you": 0.5049000392003136
+        },
+        "latencies": {
+          "claude-code-builtin": 21862,
+          "claude-code-you": 60224,
+          "gemini-builtin": 22534,
+          "gemini-you": 24381,
+          "droid-builtin": 24032,
+          "droid-you": 42393,
+          "codex-builtin": 9330,
+          "codex-you": 45421
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1859",
+        "winner": "gemini-builtin",
+        "scores": {
+          "gemini-builtin": 0.5141389386370063,
+          "droid-you": 0.5126257312402677,
+          "claude-code-builtin": 0.5111168754168829,
+          "droid-builtin": 0.5085623769158318,
+          "gemini-you": 0.5073997336095901,
+          "claude-code-you": 0.5039572093759481,
+          "codex-builtin": 0.50188451680989,
+          "codex-you": 0.10165729374979285
+        },
+        "latencies": {
+          "claude-code-builtin": 25986,
+          "claude-code-you": 74811,
+          "gemini-builtin": 20218,
+          "gemini-you": 39542,
+          "droid-builtin": 34037,
+          "droid-you": 22761,
+          "codex-builtin": 158192,
+          "codex-you": 180018
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": true
+        }
+      },
+      {
+        "id": "websearch-1861",
+        "winner": "codex-you",
+        "scores": {
+          "codex-you": 0.5521920668058455,
+          "droid-you": 0.5129853265809635,
+          "gemini-builtin": 0.5129249062944294,
+          "gemini-you": 0.5129176713744402,
+          "droid-builtin": 0.5110942642653749,
+          "claude-code-builtin": 0.5094339622641509,
+          "claude-code-you": 0.5046347077816744,
+          "codex-builtin": 0.4732600732600733
+        },
+        "latencies": {
+          "claude-code-builtin": 30800,
+          "claude-code-you": 63729,
+          "gemini-builtin": 22211,
+          "gemini-you": 22224,
+          "droid-builtin": 26041,
+          "droid-you": 22103,
+          "codex-builtin": 3095,
+          "codex-you": 4748
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1882",
+        "winner": "codex-you",
+        "scores": {
+          "codex-you": 0.5414593698175787,
+          "droid-you": 0.5169128424850603,
+          "gemini-you": 0.51454898157129,
+          "droid-builtin": 0.5117279124315872,
+          "claude-code-builtin": 0.510371650821089,
+          "claude-code-you": 0.5060652622215034,
+          "gemini-builtin": 0.3049157763649472,
+          "codex-builtin": 0.10165715643004315
+        },
+        "latencies": {
+          "claude-code-builtin": 27925,
+          "claude-code-you": 48462,
+          "gemini-builtin": 60028,
+          "gemini-you": 19620,
+          "droid-builtin": 24580,
+          "droid-you": 16738,
+          "codex-builtin": 180033,
+          "codex-you": 6236
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": true,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": true,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1886",
+        "winner": "gemini-you",
+        "scores": {
+          "gemini-you": 0.5311785491581792,
+          "droid-you": 0.5165654334621756,
+          "gemini-builtin": 0.5141857386041233,
+          "droid-builtin": 0.5126172351432057,
+          "claude-code-builtin": 0.510310695628265,
+          "claude-code-you": 0.5083530558262565,
+          "codex-you": 0.5067749147489894,
+          "codex-builtin": 0.101657229664411
+        },
+        "latencies": {
+          "claude-code-builtin": 28096,
+          "claude-code-you": 34915,
+          "gemini-builtin": 20148,
+          "gemini-you": 8622,
+          "droid-builtin": 22777,
+          "droid-you": 17110,
+          "codex-builtin": 180025,
+          "codex-you": 43281
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": true,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1888",
+        "winner": "gemini-you",
+        "scores": {
+          "gemini-you": 0.5159923236846313,
+          "gemini-builtin": 0.5131279537896027,
+          "claude-code-you": 0.5130998646347321,
+          "droid-builtin": 0.5119464797706276,
+          "codex-you": 0.5092330419795642,
+          "claude-code-builtin": 0.506378771448619,
+          "droid-you": 0.5049391659395117,
+          "codex-builtin": 0.5028172982110156
+        },
+        "latencies": {
+          "claude-code-builtin": 46031,
+          "claude-code-you": 21901,
+          "gemini-builtin": 21852,
+          "gemini-you": 17759,
+          "droid-builtin": 24112,
+          "droid-you": 59739,
+          "codex-builtin": 105485,
+          "codex-you": 31492
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1891",
+        "winner": "gemini-you",
+        "scores": {
+          "gemini-you": 0.5176087339320303,
+          "codex-you": 0.514801657785672,
+          "gemini-builtin": 0.5131758092142826,
+          "claude-code-builtin": 0.5109134562916076,
+          "claude-code-you": 0.507724194752697,
+          "droid-builtin": 0.5051359309730877,
+          "codex-builtin": 0.5018323631988175,
+          "droid-you": 0.2153925089789636
+        },
+        "latencies": {
+          "claude-code-builtin": 26489,
+          "claude-code-you": 37839,
+          "gemini-builtin": 21769,
+          "gemini-you": 16037,
+          "droid-builtin": 57412,
+          "droid-you": 18490,
+          "codex-builtin": 162723,
+          "codex-you": 19268
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1909",
+        "winner": "codex-you",
+        "scores": {
+          "codex-you": 0.546339202965709,
+          "claude-code-builtin": 0.5145384056215168,
+          "droid-you": 0.5140252454417953,
+          "droid-builtin": 0.5092864881597277,
+          "claude-code-you": 0.5074641719745223,
+          "gemini-builtin": 0.3049158569157914,
+          "gemini-you": 0.20591529300418016,
+          "codex-builtin": 0.10165720220076453
+        },
+        "latencies": {
+          "claude-code-builtin": 19635,
+          "claude-code-you": 39192,
+          "gemini-builtin": 60027,
+          "gemini-you": 49716,
+          "droid-builtin": 31305,
+          "droid-you": 20390,
+          "codex-builtin": 180028,
+          "codex-you": 5474
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": true,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": true,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1926",
+        "winner": "codex-you",
+        "scores": {
+          "codex-you": 0.5513698630136986,
+          "gemini-you": 0.5172980453208788,
+          "droid-you": 0.5152493264880801,
+          "gemini-builtin": 0.5118844828269223,
+          "droid-builtin": 0.5101375325245835,
+          "claude-code-builtin": 0.5095063058495468,
+          "claude-code-you": 0.5076689076919144,
+          "codex-builtin": 0.1016572662840223
+        },
+        "latencies": {
+          "claude-code-builtin": 30558,
+          "claude-code-you": 38119,
+          "gemini-builtin": 24243,
+          "gemini-you": 16343,
+          "droid-builtin": 28593,
+          "droid-you": 18673,
+          "codex-builtin": 180021,
+          "codex-you": 4840
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": true,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1940",
+        "winner": "codex-you",
+        "scores": {
+          "codex-you": 0.5508992195453003,
+          "gemini-builtin": 0.5172166427546628,
+          "droid-you": 0.5137956405775774,
+          "gemini-you": 0.513038942976356,
+          "claude-code-builtin": 0.5098690703335746,
+          "droid-builtin": 0.5093005952380952,
+          "codex-builtin": 0.506631446318442,
+          "claude-code-you": 0.504965325477085
+        },
+        "latencies": {
+          "claude-code-builtin": 29398,
+          "claude-code-you": 59419,
+          "gemini-builtin": 16425,
+          "gemini-you": 22008,
+          "droid-builtin": 31256,
+          "droid-you": 20746,
+          "codex-builtin": 44239,
+          "codex-you": 4894
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1944",
+        "winner": "codex-you",
+        "scores": {
+          "codex-you": 0.5518224218345138,
+          "gemini-builtin": 0.5154806749574281,
+          "gemini-you": 0.5134402580529547,
+          "droid-you": 0.5133898683329614,
+          "droid-builtin": 0.5114155251141552,
+          "claude-code-builtin": 0.5083873853723999,
+          "claude-code-you": 0.5047417335777961,
+          "codex-builtin": 0.5026826912758879
+        },
+        "latencies": {
+          "claude-code-builtin": 34768,
+          "claude-code-you": 62268,
+          "gemini-builtin": 18379,
+          "gemini-you": 21321,
+          "droid-builtin": 25280,
+          "droid-you": 21405,
+          "codex-builtin": 110828,
+          "codex-you": 4789
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1956",
+        "winner": "codex-you",
+        "scores": {
+          "codex-you": 0.5453172205438066,
+          "droid-you": 0.5261392349917227,
+          "gemini-builtin": 0.5232090360513693,
+          "codex-builtin": 0.5180407721450477,
+          "gemini-you": 0.5179597701149425,
+          "claude-code-builtin": 0.510487676979549,
+          "claude-code-you": 0.5060137112616766,
+          "droid-builtin": 0.44666355576294914
+        },
+        "latencies": {
+          "claude-code-builtin": 27605,
+          "claude-code-you": 48886,
+          "gemini-builtin": 11926,
+          "gemini-you": 15704,
+          "droid-builtin": 5429,
+          "droid-you": 10477,
+          "codex-builtin": 15629,
+          "codex-you": 5620
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1960",
+        "winner": "droid-you",
+        "scores": {
+          "droid-you": 0.5153209744139727,
+          "claude-code-builtin": 0.5088965333175173,
+          "codex-you": 0.5081006642544689,
+          "droid-builtin": 0.5078874720652031,
+          "claude-code-you": 0.5063778221863174,
+          "codex-builtin": 0.5023525352488198,
+          "gemini-you": 0.304916904317042,
+          "gemini-builtin": 0.30491513205321447
+        },
+        "latencies": {
+          "claude-code-builtin": 32721,
+          "claude-code-you": 46038,
+          "gemini-builtin": 60036,
+          "gemini-you": 60014,
+          "droid-builtin": 37035,
+          "droid-you": 18581,
+          "codex-builtin": 126522,
+          "codex-you": 36034
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": true,
+          "gemini-you": true,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1973",
+        "winner": "codex-you",
+        "scores": {
+          "codex-you": 0.5520562207183759,
+          "gemini-builtin": 0.5228293128376835,
+          "gemini-you": 0.518669487833717,
+          "droid-you": 0.5161603102779573,
+          "claude-code-builtin": 0.5130298818624044,
+          "droid-builtin": 0.5129226793021753,
+          "claude-code-you": 0.5106371662589086,
+          "codex-builtin": 0.479093066174532
+        },
+        "latencies": {
+          "claude-code-builtin": 22024,
+          "claude-code-you": 27203,
+          "gemini-builtin": 12141,
+          "gemini-you": 15069,
+          "droid-builtin": 22215,
+          "droid-you": 17564,
+          "codex-builtin": 2793,
+          "codex-you": 4763
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1995",
+        "winner": "codex-you",
+        "scores": {
+          "codex-you": 0.5382360438439969,
+          "droid-builtin": 0.5109805644010101,
+          "claude-code-builtin": 0.510594716767905,
+          "droid-you": 0.510485844110451,
+          "codex-builtin": 0.5097374143918985,
+          "gemini-you": 0.5088378258948298,
+          "gemini-builtin": 0.5071331764034525,
+          "claude-code-you": 0.5056627279247989
+        },
+        "latencies": {
+          "claude-code-builtin": 27316,
+          "claude-code-you": 51978,
+          "gemini-builtin": 41057,
+          "gemini-you": 32945,
+          "droid-builtin": 26321,
+          "droid-you": 27610,
+          "codex-builtin": 29809,
+          "codex-you": 6846
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      }
+    ],
+    "pairwise": [
+      {
+        "runA": "claude-code-builtin",
+        "runB": "claude-code-you",
+        "aWins": 6,
+        "bWins": 4,
+        "ties": 141
+      },
+      {
+        "runA": "claude-code-builtin",
+        "runB": "gemini-builtin",
+        "aWins": 6,
+        "bWins": 40,
+        "ties": 105
+      },
+      {
+        "runA": "claude-code-builtin",
+        "runB": "gemini-you",
+        "aWins": 6,
+        "bWins": 32,
+        "ties": 113
+      },
+      {
+        "runA": "claude-code-builtin",
+        "runB": "droid-builtin",
+        "aWins": 6,
+        "bWins": 2,
+        "ties": 143
+      },
+      {
+        "runA": "claude-code-builtin",
+        "runB": "droid-you",
+        "aWins": 6,
+        "bWins": 25,
+        "ties": 120
+      },
+      {
+        "runA": "claude-code-builtin",
+        "runB": "codex-builtin",
+        "aWins": 6,
+        "bWins": 3,
+        "ties": 142
+      },
+      {
+        "runA": "claude-code-builtin",
+        "runB": "codex-you",
+        "aWins": 6,
+        "bWins": 39,
+        "ties": 106
+      },
+      {
+        "runA": "claude-code-you",
+        "runB": "gemini-builtin",
+        "aWins": 4,
+        "bWins": 40,
+        "ties": 107
+      },
+      {
+        "runA": "claude-code-you",
+        "runB": "gemini-you",
+        "aWins": 4,
+        "bWins": 32,
+        "ties": 115
+      },
+      {
+        "runA": "claude-code-you",
+        "runB": "droid-builtin",
+        "aWins": 4,
+        "bWins": 2,
+        "ties": 145
+      },
+      {
+        "runA": "claude-code-you",
+        "runB": "droid-you",
+        "aWins": 4,
+        "bWins": 25,
+        "ties": 122
+      },
+      {
+        "runA": "claude-code-you",
+        "runB": "codex-builtin",
+        "aWins": 4,
+        "bWins": 3,
+        "ties": 144
+      },
+      {
+        "runA": "claude-code-you",
+        "runB": "codex-you",
+        "aWins": 4,
+        "bWins": 39,
+        "ties": 108
+      },
+      {
+        "runA": "gemini-builtin",
+        "runB": "gemini-you",
+        "aWins": 40,
+        "bWins": 32,
+        "ties": 79
+      },
+      {
+        "runA": "gemini-builtin",
+        "runB": "droid-builtin",
+        "aWins": 40,
+        "bWins": 2,
+        "ties": 109
+      },
+      {
+        "runA": "gemini-builtin",
+        "runB": "droid-you",
+        "aWins": 40,
+        "bWins": 25,
+        "ties": 86
+      },
+      {
+        "runA": "gemini-builtin",
+        "runB": "codex-builtin",
+        "aWins": 40,
+        "bWins": 3,
+        "ties": 108
+      },
+      {
+        "runA": "gemini-builtin",
+        "runB": "codex-you",
+        "aWins": 40,
+        "bWins": 39,
+        "ties": 72
+      },
+      {
+        "runA": "gemini-you",
+        "runB": "droid-builtin",
+        "aWins": 32,
+        "bWins": 2,
+        "ties": 117
+      },
+      {
+        "runA": "gemini-you",
+        "runB": "droid-you",
+        "aWins": 32,
+        "bWins": 25,
+        "ties": 94
+      },
+      {
+        "runA": "gemini-you",
+        "runB": "codex-builtin",
+        "aWins": 32,
+        "bWins": 3,
+        "ties": 116
+      },
+      {
+        "runA": "gemini-you",
+        "runB": "codex-you",
+        "aWins": 32,
+        "bWins": 39,
+        "ties": 80
+      },
+      {
+        "runA": "droid-builtin",
+        "runB": "droid-you",
+        "aWins": 2,
+        "bWins": 25,
+        "ties": 124
+      },
+      {
+        "runA": "droid-builtin",
+        "runB": "codex-builtin",
+        "aWins": 2,
+        "bWins": 3,
+        "ties": 146
+      },
+      {
+        "runA": "droid-builtin",
+        "runB": "codex-you",
+        "aWins": 2,
+        "bWins": 39,
+        "ties": 110
+      },
+      {
+        "runA": "droid-you",
+        "runB": "codex-builtin",
+        "aWins": 25,
+        "bWins": 3,
+        "ties": 123
+      },
+      {
+        "runA": "droid-you",
+        "runB": "codex-you",
+        "aWins": 25,
+        "bWins": 39,
+        "ties": 87
+      },
+      {
+        "runA": "codex-builtin",
+        "runB": "codex-you",
+        "aWins": 3,
+        "bWins": 39,
+        "ties": 109
+      }
+    ]
+  }
+}

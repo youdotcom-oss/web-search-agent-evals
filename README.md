@@ -1,10 +1,10 @@
-# Agentic Web Search Playoffs
+# Web Search Agent Evaluations
 
 Evaluate multiple agents (Claude Code, Gemini, Droid, Codex) with different web search tools (builtin, You.com MCP) in isolated Docker containers.
 
 ## Overview
 
-The **playoffs** system runs a matrix evaluation: 4 agents × 2 tools = 8 pairings, capturing full trajectories for comparison.
+This evaluation system runs a matrix comparison: 4 agents × 2 tools = 8 pairings, capturing full trajectories for analysis.
 
 **Key Features:**
 - **Headless adapters** - No custom code, just JSON schemas ([@plaited/agent-eval-harness](https://www.npmjs.com/package/@plaited/agent-eval-harness))
@@ -64,7 +64,7 @@ docker compose run --rm -e MCP_TOOL=builtin claude-code
 docker compose run --rm -e MCP_TOOL=you gemini
 ```
 
-#### Full Workflow (1,254 prompts, ~10+ hours)
+#### Full Workflow (151 prompts, ~2 hours)
 
 ```bash
 # Run all agents with full dataset
@@ -166,7 +166,7 @@ Single source of truth for MCP server configurations. The TypeScript entrypoint 
 - `builtin` - Agent's native search (no MCP config)
 - `you` - You.com MCP server (requires `YOU_API_KEY`)
 
-To add new MCP tools, see `.claude/skills/playoffs/references/mcp-tools.md`.
+To add new MCP tools, see `.claude/skills/web-search-agent-evals/SKILL.md`.
 
 ### CLI Scripts (scripts/)
 
@@ -206,10 +206,18 @@ The entrypoint script:
 |------|---------|--------|----------|
 | `test.jsonl` | 5 | `<web-search>` | `SEARCH_PROVIDER=builtin` |
 | `test-you.jsonl` | 5 | `<web-search mcp-server="ydc-server">` | `SEARCH_PROVIDER=you` |
-| `full.jsonl` | 1,254 | `<web-search>` | `SEARCH_PROVIDER=builtin` |
-| `full-you.jsonl` | 1,254 | `<web-search mcp-server="ydc-server">` | `SEARCH_PROVIDER=you` |
+| `full.jsonl` | 151 | `<web-search>` | `SEARCH_PROVIDER=builtin` |
+| `full-you.jsonl` | 151 | `<web-search mcp-server="ydc-server">` | `SEARCH_PROVIDER=you` |
 
-Prompts are designed to trigger web search with time-sensitive queries and recent events.
+**Test prompts** are randomly sampled from the full dataset. The prompts in `test.jsonl` and `test-you.jsonl` are identical except for the XML attribute (`mcp-server="ydc-server"`).
+
+To regenerate test prompts with a new random sample:
+
+```bash
+bun run sample:test
+```
+
+All prompts are designed to trigger web search with time-sensitive queries and recent events.
 
 ## Results
 
@@ -262,42 +270,118 @@ Each result includes full trajectory (messages, tool calls, timing, token usage)
 
 ## Comparisons
 
-Comparison analyses are versioned alongside the raw results they evaluate:
+Comparison analyses are versioned alongside the raw results they evaluate.
 
-### Test Comparisons (Rapid Iteration)
-```
-data/comparisons/test-runs/
-├── all-weighted.json
-├── all-statistical.json
-├── builtin-weighted.json
-└── you-weighted.json
-```
+### Comparison Metrics
 
-### Full Run Comparisons (Historical Archive)
+Each comparison output includes:
+
+**Quality Metrics (per agent+tool pairing):**
+- `avgScore` - Mean inline grader score (0-1 scale)
+- `passRate` - Percentage of prompts that passed (score ≥ 0.7)
+- `passCount` / `failCount` - Number of passing/failing prompts
+- `scoreDistribution` - Histogram of scores by quintile
+
+**Performance Metrics:**
+- `latency.p50/p90/p99` - Response time percentiles (milliseconds)
+- `firstResponse` - Time to first output
+- `totalDuration` - Total execution time across all prompts
+
+**Head-to-Head Analysis:**
+- Pairwise win/loss/tie records
+- Statistical significance (when using `--strategy statistical`)
+
+### Comparison Strategies
+
+**Weighted Strategy (default):**
+Balances multiple dimensions with configurable weights:
+- `COMPARE_QUALITY` (default: 0.6) - Inline grader scores
+- `COMPARE_LATENCY` (default: 0.3) - Response speed
+- `COMPARE_RELIABILITY` (default: 0.1) - Pass rate consistency
+
+**Statistical Strategy:**
+Uses bootstrap sampling (1000 iterations by default) to compute:
+- Confidence intervals for mean scores
+- Statistical significance testing (p<0.05)
+- Reduces false conclusions from small sample sizes
+
+Configure via `COMPARE_BOOTSTRAP_ITERATIONS` environment variable.
+
+### Output Structure
+
 ```
-data/comparisons/runs/
+data/comparisons/test-runs/       # Test mode comparisons
+├── all-weighted.json             # All agents, both tools
+├── all-statistical.json          # Statistical analysis
+├── builtin-weighted.json         # Builtin tool only
+└── you-weighted.json             # MCP tool only
+
+data/comparisons/runs/            # Full mode comparisons
 └── 2026-01-24/
     ├── all-weighted.json
     ├── all-statistical.json
     └── ...
 ```
 
-**Usage:**
+### Usage Examples
+
 ```bash
 # Generate comparison (outputs to versioned directory)
 bun scripts/compare.ts --mode full
 
-# View comparison results
-cat data/comparisons/runs/2026-01-24/all-weighted.json | jq '.quality.rankings'
+# View quality rankings
+cat data/comparisons/runs/2026-01-24/all-weighted.json | jq '.quality'
+
+# View performance metrics
+cat data/comparisons/test-runs/all-weighted.json | jq '.performance'
+
+# View head-to-head win rates
+cat data/comparisons/test-runs/all-statistical.json | jq '.headToHead.pairwise'
 ```
 
 ## Inline Grader
 
-The project uses a hybrid grading approach in `scripts/inline-grader.ts`:
-- **Deterministic (60%)** - Checks for hint content, proper formatting
-- **LLM (40%)** - Gemini Flash 2.0 for semantic quality scoring
+The project uses a hybrid grading approach in `scripts/inline-grader.ts` that evaluates agent responses on a 100-point scale.
 
-The grader runs inline during evaluation via the `--grader` flag. For detailed grading concepts (validation, calibration, best practices), see the `agent-eval-harness` skill documentation.
+### Scoring Breakdown (100 points total)
+
+**Deterministic Scoring (60 points maximum):**
+- **30 pts** - Completion: Has substantial output (>50 characters)
+- **20 pts** - Tool usage: Called at least one tool during execution
+- **10 pts** - Quality bonus: Has content and no execution errors
+
+**LLM Scoring (40 points maximum):**
+Uses Gemini Flash 2.0 to evaluate:
+- **0-15 pts** - Accuracy: Is the information factually correct?
+- **0-15 pts** - Relevance: Does it answer the query?
+- **0-10 pts** - Completeness: Are all aspects addressed?
+
+**Pass Threshold:** 70/100 (normalized score ≥ 0.7)
+
+**Automatic Failures:**
+- Execution timeouts → score 0
+- Tool execution errors → score 0
+
+**Fallback Mode:** Works without `GEMINI_API_KEY` (deterministic-only, max 60 points)
+
+### MCP Tool Detection
+
+The grader tracks whether agents used the expected MCP tools by checking trajectory metadata:
+- **Claude Code**: Detects `mcp__<server>__<tool>` format
+- **Codex**: Checks `mcpServer` field in trajectory
+- **DROID**: Detects `<server>___<tool>` format (triple underscore)
+- **GEMINI**: Matches tool names against expected tools list
+
+This metadata enables analysis of tool selection patterns (e.g., Express vs. Search usage).
+
+### Calibration
+
+The LLM component may hallucinate facts. Always:
+- Review sampled failures manually before trusting scores
+- Use `bunx @plaited/agent-eval-harness calibrate` to validate grader accuracy
+- Check for systematic biases in LLM scoring
+
+For detailed grading concepts (validation, calibration, best practices), see the `agent-eval-harness` skill documentation.
 
 ## Development
 
@@ -324,7 +408,7 @@ bun test
 3. **Add Docker Compose service**
 4. **Update TypeScript entrypoint** (`docker/entrypoint`)
 
-See `.claude/skills/playoffs/SKILL.md` for detailed guide.
+See `.claude/skills/web-search-agent-evals/SKILL.md` for detailed guide.
 
 ### Adding MCP Tools
 
@@ -334,7 +418,7 @@ See `.claude/skills/playoffs/SKILL.md` for detailed guide.
 4. **Update scripts/run.ts** (add to `McpTool` type)
 5. **Create MCP prompt set**
 
-See `.claude/skills/playoffs/references/mcp-tools.md` for detailed guide.
+See `.claude/skills/web-search-agent-evals/SKILL.md` for detailed guide.
 
 ## Troubleshooting
 
@@ -396,14 +480,14 @@ evals/
 │   ├── prompts/            # Evaluation prompts
 │   └── results/            # Agent outputs (gitignored)
 │
-└── .claude/skills/playoffs/  # Development assistant skill
+└── .claude/skills/web-search-agent-evals/  # Development assistant skill
 ```
 
 ## Skills
 
 This project uses [AgentSkills](https://agentskills.io) for agent-first development:
 
-- **playoffs** - Development assistant for extending playoffs
+- **web-search-agent-evals** - Development assistant for this evaluation system
 - **agent-eval-harness** - Capture, trials, and analysis commands
 
 See `@AGENTS.md` for development rules and conventions.

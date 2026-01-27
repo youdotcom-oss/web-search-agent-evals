@@ -103,6 +103,28 @@ See [@agent-eval-harness](../agent-eval-harness@plaited_agent-eval-harness/SKILL
 
 The entrypoint automatically selects the correct prompt file based on `SEARCH_PROVIDER` and `DATASET` environment variables.
 
+### Refreshing Test Prompts
+
+Test prompts are randomly sampled from the full dataset. Refresh them when:
+- Full dataset is updated with new prompts
+- Test prompts feel stale or unrepresentative
+- Debugging edge cases (re-sample until interesting prompts appear)
+
+```bash
+bun run sample:test
+```
+
+**What it does:**
+1. Randomly samples 5 prompts from `full.jsonl` (151 prompts)
+2. Creates `test.jsonl` with builtin format: `<web-search>`
+3. Creates `test-you.jsonl` with MCP format: `<web-search mcp-server="ydc-server">`
+4. Adds MCP metadata (`mcp_server`, `expected_tools`) to You.com variant
+
+**Use cases:**
+- **After updating full.jsonl** - Get fresh test samples reflecting new prompts
+- **Before committing** - Ensure test set represents current full dataset
+- **Rapid iteration** - Test different scenarios without running full evaluation (~5 min vs ~2 hours)
+
 ## Results
 
 ### Test Results (Rapid Iteration)

@@ -1,0 +1,67 @@
+{
+  "meta": {
+    "generatedAt": "2026-01-24T00:00:00.000Z",
+    "runs": [
+      "claude-code-builtin",
+      "claude-code-you",
+      "gemini-builtin",
+      "gemini-you",
+      "droid-builtin",
+      "droid-you",
+      "codex-builtin",
+      "codex-you"
+    ],
+    "promptCount": 2,
+    "promptsWithAllRuns": 2
+  },
+  "quality": {
+    "claude-code-builtin": {
+      "avgScore": 0.95,
+      "passRate": 1.0,
+      "passCount": 2,
+      "failCount": 0
+    },
+    "claude-code-you": {
+      "avgScore": 0.935,
+      "passRate": 1.0,
+      "passCount": 2,
+      "failCount": 0
+    },
+    "gemini-builtin": {
+      "avgScore": 0.91,
+      "passRate": 1.0,
+      "passCount": 2,
+      "failCount": 0
+    },
+    "gemini-you": {
+      "avgScore": 0.885,
+      "passRate": 1.0,
+      "passCount": 2,
+      "failCount": 0
+    },
+    "droid-builtin": {
+      "avgScore": 0.925,
+      "passRate": 1.0,
+      "passCount": 2,
+      "failCount": 0
+    },
+    "droid-you": {
+      "avgScore": 0.9,
+      "passRate": 1.0,
+      "passCount": 2,
+      "failCount": 0
+    },
+    "codex-builtin": {
+      "avgScore": 0.845,
+      "passRate": 1.0,
+      "passCount": 2,
+      "failCount": 0
+    },
+    "codex-you": {
+      "avgScore": 0.825,
+      "passRate": 1.0,
+      "passCount": 2,
+      "failCount": 0
+    }
+  }
+}

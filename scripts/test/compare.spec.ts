@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { runScript } from "./test-utils.ts";
 
 const SCRIPT_PATH = join(import.meta.dir, "..", "compare.ts");
+const FIXTURE_DIR = join(import.meta.dir, "fixtures", "data");
 
 describe("compare.ts", () => {
   describe("parseArgs - valid inputs", () => {
@@ -167,11 +168,14 @@ describe("compare.ts", () => {
         "builtin",
         "--mode",
         "full",
+        "--fixture-dir",
+        FIXTURE_DIR,
         "--dry-run",
       ]);
 
       expect(exitCode).toBe(0);
-      expect(stdout).toContain("data/results/runs/2026-01-24/droid/builtin.jsonl");
+      expect(stdout).toContain("droid/builtin.jsonl");
+      expect(stdout).toContain("runs/2026-01-24");
     });
 
     test("generates path for codex you full", async () => {
@@ -182,11 +186,14 @@ describe("compare.ts", () => {
         "you",
         "--mode",
         "full",
+        "--fixture-dir",
+        FIXTURE_DIR,
         "--dry-run",
       ]);
 
       expect(exitCode).toBe(0);
-      expect(stdout).toContain("data/results/runs/2026-01-24/codex/you.jsonl");
+      expect(stdout).toContain("codex/you.jsonl");
+      expect(stdout).toContain("runs/2026-01-24");
     });
   });
 
@@ -306,11 +313,13 @@ describe("compare.ts", () => {
         "full",
         "--strategy",
         "weighted",
+        "--fixture-dir",
+        FIXTURE_DIR,
         "--dry-run",
       ]);
 
       expect(exitCode).toBe(0);
-      expect(stdout).toContain("data/comparisons/runs/2026-01-24/all-weighted.json");
+      expect(stdout).toContain("comparisons/runs/2026-01-24/all-weighted.json");
     });
   });
 
@@ -382,6 +391,8 @@ describe("compare.ts", () => {
         "you",
         "--strategy",
         "statistical",
+        "--fixture-dir",
+        FIXTURE_DIR,
         "--dry-run",
       ]);
 
@@ -392,7 +403,7 @@ describe("compare.ts", () => {
       expect(stdout).toContain("Search Provider: you");
       expect(stdout).toContain("Strategy: statistical");
       expect(stdout).toContain("gemini-you:");
-      expect(stdout).toContain("data/comparisons/runs/2026-01-24/gemini-you-statistical.json");
+      expect(stdout).toContain("comparisons/runs/2026-01-24/gemini-you-statistical.json");
     });
   });
 });

@@ -13,6 +13,7 @@ type CompareOptions = {
   strategy: Strategy;
   dryRun?: boolean;
   runDate?: string;
+  fixtureDir?: string;
 };
 
 const ALL_AGENTS: Agent[] = ["claude-code", "gemini", "droid", "codex"];
@@ -25,6 +26,7 @@ const parseArgs = (args: string[]): CompareOptions => {
   let strategy: Strategy = "weighted";
   let dryRun = false;
   let runDate: string | undefined;
+  let fixtureDir: string | undefined;
 
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--agent" && i + 1 < args.length) {
@@ -58,6 +60,9 @@ const parseArgs = (args: string[]): CompareOptions => {
     } else if (args[i] === "--run-date" && i + 1 < args.length) {
       runDate = args[i + 1];
       i++;
+    } else if (args[i] === "--fixture-dir" && i + 1 < args.length) {
+      fixtureDir = args[i + 1];
+      i++;
     } else if (args[i] === "--dry-run") {
       dryRun = true;
     }
@@ -70,11 +75,13 @@ const parseArgs = (args: string[]): CompareOptions => {
     strategy,
     dryRun,
     runDate,
+    fixtureDir,
   };
 };
 
-const getLatestRunPath = async (): Promise<string> => {
-  const latestFile = Bun.file("data/results/latest.json");
+const getLatestRunPath = async (fixtureDir?: string): Promise<string> => {
+  const dataDir = fixtureDir || "data";
+  const latestFile = Bun.file(`${dataDir}/results/latest.json`);
   if (await latestFile.exists()) {
     const latest = await latestFile.json();
     return latest.path;
@@ -87,18 +94,22 @@ const buildResultPath = async ({
   searchProvider,
   mode,
   runDate,
+  fixtureDir,
 }: {
   agent: Agent;
   searchProvider: SearchProvider;
   mode: Mode;
   runDate?: string;
+  fixtureDir?: string;
 }): Promise<string> => {
+  const dataDir = fixtureDir || "data";
+
   if (mode === "test") {
-    return `data/results/test-runs/${agent}/${searchProvider}.jsonl`;
+    return `${dataDir}/results/test-runs/${agent}/${searchProvider}.jsonl`;
   }
 
-  const runDir = runDate ? `runs/${runDate}` : await getLatestRunPath();
-  return `data/results/${runDir}/${agent}/${searchProvider}.jsonl`;
+  const runDir = runDate ? `runs/${runDate}` : await getLatestRunPath(fixtureDir);
+  return `${dataDir}/results/${runDir}/${agent}/${searchProvider}.jsonl`;
 };
 
 const buildRunLabel = (agent: Agent, searchProvider: SearchProvider): string => {
@@ -106,7 +117,8 @@ const buildRunLabel = (agent: Agent, searchProvider: SearchProvider): string => 
 };
 
 const buildOutputPath = async (options: CompareOptions): Promise<string> => {
-  const { agents, searchProvider, strategy, mode, runDate } = options;
+  const { agents, searchProvider, strategy, mode, runDate, fixtureDir } = options;
+  const dataDir = fixtureDir || "data";
 
   let scope: string;
   if (agents.length < ALL_AGENTS.length) {
@@ -123,16 +135,16 @@ const buildOutputPath = async (options: CompareOptions): Promise<string> => {
   // Version comparison outputs by mode and date
   if (mode === "test") {
     // Test comparisons: test-runs directory
-    return `data/comparisons/test-runs/${scope}-${strategy}.json`;
+    return `${dataDir}/comparisons/test-runs/${scope}-${strategy}.json`;
   }
 
   // Full comparisons: dated directory (use runDate or latest)
-  const dateDir = runDate || (await getLatestRunPath()).replace("runs/", "");
-  return `data/comparisons/runs/${dateDir}/${scope}-${strategy}.json`;
+  const dateDir = runDate || (await getLatestRunPath(fixtureDir)).replace("runs/", "");
+  return `${dataDir}/comparisons/runs/${dateDir}/${scope}-${strategy}.json`;
 };
 
 const runComparison = async (options: CompareOptions): Promise<void> => {
-  const { agents, mode, searchProvider, strategy, runDate } = options;
+  const { agents, mode, searchProvider, strategy, runDate, fixtureDir } = options;
 
   // Build scenario matrix
   const searchProviders: SearchProvider[] = searchProvider ? [searchProvider] : ["builtin", "you"];
@@ -154,6 +166,7 @@ const runComparison = async (options: CompareOptions): Promise<void> => {
       searchProvider: provider,
       mode,
       runDate,
+      fixtureDir,
     });
     args.push("--run", `${label}:${path}`);
   }
@@ -217,6 +230,7 @@ const main = async () => {
           searchProvider: provider,
           mode: options.mode,
           runDate: options.runDate,
+          fixtureDir: options.fixtureDir,
         });
         console.log(`  ${label}: ${path}`);
       }

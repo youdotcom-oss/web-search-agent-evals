@@ -41,7 +41,7 @@
     ]
   },
   "dependencies": {
-    "@google/generative-ai": "^0.24.1",
+    "@google/genai": "^1.38.0",
     "@plaited/agent-eval-harness": "^0.7.0",
     "zod": "^4.3.6"
   },

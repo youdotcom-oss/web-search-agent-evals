@@ -15,13 +15,9 @@
  */
 
 import { MCP_SERVERS, type McpServerKey } from "../mcp-servers.ts";
-
-type Prompt = {
-  id: string;
-  input: string;
-  metadata?: Record<string, unknown>;
-  hint?: string;
-};
+import type { Prompt } from "./schemas/prompts.ts";
+import { PromptSchema } from "./schemas/prompts.ts";
+import { parseJsonl } from "./schemas/common.ts";
 
 type SampleOptions = {
   dir: string;
@@ -177,10 +173,15 @@ const main = async () => {
     }
 
     const text = await fullFile.text();
-    const allPrompts: Prompt[] = text
-      .trim()
-      .split("\n")
-      .map((line) => JSON.parse(line));
+    const { data, errors } = parseJsonl(PromptSchema, text);
+
+    if (errors.length > 0 || !data) {
+      console.error(`Found ${errors.length} validation errors in ${fullPath}`);
+      console.error(errors.join("\n"));
+      throw new Error("Prompt validation failed");
+    }
+
+    const allPrompts = data;
 
     if (options.count > allPrompts.length) {
       throw new Error(`Cannot sample ${options.count} prompts from ${allPrompts.length} available prompts`);

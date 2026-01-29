@@ -18,13 +18,9 @@
  */
 
 import { MCP_SERVERS, type McpServerKey } from "../mcp-servers.ts";
-
-type Prompt = {
-  id: string;
-  input: string;
-  metadata?: Record<string, unknown>;
-  hint?: string;
-};
+import type { Prompt } from "./schemas/prompts.ts";
+import { PromptSchema } from "./schemas/prompts.ts";
+import { parseJsonl } from "./schemas/common.ts";
 
 type McpConfig = {
   serverKey: McpServerKey;
@@ -148,9 +144,15 @@ const convertFile = async (inputPath: string, outputPath: string, config: McpCon
   }
 
   const text = await inputFile.text();
-  const lines = text.trim().split("\n");
-  const prompts: Prompt[] = lines.map((line) => JSON.parse(line));
+  const { data, errors } = parseJsonl(PromptSchema, text);
 
+  if (errors.length > 0 || !data) {
+    console.error(`Found ${errors.length} validation errors in ${inputPath}`);
+    console.error(errors.join("\n"));
+    throw new Error("Prompt validation failed");
+  }
+
+  const prompts = data;
   const converted = prompts.map((p) => convertPrompt(p, config));
 
   const output = `${converted.map((p) => JSON.stringify(p)).join("\n")}\n`;

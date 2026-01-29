@@ -70,6 +70,36 @@ cat data/comparisons/runs/2026-01-24/all-weighted.json | jq '.headToHead.pairwis
 - `weighted` - Balances quality (inline grader), latency, reliability
 - `statistical` - Bootstrap sampling with significance testing (p<0.05)
 
+### Generate Summary Reports
+
+Generate human-readable markdown summaries from comparison results:
+
+```bash
+# Generate summary for latest full run
+bun run summarize                   # → data/comparisons/runs/YYYY-MM-DD/SUMMARY.md
+bun run summarize:full              # Same as above
+
+# Generate summary for test results
+bun run summarize:test              # → data/comparisons/test-runs/SUMMARY.md
+
+# Custom options
+bun scripts/summarize.ts --mode full --run-date 2026-01-24
+bun scripts/summarize.ts --output my-summary.md
+
+# Preview without writing (dry-run)
+bun scripts/summarize.ts --dry-run
+```
+
+**Summary includes:**
+- Executive summary with best quality, fastest, most reliable
+- Quality rankings with scores and pass rates
+- Performance rankings (latency P50/P90/P99)
+- Reliability metrics (errors, timeouts, completion rates)
+- Capability metrics (Pass@k) if trials data available
+- Flakiness analysis with top flaky prompts
+- MCP tool impact analysis (builtin vs MCP comparison)
+- Recommendations for production, cost-conscious use, and what to avoid
+
 ### Pass@k Trials
 
 Run multiple trials per prompt across all agents and search providers to measure reliability:

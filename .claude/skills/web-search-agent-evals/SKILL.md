@@ -133,7 +133,9 @@ See [@agent-eval-harness](../agent-eval-harness@plaited_agent-eval-harness/SKILL
 
 ## Prompts
 
-**Unified prompt format:** All prompts use "Use web search to find:\n<query>" regardless of mode (builtin or MCP).
+Prompts are organized by dataset type, with each in its own directory. The format differs by search provider:
+- **Builtin mode**: Just the query (e.g., "What are the best free icon libraries...")
+- **MCP mode**: "Use {server-name} and answer\n{query}" (e.g., "Use ydc-server and answer\nWhat are...")
 
 Prompts are organized by dataset type, with each in its own directory:
 
@@ -146,7 +148,10 @@ Prompts are organized by dataset type, with each in its own directory:
 | `trials/prompts.jsonl` | 30 | No MCP | `SEARCH_PROVIDER=builtin` |
 | `trials/prompts-you.jsonl` | 30 | `mcp_server="ydc-server"`, `expected_tool="you-search"` | `SEARCH_PROVIDER=you` |
 
-**Key insight:** The prompt text is identical across modes. MCP metadata tells the grader which tool to expect, but agents interpret "Use web search" naturally.
+**Key difference:**
+- **Builtin prompts** have no prefix - agents use their native web search capability
+- **MCP prompts** have "Use {server-name} and answer\n" prefix to explicitly invoke the MCP tool
+- **MCP metadata** in MCP variants tells the grader which tool to expect (e.g., `"mcpServer": "ydc-server"`, `"expectedTools": ["you-search"]`)
 
 The entrypoint automatically selects the correct prompt file based on `SEARCH_PROVIDER` and `DATASET` environment variables.
 
@@ -171,9 +176,8 @@ bun scripts/sample.ts --dir trials --count 30
 
 **What it does:**
 1. Randomly samples prompts from `full/prompts.jsonl` (151 prompts) using Fisher-Yates shuffle
-2. Creates `<dir>/prompts.jsonl` without MCP metadata (builtin mode)
-3. Creates `<dir>/prompts-<key>.jsonl` for each MCP server in `mcp-servers.ts`
-4. All use identical "Use web search to find:" prompt text
+2. Creates `<dir>/prompts.jsonl` with plain queries (builtin mode)
+3. Creates `<dir>/prompts-<key>.jsonl` for each MCP server with "Use {server-name} and answer\n" prefix and MCP metadata
 
 **Use cases:**
 - **After updating full dataset** - Get fresh test samples reflecting new prompts
@@ -445,7 +449,7 @@ bun scripts/generate-mcp-prompts.ts --mcp-key exa
 # - data/prompts/trials/prompts-exa.jsonl
 ```
 
-The script automatically reads server configuration from `mcp-servers.ts` and adds MCP metadata without changing prompt text (unified "Use web search to find:" format).
+The script automatically reads server configuration from `mcp-servers.ts`, prepends "Use {server-name} and answer\n" to each query, and adds MCP metadata (server name and expected tools).
 
 Then regenerate test samples to include the new MCP variants:
 

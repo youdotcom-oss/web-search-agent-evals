@@ -97,8 +97,8 @@ bun run compare:test-statistical    # Statistical analysis
 bun run compare:full                # Full dataset, weighted
 bun run compare:full-statistical    # Full dataset, statistical
 
-# Advanced: Custom filters (direct CLI)
-bun scripts/compare.ts --agent gemini --search-provider you
+# Advanced: Custom filters
+bun run compare -- --agent gemini --search-provider you
 ```
 
 View comparison results:

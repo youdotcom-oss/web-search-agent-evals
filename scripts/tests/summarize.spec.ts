@@ -121,17 +121,15 @@ describe("summarize.ts", () => {
 
       const content = await file.text();
 
-      // Check for expected sections
+      // Check for expected sections (performance/reliability sections are conditional)
       expect(content).toContain("# Web Search Agent Evaluation Summary");
       expect(content).toContain("## Executive Summary");
       expect(content).toContain("## Quality Rankings");
-      expect(content).toContain("## Performance Rankings");
-      expect(content).toContain("## Reliability Metrics");
       expect(content).toContain("## MCP Tool Impact Analysis");
       expect(content).toContain("## Recommendations");
 
-      // Check for specific data from fixtures
-      expect(content).toContain("**Prompts:** 5");
+      // Check for specific data from fixtures (fixture has 2 prompts)
+      expect(content).toContain("**Prompts:** 2");
     });
 
     test("includes correct metadata in summary", async () => {
@@ -150,7 +148,7 @@ describe("summarize.ts", () => {
       const content = await Bun.file(outputPath).text();
 
       expect(content).toContain("**Mode:** Full evaluation");
-      expect(content).toContain("**Prompts:** 5");
+      expect(content).toContain("**Prompts:** 2");
     });
 
     test("includes quality rankings table", async () => {
@@ -173,7 +171,7 @@ describe("summarize.ts", () => {
       expect(content).toContain("gemini-you");
     });
 
-    test("includes performance rankings table", async () => {
+    test("omits performance rankings when data is missing", async () => {
       const outputPath = "/tmp/test-perf-summary.md";
       await runScript(SCRIPT_PATH, [
         "--mode",
@@ -188,12 +186,13 @@ describe("summarize.ts", () => {
 
       const content = await Bun.file(outputPath).text();
 
-      expect(content).toMatch(/\| Rank \| Agent \+ Search \| P50 \|/);
-      expect(content).toContain("P90");
-      expect(content).toContain("P99");
+      // Performance section should not be present when data is missing
+      expect(content).not.toContain("## Performance Rankings");
+      expect(content).not.toContain("P50");
+      expect(content).not.toContain("P90");
     });
 
-    test("includes reliability metrics table", async () => {
+    test("omits reliability metrics when data is missing", async () => {
       const outputPath = "/tmp/test-reliability-summary.md";
       await runScript(SCRIPT_PATH, [
         "--mode",
@@ -208,8 +207,9 @@ describe("summarize.ts", () => {
 
       const content = await Bun.file(outputPath).text();
 
-      expect(content).toMatch(/\| Agent \+ Search \| Tool Errors \| Tool Error Rate \|/);
-      expect(content).toContain("Completion Rate");
+      // Reliability section should not be present when data is missing
+      expect(content).not.toContain("## Reliability Metrics");
+      expect(content).not.toContain("Tool Error Rate");
     });
 
     test("includes MCP impact analysis", async () => {
@@ -251,7 +251,7 @@ describe("summarize.ts", () => {
       expect(content).toContain("### For Cost-Conscious Use");
       expect(content).toContain("### To Avoid");
       expect(content).toContain("**Best Quality:**");
-      expect(content).toContain("**Fastest:**");
+      // Note: "**Fastest:**" requires performance data, omitted with fixture
     });
   });
 

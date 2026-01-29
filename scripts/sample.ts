@@ -134,8 +134,8 @@ const convertToMcpVariant = (prompt: Prompt, serverKey: McpServerKey): Prompt =>
     input: `Use ${server.name} and answer\n${prompt.input}`,
     metadata: {
       ...prompt.metadata,
-      mcp_server: server.name,
-      expected_tool: server.expectedTool,
+      mcpServer: server.name,
+      expectedTools: server.expectedTools,
     },
   };
 };

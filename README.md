@@ -218,7 +218,7 @@ Prompts are organized by dataset type, with each dataset in its own directory co
 | `trials/prompts.jsonl` | 30 | Standard | `SEARCH_PROVIDER=builtin` |
 | `trials/prompts-you.jsonl` | 30 | MCP variant | `SEARCH_PROVIDER=you` |
 
-**Test and trials prompts** are randomly sampled from the full dataset. All prompts use unified "Use web search to find:" format. MCP variants add metadata (`mcp_server`, `expected_tool`) without changing prompt text.
+**Test and trials prompts** are randomly sampled from the full dataset. All prompts use unified "Use web search to find:" format. MCP variants add metadata (`mcpServer`, `expectedTools`) without changing prompt text.
 
 To regenerate test prompts with a new random sample:
 

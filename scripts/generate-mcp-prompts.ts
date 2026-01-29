@@ -7,7 +7,7 @@
  * Adds MCP metadata to base prompts without changing prompt text.
  * Uses MCP_SERVERS configuration for server names and expected tools.
  * The unified "Use web search to find:" format works for both builtin and MCP modes.
- * Only adds metadata: mcp_server and expected_tool
+ * Only adds metadata: mcpServer and expectedTools
  *
  * Usage:
  *   bun scripts/generate-mcp-prompts.ts
@@ -29,7 +29,7 @@ type Prompt = {
 type McpConfig = {
   serverKey: McpServerKey;
   serverName: string;
-  expectedTool: string;
+  expectedTools: readonly string[];
   suffix: string;
 };
 
@@ -95,7 +95,7 @@ Output files:
   return {
     serverKey,
     serverName: server.name,
-    expectedTool: server.expectedTool,
+    expectedTools: server.expectedTools,
     suffix,
   };
 };
@@ -108,8 +108,8 @@ const convertPrompt = (prompt: Prompt, config: McpConfig): Prompt => {
     input: `Use ${config.serverName} and answer\n${prompt.input}`,
     metadata: {
       ...prompt.metadata,
-      mcp_server: config.serverName,
-      expected_tool: config.expectedTool,
+      mcpServer: config.serverName,
+      expectedTools: config.expectedTools,
     },
   };
 };
@@ -146,7 +146,7 @@ const main = async () => {
         return {
           serverKey: key,
           serverName: server.name,
-          expectedTool: server.expectedTool,
+          expectedTools: server.expectedTools,
           suffix: key,
         };
       });
@@ -158,7 +158,7 @@ const main = async () => {
   for (const config of configs) {
     console.log(`Processing ${config.serverKey}:`);
     console.log(`   MCP Server: ${config.serverName}`);
-    console.log(`   Tool Name:  ${config.expectedTool}`);
+    console.log(`   Tool Names: ${config.expectedTools.join(", ")}`);
     console.log(`   Suffix:     ${config.suffix}`);
 
     const datasets = ["full", "test", "trials"];

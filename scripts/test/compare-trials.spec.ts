@@ -18,7 +18,7 @@ const SCRIPT_PATH = join(import.meta.dir, "..", "compare-trials.ts");
 describe("compare-trials.ts", () => {
   describe("parseArgs - valid inputs", () => {
     test("accepts --trial-type default", async () => {
-      const { stderr, exitCode } = await runScript(SCRIPT_PATH, ["--trial-type", "default"]);
+      const { stderr, exitCode } = await runScript(SCRIPT_PATH, ["--trial-type", "default", "--dry-run"]);
 
       // May fail if no trials exist, but should not be a parse error
       if (exitCode !== 0) {
@@ -27,7 +27,7 @@ describe("compare-trials.ts", () => {
     });
 
     test("accepts --trial-type capability", async () => {
-      const { stderr, exitCode } = await runScript(SCRIPT_PATH, ["--trial-type", "capability"]);
+      const { stderr, exitCode } = await runScript(SCRIPT_PATH, ["--trial-type", "capability", "--dry-run"]);
 
       // May fail if no trials exist, but should not be a parse error
       if (exitCode !== 0) {
@@ -36,7 +36,7 @@ describe("compare-trials.ts", () => {
     });
 
     test("accepts --trial-type regression", async () => {
-      const { stderr, exitCode } = await runScript(SCRIPT_PATH, ["--trial-type", "regression"]);
+      const { stderr, exitCode } = await runScript(SCRIPT_PATH, ["--trial-type", "regression", "--dry-run"]);
 
       // May fail if no trials exist, but should not be a parse error
       if (exitCode !== 0) {
@@ -45,7 +45,7 @@ describe("compare-trials.ts", () => {
     });
 
     test("accepts --strategy weighted", async () => {
-      const { stderr, exitCode } = await runScript(SCRIPT_PATH, ["--strategy", "weighted"]);
+      const { stderr, exitCode } = await runScript(SCRIPT_PATH, ["--strategy", "weighted", "--dry-run"]);
 
       // May fail if no trials exist, but should not be a parse error
       if (exitCode !== 0) {
@@ -54,7 +54,7 @@ describe("compare-trials.ts", () => {
     });
 
     test("accepts --strategy statistical", async () => {
-      const { stderr, exitCode } = await runScript(SCRIPT_PATH, ["--strategy", "statistical"]);
+      const { stderr, exitCode } = await runScript(SCRIPT_PATH, ["--strategy", "statistical", "--dry-run"]);
 
       // May fail if no trials exist, but should not be a parse error
       if (exitCode !== 0) {
@@ -63,7 +63,7 @@ describe("compare-trials.ts", () => {
     });
 
     test("accepts --agent flag", async () => {
-      const { stderr, exitCode } = await runScript(SCRIPT_PATH, ["--agent", "gemini"]);
+      const { stderr, exitCode } = await runScript(SCRIPT_PATH, ["--agent", "gemini", "--dry-run"]);
 
       // May fail if no trials exist, but should not be a parse error
       if (exitCode !== 0) {
@@ -72,7 +72,7 @@ describe("compare-trials.ts", () => {
     });
 
     test("accepts --search-provider builtin", async () => {
-      const { stderr, exitCode } = await runScript(SCRIPT_PATH, ["--search-provider", "builtin"]);
+      const { stderr, exitCode } = await runScript(SCRIPT_PATH, ["--search-provider", "builtin", "--dry-run"]);
 
       // May fail if no trials exist, but should not be a parse error
       if (exitCode !== 0) {
@@ -81,7 +81,7 @@ describe("compare-trials.ts", () => {
     });
 
     test("accepts --search-provider you", async () => {
-      const { stderr, exitCode } = await runScript(SCRIPT_PATH, ["--search-provider", "you"]);
+      const { stderr, exitCode } = await runScript(SCRIPT_PATH, ["--search-provider", "you", "--dry-run"]);
 
       // May fail if no trials exist, but should not be a parse error
       if (exitCode !== 0) {
@@ -90,7 +90,7 @@ describe("compare-trials.ts", () => {
     });
 
     test("accepts --run-date", async () => {
-      const { stderr, exitCode } = await runScript(SCRIPT_PATH, ["--run-date", "2026-01-29"]);
+      const { stderr, exitCode } = await runScript(SCRIPT_PATH, ["--run-date", "2026-01-29", "--dry-run"]);
 
       // May fail if date doesn't exist, but should not be a parse error
       if (exitCode !== 0) {
@@ -111,6 +111,7 @@ describe("compare-trials.ts", () => {
         "statistical",
         "--run-date",
         "2026-01-29",
+        "--dry-run",
       ]);
 
       // May fail if files don't exist, but should not be a parse error

@@ -125,8 +125,8 @@ bun run trials:capability                       # All agents/providers, k=10
 bun run trials -- --agent gemini                # Single agent, all providers
 bun run trials -- --search-provider you         # All agents, MCP only
 
-# Output: data/results/trials/{agent}-{provider}.jsonl
-# e.g., droid-builtin.jsonl, gemini-you.jsonl, etc.
+# Output: data/results/trials/YYYY-MM-DD/{agent}/{provider}.jsonl
+# e.g., trials/2026-01-29/droid/builtin.jsonl, trials/2026-01-29/gemini/you.jsonl
 ```
 
 ## Creating Custom Notebooks

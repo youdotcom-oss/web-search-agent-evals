@@ -34,12 +34,13 @@
  *
  * Results are written to:
  * ```
- * data/comparisons/trials/[date]/[scope]-[strategy].json
+ * data/comparisons/trials/[date]/[scope]-[strategy][-trial-type].json
  * ```
  *
  * Examples:
- * - `data/comparisons/trials/2026-01-29/all-weighted.json`
- * - `data/comparisons/trials/2026-01-29/builtin-statistical.json`
+ * - `data/comparisons/trials/2026-01-29/all-weighted.json` (default, k=5)
+ * - `data/comparisons/trials/2026-01-29/all-weighted-capability.json` (k=10)
+ * - `data/comparisons/trials/2026-01-29/builtin-statistical-regression.json` (k=3)
  *
  * ## Trial Result Path Convention
  *
@@ -266,7 +267,10 @@ const runComparison = async (
   const scope = getComparisonScope(scenarios, options);
   const outputDir = `data/comparisons/trials/${dateDir}`;
   await Bun.$`mkdir -p ${outputDir}`.quiet();
-  const outputPath = `${outputDir}/${scope}-${strategy}.json`;
+
+  // Include trial type in filename if not default
+  const typeSuffix = trialType === "default" ? "" : `-${trialType}`;
+  const outputPath = `${outputDir}/${scope}-${strategy}${typeSuffix}.json`;
 
   // Build command arguments
   const args = ["@plaited/agent-eval-harness", "compare"];

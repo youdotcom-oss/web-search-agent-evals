@@ -205,8 +205,12 @@ const runTrials = (
     console.log(`${label} - STARTING (k=${k})`);
     console.log(`${"=".repeat(80)}\n`);
 
-    // Build trials command to run inside Docker container
-    // Note: Output path now determined by entrypoint based on trials mode detection
+    // Build output path with trial type suffix
+    const runDate = new Date().toISOString().split("T")[0];
+    const typeSuffix = trialType === "default" ? "" : `-${trialType}`;
+    const outputPath = `/eval/data/results/trials/${runDate}/${agent}/${searchProvider}${typeSuffix}.jsonl`;
+
+    // Build trials command to run inside Docker container with explicit output path
     const trialsCmd = [
       "bunx",
       "@plaited/agent-eval-harness",
@@ -218,6 +222,8 @@ const runTrials = (
       k.toString(),
       "--grader",
       grader,
+      "-o",
+      outputPath,
       "--progress",
       "--cwd",
       "/workspace",
@@ -350,7 +356,7 @@ const main = async () => {
         console.log(`    Output: ${outputPath}`);
         console.log(`    Trials per prompt: ${k}`);
         console.log(
-          `    Docker: docker compose run --rm -e SEARCH_PROVIDER=${run.searchProvider} ${run.agent} bunx @plaited/agent-eval-harness trials ...\n`,
+          `    Docker: docker compose run --rm -e SEARCH_PROVIDER=${run.searchProvider}${options.trialType !== "default" ? ` -e TRIAL_TYPE=${options.trialType}` : ""} ${run.agent} bunx @plaited/agent-eval-harness trials ... -o ${outputPath}\n`,
         );
       }
       console.log("[DRY RUN] No trials were executed.");

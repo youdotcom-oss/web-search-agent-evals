@@ -15,6 +15,7 @@ jobs:
 
     steps:
       - name: Check author permission
+        id: author-permission
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -24,28 +25,34 @@ jobs:
           echo "Author permission: $PERMISSION"
 
           if [[ "$PERMISSION" != "admin" && "$PERMISSION" != "maintain" && "$PERMISSION" != "write" ]]; then
+            echo "authorized=false" >> "$GITHUB_OUTPUT"
             echo "Skipping review: Only users with admin, maintain, or write permissions can trigger Claude Code Review"
             echo "Current permission level: $PERMISSION"
             exit 0
           fi
 
+          echo "authorized=true" >> "$GITHUB_OUTPUT"
           echo "Author is authorized, proceeding with review"
 
       - name: Checkout repository
+        if: steps.author-permission.outputs.authorized == 'true'
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
       - name: Setup Bun
+        if: steps.author-permission.outputs.authorized == 'true'
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
 
       - name: Install dependencies
+        if: steps.author-permission.outputs.authorized == 'true'
         run: |
           bun install
 
       - name: Run Claude Code Review
+        if: steps.author-permission.outputs.authorized == 'true'
         id: claude-review
         uses: anthropics/claude-code-action@v1
         with:

@@ -26,6 +26,7 @@ type Prompt = {
 type SampleOptions = {
   dir: string;
   count: number;
+  dryRun: boolean;
 };
 
 /**
@@ -70,6 +71,7 @@ const shuffle = <T>(array: T[]): T[] => {
 const parseArgs = (args: string[]): SampleOptions => {
   let dir = "test";
   let count = 5;
+  let dryRun = false;
 
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--dir" && i + 1 < args.length) {
@@ -86,6 +88,8 @@ const parseArgs = (args: string[]): SampleOptions => {
       }
       count = parsedCount;
       i++;
+    } else if (args[i] === "--dry-run") {
+      dryRun = true;
     } else if (args[i] === "--help" || args[i] === "-h") {
       console.log(`
 Sample prompts from full dataset
@@ -97,6 +101,7 @@ Options:
   --dir <name>     Output directory (default: test)
                    Options: test, trials
   --count <num>    Number of prompts to sample (default: 5)
+  --dry-run        Show what would be sampled without writing files
   --help, -h       Show this help message
 
 Examples:
@@ -106,6 +111,9 @@ Examples:
   # Sample 30 prompts for trials
   bun scripts/sample.ts --dir trials --count 30
 
+  # Preview sampling without writing files
+  bun scripts/sample.ts --dry-run
+
 Output:
   data/prompts/<dir>/prompts.jsonl           - Builtin variant
   data/prompts/<dir>/prompts-<key>.jsonl     - MCP variant for each server
@@ -114,7 +122,7 @@ Output:
     }
   }
 
-  return { dir, count };
+  return { dir, count, dryRun };
 };
 
 /**
@@ -151,7 +159,11 @@ const main = async () => {
   try {
     const options = parseArgs(args);
 
-    console.log(`🎲 Sampling prompts:`);
+    if (options.dryRun) {
+      console.log(`[DRY RUN] Sampling Preview\n`);
+    } else {
+      console.log(`🎲 Sampling prompts:`);
+    }
     console.log(`   Source:      data/prompts/full/prompts.jsonl`);
     console.log(`   Destination: data/prompts/${options.dir}/`);
     console.log(`   Count:       ${options.count}\n`);
@@ -177,30 +189,53 @@ const main = async () => {
     // Sample randomly using Fisher-Yates shuffle
     const sampled = shuffle(allPrompts).slice(0, options.count);
 
-    console.log(`✅ Sampled ${sampled.length} prompts from ${allPrompts.length} total\n`);
+    if (options.dryRun) {
+      console.log(`[DRY RUN] Would sample ${sampled.length} prompts from ${allPrompts.length} total\n`);
+      console.log(`[DRY RUN] Sampled prompt IDs:`);
+      sampled.forEach((p, i) => {
+        console.log(`  ${i + 1}. ${p.id}`);
+      });
+    } else {
+      console.log(`✅ Sampled ${sampled.length} prompts from ${allPrompts.length} total\n`);
+    }
 
-    // Ensure output directory exists
+    // Ensure output directory exists (even in dry-run for validation)
     const outputDir = `data/prompts/${options.dir}`;
-    await Bun.$`mkdir -p ${outputDir}`.quiet();
+    if (!options.dryRun) {
+      await Bun.$`mkdir -p ${outputDir}`.quiet();
+    }
 
     // Write builtin variant
     const builtinPath = `${outputDir}/prompts.jsonl`;
-    const builtinContent = `${sampled.map((p) => JSON.stringify(p)).join("\n")}\n`;
-    await Bun.write(builtinPath, builtinContent);
-    console.log(`✅ Wrote builtin variant: ${builtinPath}`);
+    if (options.dryRun) {
+      console.log(`\n[DRY RUN] Would write: ${builtinPath}`);
+    } else {
+      const builtinContent = `${sampled.map((p) => JSON.stringify(p)).join("\n")}\n`;
+      await Bun.write(builtinPath, builtinContent);
+      console.log(`✅ Wrote builtin variant: ${builtinPath}`);
+    }
 
     // Write MCP variants for each server
     const mcpKeys = Object.keys(MCP_SERVERS) as McpServerKey[];
 
     for (const key of mcpKeys) {
-      const mcpVariants = sampled.map((p) => convertToMcpVariant(p, key));
       const mcpPath = `${outputDir}/prompts-${key}.jsonl`;
-      const mcpContent = `${mcpVariants.map((p) => JSON.stringify(p)).join("\n")}\n`;
-      await Bun.write(mcpPath, mcpContent);
-      console.log(`✅ Wrote ${key} MCP variant: ${mcpPath}`);
+      if (options.dryRun) {
+        console.log(`[DRY RUN] Would write: ${mcpPath}`);
+      } else {
+        const mcpVariants = sampled.map((p) => convertToMcpVariant(p, key));
+        const mcpContent = `${mcpVariants.map((p) => JSON.stringify(p)).join("\n")}\n`;
+        await Bun.write(mcpPath, mcpContent);
+        console.log(`✅ Wrote ${key} MCP variant: ${mcpPath}`);
+      }
     }
 
-    console.log(`\n🎉 Done! Generated ${1 + mcpKeys.length} prompt files in data/prompts/${options.dir}/`);
+    const fileCount = 1 + mcpKeys.length;
+    if (options.dryRun) {
+      console.log(`\n[DRY RUN] Would generate ${fileCount} prompt files in data/prompts/${options.dir}/`);
+    } else {
+      console.log(`\n🎉 Done! Generated ${fileCount} prompt files in data/prompts/${options.dir}/`);
+    }
 
     // Show sample
     console.log(`\nSample prompt (builtin):`);

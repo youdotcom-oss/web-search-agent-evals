@@ -33,7 +33,12 @@ type McpConfig = {
   suffix: string;
 };
 
-const parseArgs = (): McpConfig => {
+type Options = {
+  configs: McpConfig[];
+  dryRun: boolean;
+};
+
+const parseArgs = (): Options => {
   const args = process.argv.slice(2);
 
   const mcpKeys = Object.keys(MCP_SERVERS) as McpServerKey[];
@@ -44,8 +49,9 @@ const parseArgs = (): McpConfig => {
   // Defaults from first MCP server
   const defaultKey = mcpKeys[0] as McpServerKey;
 
-  let serverKey: McpServerKey = defaultKey;
-  let suffix: string = defaultKey; // Use key as suffix by default
+  let serverKey: McpServerKey | undefined;
+  let suffix: string | undefined;
+  let dryRun = false;
 
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--mcp-key" && i + 1 < args.length) {
@@ -56,8 +62,10 @@ const parseArgs = (): McpConfig => {
       serverKey = keyArg as McpServerKey;
       i++;
     } else if (args[i] === "--suffix" && i + 1 < args.length) {
-      suffix = args[i + 1] ?? suffix;
+      suffix = args[i + 1];
       i++;
+    } else if (args[i] === "--dry-run") {
+      dryRun = true;
     } else if (args[i] === "--help" || args[i] === "-h") {
       console.log(`
 Generate MCP variant prompt files from base prompts
@@ -69,6 +77,7 @@ Options:
   --mcp-key <key>      MCP server key from mcp-servers.ts (default: ${defaultKey})
                        Available: ${mcpKeys.join(", ")}
   --suffix <name>      File suffix (default: same as mcp-key) → prompts-<suffix>.jsonl
+  --dry-run            Show what would be generated without writing files
   --help, -h           Show this help message
 
 Examples:
@@ -81,6 +90,9 @@ Examples:
   # Custom suffix
   bun scripts/generate-mcp-prompts.ts --mcp-key you --suffix custom
 
+  # Preview without writing files
+  bun scripts/generate-mcp-prompts.ts --dry-run
+
 Output files:
   data/prompts/full/prompts-<suffix>.jsonl
   data/prompts/test/prompts-<suffix>.jsonl
@@ -90,14 +102,28 @@ Output files:
     }
   }
 
-  const server = MCP_SERVERS[serverKey];
+  // Build config list
+  const hasKeyFlag = serverKey !== undefined;
+  const configs: McpConfig[] = hasKeyFlag
+    ? [
+        {
+          serverKey: serverKey as McpServerKey,
+          serverName: MCP_SERVERS[serverKey as McpServerKey].name,
+          expectedTools: MCP_SERVERS[serverKey as McpServerKey].expectedTools,
+          suffix: suffix ?? (serverKey as McpServerKey),
+        },
+      ]
+    : mcpKeys.map((key) => {
+        const server = MCP_SERVERS[key];
+        return {
+          serverKey: key,
+          serverName: server.name,
+          expectedTools: server.expectedTools,
+          suffix: key,
+        };
+      });
 
-  return {
-    serverKey,
-    serverName: server.name,
-    expectedTools: server.expectedTools,
-    suffix,
-  };
+  return { configs, dryRun };
 };
 
 const convertPrompt = (prompt: Prompt, config: McpConfig): Prompt => {
@@ -134,24 +160,13 @@ const convertFile = async (inputPath: string, outputPath: string, config: McpCon
 };
 
 const main = async () => {
-  const args = process.argv.slice(2);
-  const hasKeyFlag = args.includes("--mcp-key");
+  const { configs, dryRun } = parseArgs();
 
-  // If no --mcp-key flag, generate for all MCP servers
-  const mcpKeys = Object.keys(MCP_SERVERS) as McpServerKey[];
-  const configs: McpConfig[] = hasKeyFlag
-    ? [parseArgs()]
-    : mcpKeys.map((key) => {
-        const server = MCP_SERVERS[key];
-        return {
-          serverKey: key,
-          serverName: server.name,
-          expectedTools: server.expectedTools,
-          suffix: key,
-        };
-      });
-
-  console.log(`📝 Generating MCP variant files for ${configs.length} server(s)\n`);
+  if (dryRun) {
+    console.log(`[DRY RUN] MCP Prompt Generation Preview\n`);
+  } else {
+    console.log(`📝 Generating MCP variant files for ${configs.length} server(s)\n`);
+  }
 
   let grandTotalConverted = 0;
 
@@ -174,9 +189,18 @@ const main = async () => {
         continue;
       }
 
-      const count = await convertFile(inputPath, outputPath, config);
-      console.log(`  ✅ Converted ${count} prompts: ${outputPath}`);
-      totalConverted += count;
+      if (dryRun) {
+        // Just count without writing
+        const text = await inputFile.text();
+        const lines = text.trim().split("\n");
+        const count = lines.length;
+        console.log(`  [DRY RUN] Would convert ${count} prompts: ${outputPath}`);
+        totalConverted += count;
+      } else {
+        const count = await convertFile(inputPath, outputPath, config);
+        console.log(`  ✅ Converted ${count} prompts: ${outputPath}`);
+        totalConverted += count;
+      }
     }
 
     console.log(`  Total: ${totalConverted} prompts\n`);
@@ -188,7 +212,11 @@ const main = async () => {
     process.exit(1);
   }
 
-  console.log(`🎉 Done! ${grandTotalConverted} total prompts converted across ${configs.length} server(s).`);
+  if (dryRun) {
+    console.log(`[DRY RUN] Would convert ${grandTotalConverted} total prompts across ${configs.length} server(s).`);
+  } else {
+    console.log(`🎉 Done! ${grandTotalConverted} total prompts converted across ${configs.length} server(s).`);
+  }
 };
 
 main().catch((err) => {

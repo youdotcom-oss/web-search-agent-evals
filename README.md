@@ -51,23 +51,30 @@ Required keys:
 - `OPENAI_API_KEY` - Codex agent
 - `YOU_API_KEY` - You.com MCP tool
 
-### 3. Run Evaluations
+### 3. Generate MCP Prompt Variants
+
+MCP evaluations require special prompt files with metadata. Generate them first:
+
+```bash
+# Generate MCP variants for all prompt sets
+bun run generate:mcp
+
+# Or regenerate test samples (includes MCP variants automatically)
+bun run sample:test
+```
+
+### 4. Run Evaluations
 
 #### Test Workflow (5 prompts, ~5 minutes)
 
 ```bash
-# First, generate MCP prompt variants
-bun run generate:mcp-you
-
-# Then run all agents in parallel (8 scenarios: 4 agents × 2 tools)
+# Run all agents in parallel (8 scenarios: 4 agents × 2 tools)
 bun run run
 
 # Or run specific agent+tool combinations
 docker compose run --rm -e SEARCH_PROVIDER=builtin claude-code
 docker compose run --rm -e SEARCH_PROVIDER=you gemini
 ```
-
-**Note:** MCP prompt files must be generated before running evaluations. Run `bun run generate:mcp-you` to create MCP variants, or use `bun run sample:test` to generate fresh test samples with MCP variants included.
 
 #### Full Workflow (151 prompts, ~2 hours)
 
@@ -76,7 +83,7 @@ docker compose run --rm -e SEARCH_PROVIDER=you gemini
 bun run run:full
 ```
 
-### 4. Analyze Results
+### 5. Analyze Results
 
 Compare results using the flexible CLI tool:
 
@@ -170,6 +177,7 @@ Single source of truth for MCP server configurations. The TypeScript entrypoint 
 **Available Tools:**
 - `builtin` - Agent's native search (no MCP config)
 - `you` - You.com MCP server (requires `YOU_API_KEY`)
+  - Expected tools: `you-search`, `you-express`, `you-contents`
 
 To add new MCP tools, see `.claude/skills/web-search-agent-evals/SKILL.md`.
 
@@ -181,6 +189,10 @@ To add new MCP tools, see `.claude/skills/web-search-agent-evals/SKILL.md`.
 | `compare.ts` | Flexible comparison tool with mode/agent/strategy flags |
 | `run-trials.ts` | Multi-trial wrapper for pass@k/pass^k analysis |
 | `inline-grader.ts` | Hybrid grader (deterministic + LLM scoring) |
+| `calibrate.ts` | Interactive grader calibration tool |
+| `generate-mcp-prompts.ts` | Generate MCP variant prompts with metadata |
+| `sample.ts` | Sample prompts for test/trials datasets |
+| `finalize-run.ts` | Archive full runs with dated snapshots |
 
 See "Analyze Results" in Quick Start for comparison usage examples.
 
@@ -219,6 +231,14 @@ Prompts are organized by dataset type, with each dataset in its own directory co
 | `trials/prompts-you.jsonl` | 30 | MCP variant | `SEARCH_PROVIDER=you` |
 
 **Test and trials prompts** are randomly sampled from the full dataset. All prompts use unified "Use web search to find:" format. MCP variants add metadata (`mcpServer`, `expectedTools`) without changing prompt text.
+
+**Metadata structure** (MCP variants only):
+```json
+{
+  "mcpServer": "ydc-server",
+  "expectedTools": ["you-search", "you-express", "you-contents"]
+}
+```
 
 To regenerate test prompts with a new random sample:
 
@@ -362,18 +382,20 @@ The project uses a hybrid grading approach in `scripts/inline-grader.ts` that ev
 
 ### Scoring Breakdown (100 points total)
 
-**Deterministic Scoring (60 points maximum):**
-- **30 pts** - Completion: Has substantial output (>50 characters)
-- **20 pts** - Tool usage: Called at least one tool during execution
-- **10 pts** - Quality bonus: Has content and no execution errors
+**Deterministic Scoring (70 points maximum):**
+- **10 pts** - Basic output: Has substantial content (≥40 characters)
+- **25 pts** - Tool usage: Called correct tool (partial credit for wrong tool if MCP expected)
+- **25 pts** - Clean execution: No errors or timeouts
+- **10 pts** - Sources bonus: Includes URLs or source references
 
-**LLM Scoring (40 points maximum):**
-Uses Gemini Flash 2.0 to evaluate:
-- **0-15 pts** - Accuracy: Is the information factually correct?
-- **0-15 pts** - Relevance: Does it answer the query?
-- **0-10 pts** - Completeness: Are all aspects addressed?
+**LLM Scoring (30 points maximum):**
+Uses Gemini Flash 3.0 to evaluate search result quality:
+- **0-15 pts** - Query match: Does it answer the search query?
+- **0-5 pts** - Source evidence: Are sources/URLs cited?
+- **0-5 pts** - Content substance: Specific info or generic fluff?
+- **0-5 pts** - Format quality: Well-organized structure?
 
-**Pass Threshold:** 70/100 (normalized score ≥ 0.7)
+**Pass Threshold:** 65/100 (normalized score ≥ 0.65)
 
 **Automatic Failures:**
 - Execution timeouts → score 0
@@ -487,7 +509,11 @@ evals/
 │   ├── run.ts              # Automated test runner
 │   ├── compare.ts          # Flexible comparison tool
 │   ├── run-trials.ts       # Pass@k trials wrapper
-│   └── inline-grader.ts    # Hybrid grader
+│   ├── inline-grader.ts    # Hybrid grader
+│   ├── calibrate.ts        # Grader calibration tool
+│   ├── generate-mcp-prompts.ts  # MCP variant generator
+│   ├── sample.ts           # Prompt sampler
+│   └── finalize-run.ts     # Run archiver
 │
 ├── docker/                 # Container infrastructure
 │   ├── base.Dockerfile

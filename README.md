@@ -27,6 +27,10 @@ flowchart TD
     Harness --> Results[data/results/agent/tool.jsonl]
 ```
 
+## Latest Results
+
+📊 **[View Latest Evaluation Summary](data/comparisons/runs/2026-01-29/SUMMARY.md)** - Comprehensive analysis with quality rankings, performance metrics, and recommendations
+
 ## Quick Start
 
 ### 1. Install Dependencies

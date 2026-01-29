@@ -17,6 +17,8 @@
     "format": "biome format --write",
     "format:check": "biome format",
     "format:package": "format-package --write",
+    "generate:mcp": "bun scripts/generate-mcp-prompts.ts",
+    "generate:mcp-you": "bun scripts/generate-mcp-prompts.ts --mcp-server ydc-server --tool you-search --suffix you",
     "lint": "biome lint .",
     "lint:fix": "biome lint --write .",
     "prepare": "git config core.hooksPath .hooks",

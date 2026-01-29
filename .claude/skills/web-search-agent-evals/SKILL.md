@@ -92,14 +92,16 @@ See [@agent-eval-harness](../agent-eval-harness@plaited_agent-eval-harness/SKILL
 
 ## Prompts
 
-| File | Prompts | Format | Use With |
-|------|---------|--------|----------|
-| `test.jsonl` | 5 | `<web-search>` | `SEARCH_PROVIDER=builtin` |
-| `test-you.jsonl` | 5 | `<web-search mcp-server="ydc-server">` | `SEARCH_PROVIDER=you` |
-| `full.jsonl` | 151 | `<web-search>` | `SEARCH_PROVIDER=builtin` |
-| `full-you.jsonl` | 151 | `<web-search mcp-server="ydc-server">` | `SEARCH_PROVIDER=you` |
+**Unified prompt format:** All prompts use "Use web search to find:\n<query>" regardless of mode (builtin or MCP).
 
-**You.com MCP format is 39-45% faster** than builtin due to explicit server specification.
+| File | Prompts | Metadata | Use With |
+|------|---------|----------|----------|
+| `test.jsonl` | 5 | No MCP | `SEARCH_PROVIDER=builtin` |
+| `test-you.jsonl` | 5 | `mcp_server="ydc-server"`, `expected_tool="you-search"` | `SEARCH_PROVIDER=you` |
+| `full.jsonl` | 151 | No MCP | `SEARCH_PROVIDER=builtin` |
+| `full-you.jsonl` | 151 | `mcp_server="ydc-server"`, `expected_tool="you-search"` | `SEARCH_PROVIDER=you` |
+
+**Key insight:** The prompt text is identical across modes. MCP metadata tells the grader which tool to expect, but agents interpret "Use web search" naturally.
 
 The entrypoint automatically selects the correct prompt file based on `SEARCH_PROVIDER` and `DATASET` environment variables.
 
@@ -116,9 +118,9 @@ bun run sample:test
 
 **What it does:**
 1. Randomly samples 5 prompts from `full.jsonl` (151 prompts)
-2. Creates `test.jsonl` with builtin format: `<web-search>`
-3. Creates `test-you.jsonl` with MCP format: `<web-search mcp-server="ydc-server">`
-4. Adds MCP metadata (`mcp_server`, `expected_tools`) to You.com variant
+2. Creates `test.jsonl` without MCP metadata (builtin mode)
+3. Creates `test-you.jsonl` with same prompts + MCP metadata
+4. Both use identical "Use web search to find:" prompt text
 
 **Use cases:**
 - **After updating full.jsonl** - Get fresh test samples reflecting new prompts
@@ -382,17 +384,20 @@ Edit `scripts/run.ts` and `scripts/compare.ts`:
 type McpTool = "builtin" | "you" | "exa"
 ```
 
-### 5. Create MCP Prompt Sets
+### 5. Generate MCP Prompt Sets
+
+Use the generate-mcp-prompts script to create MCP variant files with proper metadata:
 
 ```bash
-# Convert test prompts
-sed 's/mcp-server="ydc-server"/mcp-server="exa-server"/g' \
-  data/prompts/test-you.jsonl > data/prompts/test-exa.jsonl
+# Generate Exa variants
+bun scripts/generate-mcp-prompts.ts --mcp-server exa-server --tool exa-search --suffix exa
 
-# Convert full prompts
-sed 's/mcp-server="ydc-server"/mcp-server="exa-server"/g' \
-  data/prompts/full-you.jsonl > data/prompts/full-exa.jsonl
+# This creates:
+# - data/prompts/full-exa.jsonl
+# - data/prompts/test-exa.jsonl
 ```
+
+The script adds MCP metadata without changing prompt text (unified "Use web search to find:" format).
 
 The entrypoint automatically handles provider-specific prompt files:
 

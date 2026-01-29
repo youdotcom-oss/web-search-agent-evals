@@ -12,21 +12,25 @@ import { GoogleGenAI } from "@google/genai";
  * - Detection patterns documented in `detectMcpFromTrajectory()` function below
  *
  * **Hybrid Scoring:**
- * - **Deterministic (70 pts):** Output quality (35), correct tool usage (25), no errors (10)
+ * - **Deterministic (60 base, 70 max):** Basic output (10), tool usage (25), no errors (25), sources bonus (10)
  * - **LLM (30 pts):** Query match, source evidence, content substance, format quality via Gemini Flash 3.0
- * - **Pass threshold:** 70/100 (0.7 normalized score)
+ * - **Pass threshold:** 65/100 (0.65 normalized score)
  *
- * **Output Quality (35 pts):**
- * - Tiered assessment based on length, sources, structure
- * - 35: Has sources AND structure
- * - 25: Has sources OR structure
- * - 20: Substantive (200+ chars)
- * - 10: Minimal (50-200 chars)
- * - 0: Too short (<50 chars)
+ * **Deterministic Breakdown:**
+ * - 10 pts: Basic output (>= 40 chars)
+ * - 25 pts: Correct tool usage
+ * - 25 pts: No execution errors
+ * - 10 pts: Sources bonus (URLs/references)
  *
  * **Tool Usage (25 pts):**
  * - If MCP expected: 25 pts for correct tool, 15 pts for wrong tool, 0 for no tool
  * - If builtin (no MCP): 25 pts for any tool, 0 for no tool
+ *
+ * **Pass Threshold Logic:**
+ * - Baseline (no sources): 10 + 25 + 25 = 60 pts
+ * - With sources: 60 + 10 = 70 pts deterministic + up to 30 LLM = 100 max
+ * - Pass requires 65/100, so agents need sources OR LLM boost to pass
+ * - Structure/formatting judged by LLM (Format Quality dimension)
  *
  * **Execution Errors:** Timeout or tool failures result in immediate fail (score 0)
  *
@@ -169,27 +173,22 @@ const hasExecutionErrors = (
 };
 
 /**
- * Assess output quality with tiered scoring
+ * Assess basic output presence
  *
- * @returns 0-35 points based on output substance and structure
+ * @returns 10 points if output exists (>= 40 chars), 0 if empty
  */
-const assessOutputQuality = (output: string): number => {
-  // Tier 1: No meaningful output
-  if (output.length < 50) return 0;
+const assessBasicOutput = (output: string): number => {
+  return output.length >= 40 ? 10 : 0;
+};
 
-  // Tier 2: Minimal output (short response)
-  if (output.length < 200) return 10;
-
-  // Tier 3: Check for sources/structure (indicates research)
+/**
+ * Assess source evidence (bonus points)
+ *
+ * @returns 10 points if output has URLs/sources, 0 otherwise
+ */
+const assessSources = (output: string): number => {
   const hasSources = /https?:\/\/|source:|reference:/i.test(output);
-  const hasStructure =
-    output.includes("\n\n") || output.includes("- ") || output.includes("* ") || output.includes("1.");
-
-  if (hasSources && hasStructure) return 35; // Best quality
-  if (hasSources || hasStructure) return 25; // Good quality
-
-  // Tier 4: Substantive but unstructured
-  return 20;
+  return hasSources ? 10 : 0;
 };
 
 /**
@@ -198,8 +197,8 @@ const assessOutputQuality = (output: string): number => {
  * @returns 0-25 points based on tool correctness
  *
  * Logic:
- * - If MCP expected (metadata.mcp_server exists):
- *   - 25 pts if correct MCP tool used
+ * - If MCP expected (metadata.mcp_server and metadata.expected_tool exist):
+ *   - 25 pts if correct MCP tool used (matches expected_tool, e.g., "you-search")
  *   - 15 pts if any tool used (wrong choice)
  *   - 0 pts if no tools
  * - If NO MCP expected (builtin):
@@ -213,7 +212,7 @@ const assessToolUsage = (
     toolName?: string;
     title?: string;
   }>,
-  metadata?: { expected_tools?: string[]; mcp_server?: string },
+  metadata?: { expected_tool?: string; mcp_server?: string },
 ): number => {
   const toolCalls = trajectory?.filter((s) => s.type === "tool_call") ?? [];
 
@@ -221,20 +220,18 @@ const assessToolUsage = (
   if (toolCalls.length === 0) return 0;
 
   const expectedMcpServer = metadata?.mcp_server;
-  const expectedTools = metadata?.expected_tools || [];
+  const expectedTool = metadata?.expected_tool;
 
   // Case 1: MCP expected - validate correct tool
-  if (expectedMcpServer) {
+  if (expectedMcpServer && expectedTool) {
     const usedCorrectTool = toolCalls.some((call) => {
       const toolIdentifier = call.name || call.toolName || call.title || "";
 
-      // Check if tool name includes expected MCP server
-      if (toolIdentifier.includes(expectedMcpServer)) return true;
+      // Check if tool name includes expected tool (e.g., "you-search")
+      if (toolIdentifier.includes(expectedTool)) return true;
 
-      // Also check against expected_tools list if provided
-      if (expectedTools.length > 0) {
-        return expectedTools.some((expected) => toolIdentifier.includes(expected));
-      }
+      // Also check if tool name includes expected MCP server
+      if (toolIdentifier.includes(expectedMcpServer)) return true;
 
       return false;
     });
@@ -247,17 +244,24 @@ const assessToolUsage = (
 };
 
 /**
- * Hybrid quality assessment: deterministic (70%) + LLM (30%)
+ * Hybrid quality assessment: deterministic (65-70%) + LLM (30%)
  *
  * @remarks
- * Deterministic scoring (70 pts max):
- * - 35 pts: Output quality (tiered assessment)
+ * Deterministic scoring (60 base pts, 70 max with sources bonus):
+ * - 10 pts: Basic output (>= 40 chars)
  * - 25 pts: Correct tool usage
- * - 10 pts: No execution errors
+ * - 25 pts: No execution errors
+ * - 10 pts: Sources bonus (URLs/references)
  *
  * LLM scoring (30 pts max):
  * - Query match, source evidence, content substance, format quality
  * - Uses Gemini Flash 3.0 for web search result evaluation
+ *
+ * Pass threshold: 0.65 (65/100)
+ * - Baseline without sources = 60 pts (10 + 25 + 25)
+ * - With sources = 70 pts deterministic + up to 30 LLM = 100 max
+ * - Agents need sources OR LLM quality boost to reach 65/100 pass threshold
+ * - Structure/formatting judged by LLM, not deterministic
  *
  * Falls back to deterministic-only if GEMINI_API_KEY not available.
  */
@@ -292,22 +296,25 @@ const assessQuality = async ({
 }> => {
   const startTime = performance.now();
 
-  // Phase 1: Deterministic scoring (70 pts max)
+  // Phase 1: Deterministic scoring (60 base, 70 max)
   let deterministicScore = 0;
 
-  // 35 pts: Output quality (tiered assessment)
-  const outputQuality = assessOutputQuality(output);
-  deterministicScore += outputQuality;
+  // 10 pts: Basic output
+  const basicOutput = assessBasicOutput(output);
+  deterministicScore += basicOutput;
 
   // 25 pts: Correct tool usage
   const toolScore = assessToolUsage(trajectory, metadata);
   deterministicScore += toolScore;
 
-  // 10 pts: No execution errors
+  // 25 pts: No execution errors
   const { hasErrors } = hasExecutionErrors(output, trajectory);
-  if (!hasErrors && output.length > 50) {
-    deterministicScore += 10;
-  }
+  const cleanScore = !hasErrors && output.length >= 40 ? 25 : 0;
+  deterministicScore += cleanScore;
+
+  // 10 pts: Sources bonus
+  const sourcesBonus = assessSources(output);
+  deterministicScore += sourcesBonus;
 
   // Phase 2: LLM quality judgment (30 pts max)
   let llmScore = 0;
@@ -378,7 +385,7 @@ JSON:
 
   const totalLatency = performance.now() - startTime;
 
-  const reasoning = `Deterministic: ${deterministicScore}/70 (quality=${outputQuality}, tools=${toolScore}, clean=${!hasErrors}). LLM: ${llmScore}/30. ${llmReasoning}`;
+  const reasoning = `Deterministic: ${deterministicScore}/70 (basic=${basicOutput}, tools=${toolScore}, clean=${cleanScore}, sources=${sourcesBonus}). LLM: ${llmScore}/30. ${llmReasoning}`;
 
   return {
     deterministicScore,
@@ -458,7 +465,7 @@ export const grade: Grader = async ({ input, output, hint, trajectory, metadata 
   // Combine scores (70 deterministic + 30 LLM = 100 total)
   const totalScore = quality.deterministicScore + quality.llmScore;
   const normalizedScore = totalScore / 100;
-  const pass = normalizedScore >= 0.7; // 70% threshold
+  const pass = normalizedScore >= 0.65; // 65% threshold (baseline without sources)
 
   return {
     pass,

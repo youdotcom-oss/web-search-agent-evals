@@ -164,15 +164,8 @@ const buildCaptureCommand = async (): Promise<string[]> => {
 
   cmd.push("--cwd", "/workspace");
 
-  // Add timeout if needed (agent-specific)
-  switch (AGENT) {
-    case "claude-code":
-      cmd.push("--timeout", "90000");
-      break;
-    case "codex":
-      cmd.push("--timeout", "180000");
-      break;
-  }
+  // Add timeout (180 seconds for all agents)
+  cmd.push("--timeout", "180000");
 
   cmd.push("-o", outputFile, "--progress");
 

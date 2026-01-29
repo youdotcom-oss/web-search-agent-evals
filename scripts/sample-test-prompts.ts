@@ -4,9 +4,10 @@
  *
  * @remarks
  * Creates test.jsonl and test-you.jsonl by randomly sampling 5 prompts from full.jsonl.
- * The prompts are identical except for the XML attribute:
- * - test.jsonl: <web-search>
- * - test-you.jsonl: <web-search mcp-server="ydc-server">
+ * Both files use identical "Use web search to find:" prompt text.
+ * The only difference is metadata:
+ * - test.jsonl: No MCP metadata (builtin search)
+ * - test-you.jsonl: mcp_server="ydc-server", expected_tool="you-search"
  */
 
 type Prompt = {
@@ -47,29 +48,29 @@ const main = async () => {
   // Create test.jsonl (builtin format)
   const testPrompts = sampled.map((prompt) => ({
     ...prompt,
-    // Ensure <web-search> format (without mcp-server attribute)
-    input: prompt.input.replace(/<web-search[^>]*>/g, "<web-search>"),
+    // Keep input as-is (already in "Use web search to find:\n<query>" format)
+    // Remove any MCP metadata
+    metadata: {
+      ...prompt.metadata,
+      mcp_server: undefined,
+      expected_tool: undefined,
+    },
   }));
 
   const testContent = `${testPrompts.map((p) => JSON.stringify(p)).join("\n")}\n`;
   await Bun.write(TEST_OUTPUT_PATH, testContent);
   console.log(`✅ Written ${TEST_OUTPUT_PATH}`);
 
-  // Create test-you.jsonl (MCP format)
-  const testYouPrompts = sampled.map((prompt) => {
-    // Add or update MCP server attribute
-    const input = prompt.input.replace(/<web-search[^>]*>/g, '<web-search mcp-server="ydc-server">');
-
-    return {
-      ...prompt,
-      input,
-      metadata: {
-        ...prompt.metadata,
-        mcp_server: "ydc-server",
-        expected_tools: ["you-search", "you-express"],
-      },
-    };
-  });
+  // Create test-you.jsonl (MCP format with metadata only)
+  const testYouPrompts = sampled.map((prompt) => ({
+    ...prompt,
+    // Keep input unchanged - unified "Use web search to find:" format works for both
+    metadata: {
+      ...prompt.metadata,
+      mcp_server: "ydc-server",
+      expected_tool: "you-search",
+    },
+  }));
 
   const testYouContent = `${testYouPrompts.map((p) => JSON.stringify(p)).join("\n")}\n`;
   await Bun.write(TEST_YOU_OUTPUT_PATH, testYouContent);

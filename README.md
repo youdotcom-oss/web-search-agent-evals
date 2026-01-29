@@ -56,13 +56,18 @@ Required keys:
 #### Test Workflow (5 prompts, ~5 minutes)
 
 ```bash
-# Run all agents in parallel (8 scenarios: 4 agents × 2 tools)
+# First, generate MCP prompt variants
+bun run generate:mcp-you
+
+# Then run all agents in parallel (8 scenarios: 4 agents × 2 tools)
 bun run run
 
 # Or run specific agent+tool combinations
-docker compose run --rm -e MCP_TOOL=builtin claude-code
-docker compose run --rm -e MCP_TOOL=you gemini
+docker compose run --rm -e SEARCH_PROVIDER=builtin claude-code
+docker compose run --rm -e SEARCH_PROVIDER=you gemini
 ```
+
+**Note:** MCP prompt files (test-you.jsonl, full-you.jsonl) must be generated before running evaluations. Run `bun run generate:mcp-you` to create them from base prompts (test.jsonl, full.jsonl).
 
 #### Full Workflow (151 prompts, ~2 hours)
 

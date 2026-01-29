@@ -10,7 +10,7 @@
     "flag": "--output-format",
     "value": "stream-json"
   },
-  "autoApprove": ["--sandbox", "false"],
+  "autoApprove": ["--sandbox", "false", "--allowed-mcp-server-names", "ydc-server"],
   "outputEvents": [
     {
       "match": { "path": "$.type", "value": "message" },

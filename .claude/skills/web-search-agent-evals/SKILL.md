@@ -94,12 +94,16 @@ See [@agent-eval-harness](../agent-eval-harness@plaited_agent-eval-harness/SKILL
 
 **Unified prompt format:** All prompts use "Use web search to find:\n<query>" regardless of mode (builtin or MCP).
 
+Prompts are organized by dataset type, with each in its own directory:
+
 | File | Prompts | Metadata | Use With |
 |------|---------|----------|----------|
-| `test.jsonl` | 5 | No MCP | `SEARCH_PROVIDER=builtin` |
-| `test-you.jsonl` | 5 | `mcp_server="ydc-server"`, `expected_tool="you-search"` | `SEARCH_PROVIDER=you` |
-| `full.jsonl` | 151 | No MCP | `SEARCH_PROVIDER=builtin` |
-| `full-you.jsonl` | 151 | `mcp_server="ydc-server"`, `expected_tool="you-search"` | `SEARCH_PROVIDER=you` |
+| `full/prompts.jsonl` | 151 | No MCP | `SEARCH_PROVIDER=builtin` |
+| `full/prompts-you.jsonl` | 151 | `mcp_server="ydc-server"`, `expected_tool="you-search"` | `SEARCH_PROVIDER=you` |
+| `test/prompts.jsonl` | 5 | No MCP | `SEARCH_PROVIDER=builtin` |
+| `test/prompts-you.jsonl` | 5 | `mcp_server="ydc-server"`, `expected_tool="you-search"` | `SEARCH_PROVIDER=you` |
+| `trials/prompts.jsonl` | 30 | No MCP | `SEARCH_PROVIDER=builtin` |
+| `trials/prompts-you.jsonl` | 30 | `mcp_server="ydc-server"`, `expected_tool="you-search"` | `SEARCH_PROVIDER=you` |
 
 **Key insight:** The prompt text is identical across modes. MCP metadata tells the grader which tool to expect, but agents interpret "Use web search" naturally.
 
@@ -107,23 +111,31 @@ The entrypoint automatically selects the correct prompt file based on `SEARCH_PR
 
 ### Refreshing Test Prompts
 
-Test prompts are randomly sampled from the full dataset. Refresh them when:
+Test and trials prompts are randomly sampled from the full dataset. Refresh them when:
 - Full dataset is updated with new prompts
 - Test prompts feel stale or unrepresentative
 - Debugging edge cases (re-sample until interesting prompts appear)
 
 ```bash
-bun run sample:test
+bun run sample:test        # 5 prompts → test/
+bun run sample:trials      # 30 prompts → trials/
+```
+
+Or use the script directly:
+
+```bash
+bun scripts/sample.ts --dir test --count 5
+bun scripts/sample.ts --dir trials --count 30
 ```
 
 **What it does:**
-1. Randomly samples 5 prompts from `full.jsonl` (151 prompts)
-2. Creates `test.jsonl` without MCP metadata (builtin mode)
-3. Creates `test-you.jsonl` with same prompts + MCP metadata
-4. Both use identical "Use web search to find:" prompt text
+1. Randomly samples prompts from `full/prompts.jsonl` (151 prompts) using Fisher-Yates shuffle
+2. Creates `<dir>/prompts.jsonl` without MCP metadata (builtin mode)
+3. Creates `<dir>/prompts-<key>.jsonl` for each MCP server in `mcp-servers.ts`
+4. All use identical "Use web search to find:" prompt text
 
 **Use cases:**
-- **After updating full.jsonl** - Get fresh test samples reflecting new prompts
+- **After updating full dataset** - Get fresh test samples reflecting new prompts
 - **Before committing** - Ensure test set represents current full dataset
 - **Rapid iteration** - Test different scenarios without running full evaluation (~5 min vs ~2 hours)
 
@@ -389,23 +401,32 @@ type McpTool = "builtin" | "you" | "exa"
 Use the generate-mcp-prompts script to create MCP variant files with proper metadata:
 
 ```bash
-# Generate Exa variants
-bun scripts/generate-mcp-prompts.ts --mcp-server exa-server --tool exa-search --suffix exa
+# Generate variants for new MCP server (uses exa key from mcp-servers.ts)
+bun scripts/generate-mcp-prompts.ts --mcp-key exa
 
-# This creates:
-# - data/prompts/full-exa.jsonl
-# - data/prompts/test-exa.jsonl
+# This creates MCP variants for all datasets:
+# - data/prompts/full/prompts-exa.jsonl
+# - data/prompts/test/prompts-exa.jsonl
+# - data/prompts/trials/prompts-exa.jsonl
 ```
 
-The script adds MCP metadata without changing prompt text (unified "Use web search to find:" format).
+The script automatically reads server configuration from `mcp-servers.ts` and adds MCP metadata without changing prompt text (unified "Use web search to find:" format).
+
+Then regenerate test samples to include the new MCP variants:
+
+```bash
+bun run sample:test
+```
 
 The entrypoint automatically handles provider-specific prompt files:
 
 ```typescript
 const promptFile = SEARCH_PROVIDER === "builtin"
-  ? `/eval/data/prompts/${DATASET}.jsonl`
-  : `/eval/data/prompts/${DATASET}-${SEARCH_PROVIDER}.jsonl`  // e.g., test-exa.jsonl
+  ? `/eval/data/prompts/${DATASET}/prompts.jsonl`
+  : `/eval/data/prompts/${DATASET}/prompts-${SEARCH_PROVIDER}.jsonl`  // e.g., test/prompts-exa.jsonl
 ```
+
+**Note:** Scripts (`run.ts`, `run-trials.ts`, `sample.ts`) automatically pick up new MCP servers from `mcp-servers.ts`, so no manual updates needed.
 
 ### 6. Test
 

@@ -4,17 +4,20 @@
  * Generate MCP variant prompt files from base prompts
  *
  * @remarks
- * Adds MCP metadata to base prompts (full.jsonl, test.jsonl) without changing prompt text.
+ * Adds MCP metadata to base prompts without changing prompt text.
+ * Uses MCP_SERVERS configuration for server names and expected tools.
  * The unified "Use web search to find:" format works for both builtin and MCP modes.
  * Only adds metadata: mcp_server and expected_tool
  *
  * Usage:
  *   bun scripts/generate-mcp-prompts.ts
- *   bun scripts/generate-mcp-prompts.ts --mcp-server ydc-server --tool you-search
- *   bun scripts/generate-mcp-prompts.ts --mcp-server exa-server --tool exa-search
+ *   bun scripts/generate-mcp-prompts.ts --mcp-key you
+ *   bun scripts/generate-mcp-prompts.ts --mcp-key you --suffix custom
  *
  * @public
  */
+
+import { MCP_SERVERS, type McpServerKey } from "../mcp-servers.ts";
 
 type Prompt = {
   id: string;
@@ -24,24 +27,33 @@ type Prompt = {
 };
 
 type McpConfig = {
-  server: string;
-  tool: string;
+  serverKey: McpServerKey;
+  serverName: string;
+  expectedTool: string;
   suffix: string;
 };
 
 const parseArgs = (): McpConfig => {
   const args = process.argv.slice(2);
 
-  let server = "ydc-server";
-  let tool = "you-search";
-  let suffix = "you";
+  const mcpKeys = Object.keys(MCP_SERVERS) as McpServerKey[];
+  if (mcpKeys.length === 0) {
+    throw new Error("No MCP servers configured in MCP_SERVERS");
+  }
+
+  // Defaults from first MCP server
+  const defaultKey = mcpKeys[0] as McpServerKey;
+
+  let serverKey: McpServerKey = defaultKey;
+  let suffix: string = defaultKey; // Use key as suffix by default
 
   for (let i = 0; i < args.length; i++) {
-    if (args[i] === "--mcp-server" && i + 1 < args.length) {
-      server = args[i + 1] ?? server;
-      i++;
-    } else if (args[i] === "--tool" && i + 1 < args.length) {
-      tool = args[i + 1] ?? tool;
+    if (args[i] === "--mcp-key" && i + 1 < args.length) {
+      const keyArg = args[i + 1] as string;
+      if (!mcpKeys.includes(keyArg as McpServerKey)) {
+        throw new Error(`Invalid MCP key: ${keyArg}. Must be one of: ${mcpKeys.join(", ")}`);
+      }
+      serverKey = keyArg as McpServerKey;
       i++;
     } else if (args[i] === "--suffix" && i + 1 < args.length) {
       suffix = args[i + 1] ?? suffix;
@@ -54,38 +66,50 @@ Usage:
   bun scripts/generate-mcp-prompts.ts [options]
 
 Options:
-  --mcp-server <name>  MCP server name (default: ydc-server)
-  --tool <name>        Tool name for prompts (default: you-search)
-  --suffix <name>      File suffix (default: you) → full-<suffix>.jsonl
+  --mcp-key <key>      MCP server key from mcp-servers.ts (default: ${defaultKey})
+                       Available: ${mcpKeys.join(", ")}
+  --suffix <name>      File suffix (default: same as mcp-key) → prompts-<suffix>.jsonl
   --help, -h           Show this help message
 
 Examples:
   # Generate You.com variants (default)
   bun scripts/generate-mcp-prompts.ts
 
-  # Generate Exa variants
-  bun scripts/generate-mcp-prompts.ts --mcp-server exa-server --tool exa-search --suffix exa
+  # Generate for specific MCP server
+  bun scripts/generate-mcp-prompts.ts --mcp-key you
+
+  # Custom suffix
+  bun scripts/generate-mcp-prompts.ts --mcp-key you --suffix custom
 
 Output files:
-  data/prompts/full-<suffix>.jsonl
-  data/prompts/test-<suffix>.jsonl
+  data/prompts/full/prompts-<suffix>.jsonl
+  data/prompts/test/prompts-<suffix>.jsonl
+  data/prompts/trials/prompts-<suffix>.jsonl
       `);
       process.exit(0);
     }
   }
 
-  return { server, tool, suffix };
+  const server = MCP_SERVERS[serverKey];
+
+  return {
+    serverKey,
+    serverName: server.name,
+    expectedTool: server.expectedTool,
+    suffix,
+  };
 };
 
 const convertPrompt = (prompt: Prompt, config: McpConfig): Prompt => {
-  // Keep input unchanged - unified "Use web search to find:" format works for both builtin and MCP
-  // Only add metadata to indicate MCP expectations
+  // Prefix input with rule to use the specified MCP tool
+  // Add metadata to indicate MCP expectations for grader
   return {
     ...prompt,
+    input: `Use ${config.serverName} and answer\n${prompt.input}`,
     metadata: {
       ...prompt.metadata,
-      mcp_server: config.server,
-      expected_tool: config.tool,
+      mcp_server: config.serverName,
+      expected_tool: config.expectedTool,
     },
   };
 };
@@ -110,37 +134,61 @@ const convertFile = async (inputPath: string, outputPath: string, config: McpCon
 };
 
 const main = async () => {
-  const config = parseArgs();
+  const args = process.argv.slice(2);
+  const hasKeyFlag = args.includes("--mcp-key");
 
-  console.log(`📝 Generating MCP variant files:`);
-  console.log(`   MCP Server: ${config.server}`);
-  console.log(`   Tool Name:  ${config.tool}`);
-  console.log(`   Suffix:     ${config.suffix}\n`);
+  // If no --mcp-key flag, generate for all MCP servers
+  const mcpKeys = Object.keys(MCP_SERVERS) as McpServerKey[];
+  const configs: McpConfig[] = hasKeyFlag
+    ? [parseArgs()]
+    : mcpKeys.map((key) => {
+        const server = MCP_SERVERS[key];
+        return {
+          serverKey: key,
+          serverName: server.name,
+          expectedTool: server.expectedTool,
+          suffix: key,
+        };
+      });
 
-  // Convert full.jsonl
-  const fullInput = "data/prompts/full.jsonl";
-  const fullOutput = `data/prompts/full-${config.suffix}.jsonl`;
-  const fullCount = await convertFile(fullInput, fullOutput, config);
-  console.log(`✅ Converted ${fullCount} prompts: ${fullOutput}`);
+  console.log(`📝 Generating MCP variant files for ${configs.length} server(s)\n`);
 
-  // Convert test.jsonl
-  const testInput = "data/prompts/test.jsonl";
-  const testOutput = `data/prompts/test-${config.suffix}.jsonl`;
-  const testCount = await convertFile(testInput, testOutput, config);
-  console.log(`✅ Converted ${testCount} prompts: ${testOutput}`);
+  let grandTotalConverted = 0;
 
-  console.log(`\n🎉 Done! MCP variants generated.`);
-  console.log(`\nSample output:`);
+  for (const config of configs) {
+    console.log(`Processing ${config.serverKey}:`);
+    console.log(`   MCP Server: ${config.serverName}`);
+    console.log(`   Tool Name:  ${config.expectedTool}`);
+    console.log(`   Suffix:     ${config.suffix}`);
 
-  // Show sample
-  const firstLine = (await Bun.file(fullOutput).text()).split("\n")[0];
-  if (firstLine) {
-    const sample = JSON.parse(firstLine) as Prompt;
-    console.log(`  Input:    ${sample.input.slice(0, 60)}...`);
-    console.log(
-      `  Metadata: mcp_server="${sample.metadata?.mcp_server}", expected_tool="${sample.metadata?.expected_tool}"`,
-    );
+    const datasets = ["full", "test", "trials"];
+    let totalConverted = 0;
+
+    for (const dataset of datasets) {
+      const inputPath = `data/prompts/${dataset}/prompts.jsonl`;
+      const outputPath = `data/prompts/${dataset}/prompts-${config.suffix}.jsonl`;
+
+      const inputFile = Bun.file(inputPath);
+      if (!(await inputFile.exists())) {
+        console.log(`  ⚠️  Skipping ${dataset}: ${inputPath} not found`);
+        continue;
+      }
+
+      const count = await convertFile(inputPath, outputPath, config);
+      console.log(`  ✅ Converted ${count} prompts: ${outputPath}`);
+      totalConverted += count;
+    }
+
+    console.log(`  Total: ${totalConverted} prompts\n`);
+    grandTotalConverted += totalConverted;
   }
+
+  if (grandTotalConverted === 0) {
+    console.log(`⚠️  No prompts converted. Check that base prompt files exist.`);
+    process.exit(1);
+  }
+
+  console.log(`🎉 Done! ${grandTotalConverted} total prompts converted across ${configs.length} server(s).`);
 };
 
 main().catch((err) => {

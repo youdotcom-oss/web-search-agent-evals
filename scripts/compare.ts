@@ -1,9 +1,10 @@
 #!/usr/bin/env bun
 import { spawn } from "node:child_process";
+import { MCP_SERVERS, type McpServerKey } from "../mcp-servers.ts";
 
 type Mode = "test" | "full";
 type Agent = "claude-code" | "gemini" | "droid" | "codex";
-type SearchProvider = "builtin" | "you";
+type SearchProvider = McpServerKey | "builtin";
 type Strategy = "weighted" | "statistical";
 
 type CompareOptions = {
@@ -28,6 +29,8 @@ const parseArgs = (args: string[]): CompareOptions => {
   let runDate: string | undefined;
   let fixtureDir: string | undefined;
 
+  const validProviders = ["builtin", ...Object.keys(MCP_SERVERS)];
+
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--agent" && i + 1 < args.length) {
       const agent = args[i + 1];
@@ -45,10 +48,10 @@ const parseArgs = (args: string[]): CompareOptions => {
       i++;
     } else if ((args[i] === "--search-provider" || args[i] === "--mcp") && i + 1 < args.length) {
       const tool = args[i + 1];
-      if (tool !== "builtin" && tool !== "you") {
-        throw new Error(`Invalid search provider: ${tool}. Must be "builtin" or "you"`);
+      if (!validProviders.includes(tool as string)) {
+        throw new Error(`Invalid search provider: ${tool}. Must be one of: ${validProviders.join(", ")}`);
       }
-      searchProvider = tool;
+      searchProvider = tool as SearchProvider;
       i++;
     } else if (args[i] === "--strategy" && i + 1 < args.length) {
       const s = args[i + 1];
@@ -147,7 +150,8 @@ const runComparison = async (options: CompareOptions): Promise<void> => {
   const { agents, mode, searchProvider, strategy, runDate, fixtureDir } = options;
 
   // Build scenario matrix
-  const searchProviders: SearchProvider[] = searchProvider ? [searchProvider] : ["builtin", "you"];
+  const mcpProviders = Object.keys(MCP_SERVERS) as McpServerKey[];
+  const searchProviders: SearchProvider[] = searchProvider ? [searchProvider] : ["builtin", ...mcpProviders];
   const runs: Array<{ agent: Agent; searchProvider: SearchProvider }> = [];
 
   for (const agent of agents) {
@@ -213,7 +217,10 @@ const main = async () => {
       console.log(`\nOutput: ${await buildOutputPath(options)}\n`);
 
       // Build scenario matrix for preview
-      const searchProviders: SearchProvider[] = options.searchProvider ? [options.searchProvider] : ["builtin", "you"];
+      const mcpProviders = Object.keys(MCP_SERVERS) as McpServerKey[];
+      const searchProviders: SearchProvider[] = options.searchProvider
+        ? [options.searchProvider]
+        : ["builtin", ...mcpProviders];
       const runs: Array<{ agent: Agent; searchProvider: SearchProvider }> = [];
 
       for (const agent of options.agents) {

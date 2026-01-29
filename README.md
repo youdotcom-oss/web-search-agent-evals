@@ -67,7 +67,7 @@ docker compose run --rm -e SEARCH_PROVIDER=builtin claude-code
 docker compose run --rm -e SEARCH_PROVIDER=you gemini
 ```
 
-**Note:** MCP prompt files (test-you.jsonl, full-you.jsonl) must be generated before running evaluations. Run `bun run generate:mcp-you` to create them from base prompts (test.jsonl, full.jsonl).
+**Note:** MCP prompt files must be generated before running evaluations. Run `bun run generate:mcp-you` to create MCP variants, or use `bun run sample:test` to generate fresh test samples with MCP variants included.
 
 #### Full Workflow (151 prompts, ~2 hours)
 
@@ -207,19 +207,31 @@ The entrypoint script:
 
 ## Prompts
 
+Prompts are organized by dataset type, with each dataset in its own directory containing both builtin and MCP variants:
+
 | File | Prompts | Format | Use With |
 |------|---------|--------|----------|
-| `test.jsonl` | 5 | `<web-search>` | `SEARCH_PROVIDER=builtin` |
-| `test-you.jsonl` | 5 | `<web-search mcp-server="ydc-server">` | `SEARCH_PROVIDER=you` |
-| `full.jsonl` | 151 | `<web-search>` | `SEARCH_PROVIDER=builtin` |
-| `full-you.jsonl` | 151 | `<web-search mcp-server="ydc-server">` | `SEARCH_PROVIDER=you` |
+| `full/prompts.jsonl` | 151 | Standard | `SEARCH_PROVIDER=builtin` |
+| `full/prompts-you.jsonl` | 151 | MCP variant | `SEARCH_PROVIDER=you` |
+| `test/prompts.jsonl` | 5 | Standard | `SEARCH_PROVIDER=builtin` |
+| `test/prompts-you.jsonl` | 5 | MCP variant | `SEARCH_PROVIDER=you` |
+| `trials/prompts.jsonl` | 30 | Standard | `SEARCH_PROVIDER=builtin` |
+| `trials/prompts-you.jsonl` | 30 | MCP variant | `SEARCH_PROVIDER=you` |
 
-**Test prompts** are randomly sampled from the full dataset. The prompts in `test.jsonl` and `test-you.jsonl` are identical except for the XML attribute (`mcp-server="ydc-server"`).
+**Test and trials prompts** are randomly sampled from the full dataset. All prompts use unified "Use web search to find:" format. MCP variants add metadata (`mcp_server`, `expected_tool`) without changing prompt text.
 
 To regenerate test prompts with a new random sample:
 
 ```bash
-bun run sample:test
+bun run sample:test        # 5 prompts → data/prompts/test/
+bun run sample:trials      # 30 prompts → data/prompts/trials/
+```
+
+Or use the script directly:
+
+```bash
+bun scripts/sample.ts --dir test --count 5
+bun scripts/sample.ts --dir trials --count 30
 ```
 
 All prompts are designed to trigger web search with time-sensitive queries and recent events.
@@ -417,13 +429,15 @@ See `.claude/skills/web-search-agent-evals/SKILL.md` for detailed guide.
 
 ### Adding MCP Tools
 
-1. **Add to mcp-servers.ts**
-2. **Update docker/entrypoint** (add case to `configureMcp()`)
-3. **Update .env and .env.example**
-4. **Update scripts/run.ts** (add to `McpTool` type)
-5. **Create MCP prompt set**
+1. **Add to mcp-servers.ts** - Define server configuration with name, URL, auth, and expectedTool
+2. **Update docker/entrypoint** - Add case to `configureMcp()` function for each agent CLI
+3. **Update .env and .env.example** - Add required API keys
+4. **Generate MCP prompts** - Run `bun scripts/generate-mcp-prompts.ts --mcp-key <new-key>` to create MCP variants
+5. **Sample test prompts** - Run `bun run sample:test` to include new MCP variants in test set
 
 See `.claude/skills/web-search-agent-evals/SKILL.md` for detailed guide.
+
+**Note:** Scripts (`run.ts`, `run-trials.ts`, `sample.ts`) automatically pick up new MCP servers from `mcp-servers.ts`, so no manual updates needed.
 
 ## Troubleshooting
 

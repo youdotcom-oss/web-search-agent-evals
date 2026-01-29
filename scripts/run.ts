@@ -2,10 +2,11 @@
 import { spawn } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
+import { MCP_SERVERS, type McpServerKey } from "../mcp-servers.ts";
 
 type Agent = "claude-code" | "gemini" | "droid" | "codex";
 type Mode = "test" | "full";
-type SearchProvider = "builtin" | "you";
+type SearchProvider = McpServerKey | "builtin";
 
 type RunOptions = {
   agents: Agent[];
@@ -21,6 +22,8 @@ const parseArgs = (args: string[]): RunOptions => {
   let mode: Mode | undefined;
   let searchProvider: SearchProvider | undefined;
   let dryRun = false;
+
+  const validProviders = ["builtin", ...Object.keys(MCP_SERVERS)];
 
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--agent" && i + 1 < args.length) {
@@ -39,10 +42,10 @@ const parseArgs = (args: string[]): RunOptions => {
       i++;
     } else if ((args[i] === "--search-provider" || args[i] === "--mcp") && i + 1 < args.length) {
       const tool = args[i + 1];
-      if (tool !== "builtin" && tool !== "you") {
-        throw new Error(`Invalid search provider: ${tool}. Must be "builtin" or "you"`);
+      if (!validProviders.includes(tool as string)) {
+        throw new Error(`Invalid search provider: ${tool}. Must be one of: ${validProviders.join(", ")}`);
       }
-      searchProvider = tool;
+      searchProvider = tool as SearchProvider;
       i++;
     } else if (args[i] === "--dry-run") {
       dryRun = true;
@@ -190,7 +193,10 @@ const main = async () => {
     console.log(`Agents: ${options.agents.join(", ")}`);
 
     // Determine which search providers to test
-    const searchProviders: SearchProvider[] = options.searchProvider ? [options.searchProvider] : ["builtin", "you"];
+    const mcpProviders = Object.keys(MCP_SERVERS) as McpServerKey[];
+    const searchProviders: SearchProvider[] = options.searchProvider
+      ? [options.searchProvider]
+      : ["builtin", ...mcpProviders];
     console.log(`Search providers: ${searchProviders.join(", ")}`);
     console.log("");
 

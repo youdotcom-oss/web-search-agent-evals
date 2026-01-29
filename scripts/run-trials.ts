@@ -1,14 +1,15 @@
 #!/usr/bin/env bun
 import { spawn } from "node:child_process";
+import { MCP_SERVERS, type McpServerKey } from "../mcp-servers.ts";
 
 type Agent = "claude-code" | "gemini" | "droid" | "codex";
-type Mode = "test" | "full";
 type TrialType = "default" | "capability" | "regression";
+type SearchProvider = McpServerKey | "builtin";
 
 type TrialsOptions = {
   agent: Agent;
-  mode: Mode;
   trialType: TrialType;
+  searchProvider: SearchProvider;
   k?: number;
   dryRun?: boolean;
 };
@@ -25,10 +26,12 @@ const ALL_AGENTS: Agent[] = ["claude-code", "gemini", "droid", "codex"];
  */
 const parseArgs = (args: string[]): TrialsOptions => {
   let agent: Agent = "droid"; // Default to droid
-  let mode: Mode = "test";
   let trialType: TrialType = "default";
+  let searchProvider: SearchProvider = "builtin";
   let k: number | undefined;
   let dryRun = false;
+
+  const validProviders = ["builtin", ...Object.keys(MCP_SERVERS)];
 
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--agent" && i + 1 < args.length) {
@@ -38,12 +41,12 @@ const parseArgs = (args: string[]): TrialsOptions => {
       }
       agent = agentArg as Agent;
       i++;
-    } else if (args[i] === "--mode" && i + 1 < args.length) {
-      const modeArg = args[i + 1];
-      if (modeArg !== "test" && modeArg !== "full") {
-        throw new Error(`Invalid mode: ${modeArg}. Must be "test" or "full"`);
+    } else if (args[i] === "--search-provider" && i + 1 < args.length) {
+      const providerArg = args[i + 1];
+      if (!validProviders.includes(providerArg as string)) {
+        throw new Error(`Invalid search provider: ${providerArg}. Must be one of: ${validProviders.join(", ")}`);
       }
-      mode = modeArg;
+      searchProvider = providerArg as SearchProvider;
       i++;
     } else if (args[i] === "--type" && i + 1 < args.length) {
       const typeArg = args[i + 1];
@@ -67,7 +70,7 @@ const parseArgs = (args: string[]): TrialsOptions => {
     }
   }
 
-  return { agent, mode, trialType, k, dryRun };
+  return { agent, trialType, searchProvider, k, dryRun };
 };
 
 /**
@@ -96,20 +99,20 @@ const getKValue = (trialType: TrialType, override?: number): number => {
  * Get output file path for trials results
  *
  * @param agent - Agent name
- * @param mode - Test mode (test or full)
+ * @param searchProvider - Search provider (builtin or MCP server key)
  * @param trialType - Type of trial
  * @returns Output file path
  *
  * @internal
  */
-const getOutputPath = (agent: Agent, mode: Mode, trialType: TrialType): string => {
+const getOutputPath = (agent: Agent, searchProvider: SearchProvider, trialType: TrialType): string => {
   if (trialType === "capability") {
-    return `data/results/trials/${agent}-capability.jsonl`;
+    return `data/results/trials/${agent}-${searchProvider}-capability.jsonl`;
   }
   if (trialType === "regression") {
-    return `data/results/trials/${agent}-regression.jsonl`;
+    return `data/results/trials/${agent}-${searchProvider}-regression.jsonl`;
   }
-  return `data/results/trials/${agent}-${mode}.jsonl`;
+  return `data/results/trials/${agent}-${searchProvider}.jsonl`;
 };
 
 /**
@@ -123,15 +126,18 @@ const getOutputPath = (agent: Agent, mode: Mode, trialType: TrialType): string =
 const runTrials = (options: TrialsOptions): Promise<number> => {
   return new Promise((resolve) => {
     const k = getKValue(options.trialType, options.k);
-    const dataset = options.mode === "full" ? "data/prompts/full.jsonl" : "data/prompts/test.jsonl";
+    const dataset =
+      options.searchProvider === "builtin"
+        ? "data/prompts/trials/prompts.jsonl"
+        : `data/prompts/trials/prompts-${options.searchProvider}.jsonl`;
     const schema = `agent-schemas/${options.agent}.json`;
-    const outputPath = getOutputPath(options.agent, options.mode, options.trialType);
+    const outputPath = getOutputPath(options.agent, options.searchProvider, options.trialType);
     const grader = "./scripts/inline-grader.ts";
 
     const startTime = Date.now();
 
     console.log(`\n${"=".repeat(80)}`);
-    console.log(`Running trials: ${options.agent} (k=${k}, mode=${options.mode})`);
+    console.log(`Running trials: ${options.agent} (k=${k}, search=${options.searchProvider})`);
     console.log(`${"=".repeat(80)}\n`);
 
     if (options.dryRun) {
@@ -198,7 +204,7 @@ const main = async () => {
     const options = parseArgs(args);
 
     console.log(`Agent: ${options.agent}`);
-    console.log(`Mode: ${options.mode}`);
+    console.log(`Search provider: ${options.searchProvider}`);
     console.log(`Trial type: ${options.trialType}`);
     console.log(`k: ${getKValue(options.trialType, options.k)}`);
 

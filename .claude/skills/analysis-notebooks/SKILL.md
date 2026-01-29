@@ -1,326 +1,374 @@
 # Analysis Notebooks
 
-Create and use Jupyter notebooks for deep analysis of evaluation results. Notebooks combine raw trajectory data with statistical comparison analysis for comprehensive benchmarking.
+Jupyter notebooks for visualizing evaluation results and reliability metrics.
+
+## Available Notebooks
+
+### 1. comparison.ipynb - Quality Rankings & Head-to-Head
+
+Visualizes pre-computed comparison metrics from weighted and statistical analysis.
+
+**What it shows:**
+- Overall quality rankings
+- Quality vs performance tradeoff
+- Head-to-head win/loss matrix
+- Statistical significance (confidence intervals)
+- Search provider comparison (builtin vs MCP)
+- Pass rate analysis
+
+**Data source:** `data/comparisons/{mode}-runs/*.json` or `data/comparisons/runs/YYYY-MM-DD/*.json`
+
+**View on GitHub:**
+Navigate to [`notebooks/comparison.ipynb`](../../notebooks/comparison.ipynb) - GitHub renders automatically
+
+**Run on Google Colab:**
+Click "Open in Colab" badge in notebook - runs interactively with repo clone
+
+**Run locally:**
+```bash
+pip install -r notebooks/requirements.txt
+jupyter notebook notebooks/comparison.ipynb
+```
+
+### 2. trials.ipynb - Pass@k Reliability Analysis
+
+Deep dive into multi-trial evaluation results to measure agent reliability.
+
+**What it shows:**
+- pass@k (capability) vs pass^k (reliability) frontier
+- Flakiness analysis (inconsistency detection)
+- Prompt difficulty rankings
+- Per-prompt trial heatmap (visual pattern inspection)
+- Pass rate distributions
+
+**Data source:** `data/results/trials/{agent}-{mode}.jsonl`
+
+**View/Run:** Same options as comparison.ipynb
+
+**Typical use cases:**
+- Production deployment decisions (need reliability)
+- Prompt engineering (focus on flaky prompts)
+- Regression testing (track reliability over time)
 
 ## Quick Start
 
-### View Summary Notebook
+### View Notebooks on GitHub
 
-**On GitHub:**
-- Navigate to `notebooks/summary.ipynb` in the repo
-- GitHub renders it automatically with all visualizations
+1. Navigate to `notebooks/` directory in repo
+2. Click on `comparison.ipynb` or `trials.ipynb`
+3. GitHub renders automatically with all visualizations
 
-**On Google Colab:**
-1. Click "Open in Colab" badge in notebook
-2. Run all cells for interactive exploration
+### Run on Google Colab
 
-**Locally:**
+1. Open notebook in GitHub
+2. Click "Open in Colab" badge at top
+3. Colab clones repo and loads notebook
+4. Run all cells (Runtime → Run all)
+
+**No local setup required!** Colab provides Python environment and dependencies.
+
+### Run Locally
+
 ```bash
 # Install dependencies
 pip install -r notebooks/requirements.txt
 
 # Launch Jupyter
-jupyter notebook notebooks/summary.ipynb
+jupyter notebook
+
+# Open comparison.ipynb or trials.ipynb from browser
 ```
 
-## Summary Notebook Structure
+## Configuration
 
-The `notebooks/summary.ipynb` combines multiple data sources:
+Both notebooks have **USER CONFIGURATION** cells where you can set:
 
-**Data Sources:**
-- `data/results/latest.json` - Points to current run
-- `data/results/runs/YYYY-MM-DD/**/*.jsonl` - Raw trajectory results
-- `data/comparisons/runs/YYYY-MM-DD/*.json` - Statistical analysis
-- `data/results/MANIFEST.jsonl` - Historical metadata
+**comparison.ipynb:**
+```python
+MODE = 'test'        # Options: 'test' or 'full'
+RUN_DATE = None      # For full mode: '2026-01-24' or None for latest
+```
 
-**9 Analysis Cells:**
-1. **Setup** - Load data, display run metadata
-2. **Overall Rankings** - Bar chart from weighted comparison
-3. **Head-to-Head Matrix** - Win/loss heatmap
-4. **Statistical Significance** - Bootstrap confidence intervals
-5. **Pass Rates** - Success rate by agent/provider
-6. **Latency Distribution** - Response time histograms
-7. **Error Rates** - Tool error analysis
-8. **Token Usage** - Input/output tokens per query
-9. **Historical Trends** - Performance over time
+**trials.ipynb:**
+```python
+AGENT = 'droid'      # Options: 'claude-code', 'gemini', 'droid', 'codex'
+MODE = 'test'        # Options: 'test', 'trials', 'full'
+```
 
-## Creating Custom Analysis Notebooks
+## Data Requirements
 
-### 1. Create New Notebook
+### For comparison.ipynb
+
+Requires comparison results to exist:
 
 ```bash
-jupyter notebook
-# New → Python 3
-# Save as notebooks/your-analysis.ipynb
+# Generate comparison results first
+bun run compare --mode test                    # → data/comparisons/test-runs/
+bun run compare --mode test --strategy statistical
+
+# For full runs
+bun run compare:full                            # → data/comparisons/runs/YYYY-MM-DD/
+bun run compare:full-statistical
 ```
 
-### 2. Load Data
+### For trials.ipynb
 
+Requires trials data to exist:
+
+```bash
+# Run trials first
+bun run trials                                  # Default: droid, test, k=5
+bun run trials -- --agent gemini --mode trials -k 10
+
+# Output: data/results/trials/{agent}-{mode}.jsonl
+```
+
+## Creating Custom Notebooks
+
+### 1. Start with Template
+
+Copy existing notebook structure for Colab compatibility:
+
+```bash
+cp notebooks/comparison.ipynb notebooks/my-analysis.ipynb
+```
+
+### 2. Essential Setup Cells
+
+**Always include these first two cells:**
+
+**Cell 1: Colab Detection & Repo Clone**
+```python
+import os
+from pathlib import Path
+
+try:
+    import google.colab
+    IN_COLAB = True
+except ImportError:
+    IN_COLAB = False
+
+if IN_COLAB:
+    print("🔧 Running in Google Colab - cloning repository...")
+    repo_dir = Path('/content/web-search-agent-evals')
+    if not repo_dir.exists():
+        !git clone https://github.com/youdotcom-oss/web-search-agent-evals.git /content/web-search-agent-evals
+        print("✓ Repository cloned")
+    else:
+        print("✓ Repository already exists")
+        %cd /content/web-search-agent-evals
+        !git pull origin main
+    %cd /content/web-search-agent-evals
+    print(f"✓ Working directory: {Path.cwd()}")
+else:
+    print("✓ Running locally")
+```
+
+**Cell 2: Dependencies & Path Setup**
 ```python
 import json
 import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from pathlib import Path
 
-# Read latest.json to find current run
-with open('../data/results/latest.json') as f:
-    latest = json.load(f)
+# Configure plotting
+sns.set_style('whitegrid')
+plt.rcParams['figure.dpi'] = 100
 
-print(f"Analyzing run: {latest['date']}")
+# Find project root
+PROJECT_ROOT = Path.cwd()
+if PROJECT_ROOT.name == 'notebooks':
+    PROJECT_ROOT = PROJECT_ROOT.parent
 
-# Load raw results for specific agent/tool
-with open(f"../data/results/{latest['path']}/claude-code/builtin.jsonl") as f:
+DATA_DIR = PROJECT_ROOT / 'data'
+print(f"📁 Project root: {PROJECT_ROOT}")
+print(f"📊 Data directory: {DATA_DIR}")
+
+if not DATA_DIR.exists():
+    raise FileNotFoundError(f"Data directory not found: {DATA_DIR}")
+```
+
+### 3. Add Colab Badge to Markdown
+
+First cell should be markdown with Colab badge:
+
+```markdown
+# My Custom Analysis
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/youdotcom-oss/web-search-agent-evals/blob/main/notebooks/my-analysis.ipynb)
+
+Description of what this analyzes...
+```
+
+### 4. Load Data
+
+**For comparison analysis:**
+```python
+MODE = 'test'
+comp_dir = DATA_DIR / 'comparisons' / (f'{MODE}-runs' if MODE == 'test' else f'runs/{RUN_DATE}')
+
+with open(comp_dir / 'all-weighted.json') as f:
+    weighted = json.load(f)
+```
+
+**For raw trajectory analysis:**
+```python
+AGENT = 'claude-code'
+PROVIDER = 'builtin'
+MODE = 'test'
+
+results_dir = DATA_DIR / 'results' / (f'{MODE}-runs' if MODE == 'test' else f'runs/{RUN_DATE}')
+results_file = results_dir / AGENT / f'{PROVIDER}.jsonl'
+
+with open(results_file) as f:
     results = [json.loads(line) for line in f]
 
 df = pd.DataFrame(results)
-df.head()
 ```
 
-### 3. Common Analysis Patterns
-
-**Failure Clustering by Category:**
+**For trials analysis:**
 ```python
-failures = df[df['score'] < 0.5]
-category_failures = failures['metadata'].apply(
-    lambda x: x.get('category', 'unknown')
-)
+AGENT = 'droid'
+MODE = 'test'
 
-category_failures.value_counts().plot(kind='bar')
-plt.title('Failures by Category')
-plt.xlabel('Category')
-plt.ylabel('Failure Count')
+trials_file = DATA_DIR / 'results' / 'trials' / f'{AGENT}-{MODE}.jsonl'
+
+with open(trials_file) as f:
+    trials = [json.loads(line) for line in f]
+
+df = pd.DataFrame(trials)
+```
+
+## Common Analysis Patterns
+
+### Failure Analysis
+
+```python
+# Filter to failures only
+failures = df[df['score'] < 0.65]
+
+# Group by error type if available
+if 'error' in failures.columns:
+    error_counts = failures['error'].value_counts()
+    error_counts.plot(kind='bar', title='Failure Types')
+    plt.show()
+```
+
+### Latency Analysis
+
+```python
+# Extract latency from timing
+df['latency_ms'] = df['timing'].apply(lambda x: x.get('total', 0))
+
+# Plot distribution
+df.boxplot(column='latency_ms', by='provider')
+plt.title('Latency Distribution by Provider')
+plt.ylabel('Latency (ms)')
+plt.suptitle('')
 plt.show()
 ```
 
-**Token Usage Analysis:**
+### Token Usage (if available)
+
 ```python
-# Note: Token counts may not be available for all agents
-df['total_tokens'] = df['timing'].apply(
-    lambda x: x.get('inputTokens', 0) + x.get('outputTokens', 0)
-)
+# Extract token counts
+df['input_tokens'] = df['timing'].apply(lambda x: x.get('inputTokens', 0))
+df['output_tokens'] = df['timing'].apply(lambda x: x.get('outputTokens', 0))
+df['total_tokens'] = df['input_tokens'] + df['output_tokens']
 
 # Filter to rows with token data
 df_with_tokens = df[df['total_tokens'] > 0]
 
 if len(df_with_tokens) > 0:
-    df_with_tokens.boxplot(
-        column='total_tokens',
-        by='metadata.searchProvider'
-    )
-    plt.title('Token Usage by Search Provider')
-    plt.ylabel('Tokens (input + output)')
-    plt.suptitle('')  # Remove default title
+    df_with_tokens.plot.scatter(x='input_tokens', y='output_tokens', alpha=0.5)
+    plt.title('Input vs Output Tokens')
     plt.show()
 else:
-    print("⚠️  No token data available in this run")
-```
-
-**Latency Time Series:**
-```python
-df['prompt_index'] = range(len(df))
-df['latency_sec'] = df['timing'].apply(
-    lambda x: x.get('total', 0) / 1000
-)
-
-plt.figure(figsize=(12, 6))
-plt.plot(df['prompt_index'], df['latency_sec'], alpha=0.5)
-plt.xlabel('Prompt Index')
-plt.ylabel('Latency (seconds)')
-plt.title('Latency Over Evaluation Run')
-plt.axhline(
-    df['latency_sec'].median(),
-    color='red',
-    linestyle='--',
-    label='Median'
-)
-plt.legend()
-plt.show()
-```
-
-**Success Rate by Prompt Difficulty:**
-```python
-# Analyze if certain prompts are harder
-df['passed'] = df['score'] >= 0.5
-prompt_difficulty = df.groupby('id')['passed'].mean()
-
-# Hardest prompts
-hardest = prompt_difficulty.nsmallest(10)
-print("Hardest Prompts (lowest success rate):")
-print(hardest)
-
-# Easiest prompts
-easiest = prompt_difficulty.nlargest(10)
-print("\nEasiest Prompts (highest success rate):")
-print(easiest)
-```
-
-### 4. Load Comparison Analysis
-
-```python
-# Load weighted comparison results
-comparison_path = f"../data/comparisons/{latest['path']}/all-weighted.json"
-with open(comparison_path) as f:
-    comparison = json.load(f)
-
-quality = comparison['quality']
-head_to_head = comparison['headToHead']['pairwise']
-
-# Rankings dataframe
-rankings_df = pd.DataFrame(quality['rankings'])
-rankings_df['score_pct'] = rankings_df['score'] * 100
-print(rankings_df[['rank', 'run', 'score_pct']])
-```
-
-### 5. Add Colab Badge
-
-```markdown
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/<org>/acp-evals/blob/main/notebooks/your-analysis.ipynb)
-```
-
-## Historical Comparisons
-
-Compare performance across multiple runs:
-
-```python
-import pandas as pd
-import json
-
-# Read MANIFEST.jsonl for all runs
-with open('../data/results/MANIFEST.jsonl') as f:
-    history = [json.loads(line) for line in f]
-
-# Load results from each run
-historical_data = []
-for run in history:
-    for agent in run['agents']:
-        for provider in run['searchProviders']:
-            path = f"../data/results/{run['path']}/{agent}/{provider}.jsonl"
-            
-            try:
-                with open(path) as f:
-                    results = [json.loads(line) for line in f]
-                    avg_score = sum(r.get('score', 0) for r in results) / len(results)
-                    
-                    historical_data.append({
-                        'date': run['date'],
-                        'agent': agent,
-                        'provider': provider,
-                        'avg_score': avg_score * 100,  # Convert to percentage
-                        'prompt_count': len(results),
-                    })
-            except FileNotFoundError:
-                print(f"⚠️  Missing: {path}")
-
-# Create dataframe
-hist_df = pd.DataFrame(historical_data)
-
-# Plot trends for each agent-provider combo
-import matplotlib.pyplot as plt
-
-fig, ax = plt.subplots(figsize=(14, 8))
-
-for combo in hist_df.groupby(['agent', 'provider']):
-    label = f"{combo[0][0]}-{combo[0][1]}"
-    combo_data = combo[1].sort_values('date')
-    ax.plot(combo_data['date'], combo_data['avg_score'], marker='o', label=label)
-
-ax.set_xlabel('Run Date')
-ax.set_ylabel('Average Score (%)')
-ax.set_title('Performance Trends Over Time')
-ax.axhline(50, color='black', linestyle='--', linewidth=1, label='50% baseline')
-ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
-ax.grid(True, alpha=0.3)
-plt.xticks(rotation=45)
-plt.tight_layout()
-plt.show()
+    print("⚠️  No token data available")
 ```
 
 ## Publishing Notebooks
 
-### GitHub Rendering
+### GitHub (Automatic)
 
-GitHub automatically renders `.ipynb` files with all outputs. Just commit and push:
+Commit and push - GitHub renders `.ipynb` files automatically:
 
 ```bash
-git add notebooks/your-analysis.ipynb
+git add notebooks/my-analysis.ipynb
 git commit -m "docs: add custom analysis notebook"
 git push
 ```
 
-### Sharing via Colab
+### Google Colab (Shareable Link)
 
-Colab can run notebooks directly from GitHub:
-
-1. Add Colab badge to notebook header
-2. Users click badge → Colab clones repo and opens notebook
-3. All dependencies from `requirements.txt` can be installed in first cell
+1. Add Colab badge to first markdown cell
+2. Users click badge → Colab loads notebook from GitHub
+3. No local setup required for users
 
 ### Static HTML Export
 
 ```bash
-# Install nbconvert
 pip install nbconvert
-
-# Export to HTML
-jupyter nbconvert --to html notebooks/summary.ipynb
-
-# Output: notebooks/summary.html (static page)
-```
-
-### Jupyter Book (Optional)
-
-For a complete documentation site:
-
-```bash
-pip install jupyter-book
-
-# Build book
-jupyter-book build notebooks/
-
-# Output: notebooks/_build/html/index.html
+jupyter nbconvert --to html notebooks/my-analysis.ipynb
+# Output: notebooks/my-analysis.html
 ```
 
 ## Data Caveats
 
 ### Token Counts
 
-Token data availability varies by agent:
-- **Available**: Agents that report `inputTokens` and `outputTokens` in trajectory
-- **Missing**: Agents that don't expose token counts
-- **Partial**: May only include final turn, not intermediate tool calls
+Not all agents expose token usage:
+- **Available**: Check if `timing.inputTokens` and `timing.outputTokens` exist
+- **Partial**: May only include final turn, not tool calls
+- **Missing**: Some agents don't report tokens at all
 
-Always filter for non-zero token counts before analysis:
-
+Always filter before analysis:
 ```python
 df_with_tokens = df[df['total_tokens'] > 0]
 if len(df_with_tokens) == 0:
-    print("⚠️  No token data available")
+    print("⚠️  No token data available for this agent")
 ```
 
 ### Timing Data
 
-All agents report `timing.total` (end-to-end latency), but intermediate timing may vary.
+All agents report `timing.total` (end-to-end latency), but:
+- Intermediate timing (per-turn) may vary
+- Tool call latency may not be broken out separately
 
 ### Metadata Fields
 
-Check available fields before analysis:
+Check available fields before assuming structure:
 
 ```python
-# Show all available fields in first result
-first_result = results[0]
-print("Available fields:", list(first_result.keys()))
+# Inspect first record
+first = results[0]
+print("Fields:", list(first.keys()))
 
-# Check metadata structure
-if 'metadata' in first_result:
-    print("Metadata fields:", list(first_result['metadata'].keys()))
+if 'metadata' in first:
+    print("Metadata:", list(first['metadata'].keys()))
 ```
 
-## Related Tools
+## Dependencies
 
-- **Pandas Docs:** https://pandas.pydata.org/docs/
-- **Matplotlib Gallery:** https://matplotlib.org/stable/gallery/
-- **Seaborn Tutorial:** https://seaborn.pydata.org/tutorial.html
-- **Jupyter Notebook Docs:** https://jupyter-notebook.readthedocs.io/
+Required packages (in `notebooks/requirements.txt`):
+
+```
+pandas>=2.0.0
+matplotlib>=3.7.0
+seaborn>=0.12.0
+numpy>=1.24.0
+jupyter>=1.0.0
+```
+
+Install locally:
+```bash
+pip install -r notebooks/requirements.txt
+```
+
+On Colab: Pre-installed (no action needed)
 
 ## Related Skills
 
-- [@playoffs](../playoffs/SKILL.md) - Running evaluations and comparisons
-- [@agent-eval-harness](../agent-eval-harness@plaited_agent-eval-harness/SKILL.md) - Capture and compare commands
+- [@web-search-agent-evals](../web-search-agent-evals/SKILL.md) - Run evaluations and comparisons
+- [@agent-eval-harness](../agent-eval-harness@plaited_agent-eval-harness/SKILL.md) - Trials and capture commands

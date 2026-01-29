@@ -160,7 +160,11 @@ const discoverLatestDate = async (trialsBaseDir: string): Promise<string> => {
   if (dates.length === 0) {
     throw new Error(`No dated runs found in ${trialsBaseDir}`);
   }
-  return dates[dates.length - 1];
+  const latestDate = dates[dates.length - 1];
+  if (!latestDate) {
+    throw new Error(`Failed to get latest date from ${trialsBaseDir}`);
+  }
+  return latestDate;
 };
 
 /**

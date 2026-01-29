@@ -9,12 +9,18 @@
  *
  * ## Execution Model
  *
- * Like run.ts, creates an agent × search provider matrix and runs all combinations in parallel:
+ * Uses Docker containers like run.ts for isolated execution:
  * - **Agents**: claude-code, gemini, droid, codex (or subset via --agent)
  * - **Search Providers**: builtin, you (or subset via --search-provider)
  * - **Trial Types**: default (k=5), capability (k=10), regression (k=3)
  *
- * Each combination runs k trials per prompt to measure consistency and reliability.
+ * Each combination runs in its own Docker container with isolated environment:
+ * ```bash
+ * docker compose run --rm \
+ *   -e SEARCH_PROVIDER=you \
+ *   claude-code \
+ *   bunx @plaited/agent-eval-harness trials ...
+ * ```
  *
  * ## Output Format
  *
@@ -163,14 +169,29 @@ const getKValue = (trialType: TrialType, override?: number): number => {
  */
 const getOutputPath = (agent: Agent, searchProvider: SearchProvider, trialType: TrialType): string => {
   const suffix = trialType === "default" ? "" : `-${trialType}`;
-  return `data/results/trials/${agent}-${searchProvider}${suffix}.jsonl`;
+  return `/eval/data/results/trials/${agent}-${searchProvider}${suffix}.jsonl`;
 };
 
 /**
- * Run trials for a single agent-provider combination
+ * Get prompt dataset path for trials
+ *
+ * @param searchProvider - Search provider (builtin or MCP server key)
+ * @returns Prompt dataset path
+ *
+ * @internal
+ */
+const getPromptPath = (searchProvider: SearchProvider): string => {
+  return searchProvider === "builtin"
+    ? "/eval/data/prompts/trials/prompts.jsonl"
+    : `/eval/data/prompts/trials/prompts-${searchProvider}.jsonl`;
+};
+
+/**
+ * Run trials for a single agent-provider combination using Docker
  *
  * @param agent - Agent name
  * @param searchProvider - Search provider
+ * @param trialType - Type of trial
  * @param k - Number of trials per prompt
  * @param scenarioId - Scenario number for progress tracking
  * @param totalScenarios - Total number of scenarios
@@ -188,13 +209,10 @@ const runTrials = (
 ): Promise<number> => {
   return new Promise((resolve) => {
     const label = `[${scenarioId}/${totalScenarios}] ${agent}-${searchProvider}`;
-    const dataset =
-      searchProvider === "builtin"
-        ? "data/prompts/trials/prompts.jsonl"
-        : `data/prompts/trials/prompts-${searchProvider}.jsonl`;
-    const schema = `agent-schemas/${agent}.json`;
+    const dataset = getPromptPath(searchProvider);
+    const schema = `/eval/agent-schemas/${agent}.json`;
     const outputPath = getOutputPath(agent, searchProvider, trialType);
-    const grader = "./scripts/inline-grader.ts";
+    const grader = "/eval/scripts/inline-grader.ts";
 
     const startTime = Date.now();
 
@@ -202,22 +220,29 @@ const runTrials = (
     console.log(`${label} - STARTING (k=${k})`);
     console.log(`${"=".repeat(80)}\n`);
 
-    const proc = spawn(
+    // Build trials command to run inside Docker container
+    const trialsCmd = [
       "bunx",
-      [
-        "@plaited/agent-eval-harness",
-        "trials",
-        dataset,
-        "--schema",
-        schema,
-        "-k",
-        k.toString(),
-        "--grader",
-        grader,
-        "-o",
-        outputPath,
-        "--progress",
-      ],
+      "@plaited/agent-eval-harness",
+      "trials",
+      dataset,
+      "--schema",
+      schema,
+      "-k",
+      k.toString(),
+      "--grader",
+      grader,
+      "-o",
+      outputPath,
+      "--progress",
+      "--cwd",
+      "/workspace",
+    ];
+
+    // Run via Docker compose with environment variables
+    const proc = spawn(
+      "docker",
+      ["compose", "run", "--rm", "-e", `SEARCH_PROVIDER=${searchProvider}`, agent, ...trialsCmd],
       {
         stdio: "pipe", // Capture output for selective logging
       },
@@ -248,7 +273,7 @@ const runTrials = (
           const prefix = currentPrompt ? `[${currentPrompt}] ` : "";
           console.log(`  ${label} ${prefix}(${elapsed}s): ${line.trim()}`);
 
-          if (line.includes("ERROR")) {
+          if (line.includes("ERROR") && !line.includes("MCP ERROR")) {
             hasError = true;
           }
         }
@@ -258,10 +283,15 @@ const runTrials = (
     proc.stderr?.on("data", (data) => {
       const lines = data.toString().split("\n");
       for (const line of lines) {
-        if (line.trim() && line.includes("ERROR")) {
+        if (line.includes("ERROR") && !line.includes("MCP ERROR")) {
+          // Fatal errors (non-MCP)
           const elapsed = ((Date.now() - startTime) / 1000).toFixed(0);
-          console.error(`  ${label} (${elapsed}s): ⚠️  ${line.trim()}`);
+          console.error(`  ${label} (${elapsed}s): ⚠️  FATAL: ${line.trim()}`);
           hasError = true;
+        } else if (line.includes("MCP ERROR")) {
+          // MCP errors are often warnings (tool may continue)
+          const elapsed = ((Date.now() - startTime) / 1000).toFixed(0);
+          console.warn(`  ${label} (${elapsed}s): ⚠️  WARNING: ${line.trim()}`);
         }
       }
     });
@@ -306,6 +336,7 @@ const main = async () => {
     console.log(`Trial type: ${options.trialType} (k=${k})`);
     console.log(`Agents: ${options.agents.join(", ")}`);
     console.log(`Search providers: ${options.searchProviders.join(", ")}`);
+    console.log(`Execution: Docker containers (isolated)`);
     console.log(`${"=".repeat(80)}\n`);
 
     // Build execution matrix
@@ -324,15 +355,15 @@ const main = async () => {
       for (let i = 0; i < runs.length; i++) {
         const run = runs[i];
         if (!run) continue;
-        const dataset =
-          run.searchProvider === "builtin"
-            ? "data/prompts/trials/prompts.jsonl"
-            : `data/prompts/trials/prompts-${run.searchProvider}.jsonl`;
+        const dataset = getPromptPath(run.searchProvider);
         const outputPath = getOutputPath(run.agent, run.searchProvider, options.trialType);
         console.log(`  [${i + 1}/${runs.length}] ${run.agent}-${run.searchProvider}:`);
         console.log(`    Dataset: ${dataset}`);
         console.log(`    Output: ${outputPath}`);
-        console.log(`    Trials per prompt: ${k}\n`);
+        console.log(`    Trials per prompt: ${k}`);
+        console.log(
+          `    Docker: docker compose run --rm -e SEARCH_PROVIDER=${run.searchProvider} ${run.agent} bunx @plaited/agent-eval-harness trials ...\n`,
+        );
       }
       console.log("[DRY RUN] No trials were executed.");
       process.exit(0);
@@ -387,36 +418,43 @@ const main = async () => {
 
     for (let i = 0; i < runs.length; i++) {
       const run = runs[i];
-      const result = results[i];
-      if (!run || result === undefined) continue;
+      const exitCode = results[i];
 
-      const label = `${run.agent}-${run.searchProvider}`;
-      if (result === 0) {
+      if (!run || exitCode === undefined) {
+        continue;
+      }
+
+      const label = `[${i + 1}/${runs.length}] ${run.agent}-${run.searchProvider}`;
+
+      if (exitCode === 0) {
         successes.push(label);
+        console.log(`✓ ${label}`);
       } else {
-        failures.push({ label, exitCode: result });
+        failures.push({ label, exitCode });
+        console.log(`✗ ${label} (exit code: ${exitCode})`);
       }
     }
 
-    console.log(`✓ Successful: ${successes.length}/${runs.length}`);
-    if (successes.length > 0) {
-      console.log(`  ${successes.join(", ")}`);
-    }
-
-    if (failures.length > 0) {
-      console.log(`\n✗ Failed: ${failures.length}/${runs.length}`);
-      for (const failure of failures) {
-        console.log(`  ${failure.label} (exit code: ${failure.exitCode})`);
-      }
-    }
-
+    console.log(`\n${"=".repeat(80)}`);
+    console.log(`Success: ${successes.length}/${runs.length}`);
+    console.log(`Failed: ${failures.length}/${runs.length}`);
     console.log("=".repeat(80));
 
     const totalTime = ((Date.now() - startTime) / 1000 / 60).toFixed(1);
     console.log(`\nTotal time: ${totalTime} minutes`);
 
-    // Exit with failure if any scenario failed
-    process.exit(failures.length > 0 ? 1 : 0);
+    if (failures.length > 0) {
+      console.error(`\n⚠️  Failed scenarios (${failures.length}):`);
+      failures.forEach(({ label, exitCode }) => {
+        const errorType = exitCode === 143 || exitCode === 124 ? "TIMEOUT" : "ERROR";
+        console.error(`  - ${label}: ${errorType} (exit code ${exitCode})`);
+      });
+      console.error("\n💡 Tip: Check output above for specific error details (authentication, MCP issues, etc.)");
+      process.exit(1);
+    } else {
+      console.log("\n✅ All trial scenarios completed successfully!");
+      process.exit(0);
+    }
   } catch (error) {
     console.error("Error:", (error as Error).message);
     process.exit(1);

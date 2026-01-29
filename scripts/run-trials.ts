@@ -107,12 +107,12 @@ const getKValue = (trialType: TrialType, override?: number): number => {
  */
 const getOutputPath = (agent: Agent, searchProvider: SearchProvider, trialType: TrialType): string => {
   if (trialType === "capability") {
-    return `data/results/trials/${agent}-${searchProvider}-capability.jsonl`;
+    return `data/results/trial-runs/${agent}-${searchProvider}-capability.jsonl`;
   }
   if (trialType === "regression") {
-    return `data/results/trials/${agent}-${searchProvider}-regression.jsonl`;
+    return `data/results/trial-runs/${agent}-${searchProvider}-regression.jsonl`;
   }
-  return `data/results/trials/${agent}-${searchProvider}.jsonl`;
+  return `data/results/trial-runs/${agent}-${searchProvider}.jsonl`;
 };
 
 /**

@@ -196,7 +196,7 @@ describe("run-trials.ts", () => {
       ]);
 
       expect(exitCode).toBe(0);
-      expect(stdout).toContain("data/results/trials/droid-builtin.jsonl");
+      expect(stdout).toContain("data/results/trial-runs/droid-builtin.jsonl");
     });
 
     test("default type with you provider", async () => {
@@ -211,7 +211,7 @@ describe("run-trials.ts", () => {
       ]);
 
       expect(exitCode).toBe(0);
-      expect(stdout).toContain("data/results/trials/gemini-you.jsonl");
+      expect(stdout).toContain("data/results/trial-runs/gemini-you.jsonl");
     });
 
     test("capability type with builtin provider", async () => {
@@ -226,7 +226,7 @@ describe("run-trials.ts", () => {
       ]);
 
       expect(exitCode).toBe(0);
-      expect(stdout).toContain("data/results/trials/claude-code-builtin-capability.jsonl");
+      expect(stdout).toContain("data/results/trial-runs/claude-code-builtin-capability.jsonl");
     });
 
     test("regression type with you provider", async () => {
@@ -241,7 +241,7 @@ describe("run-trials.ts", () => {
       ]);
 
       expect(exitCode).toBe(0);
-      expect(stdout).toContain("data/results/trials/codex-you-regression.jsonl");
+      expect(stdout).toContain("data/results/trial-runs/codex-you-regression.jsonl");
     });
 
     test("all agents with capability type", async () => {
@@ -255,7 +255,7 @@ describe("run-trials.ts", () => {
         ]);
 
         expect(exitCode).toBe(0);
-        expect(stdout).toContain(`data/results/trials/${agent}-builtin-capability.jsonl`);
+        expect(stdout).toContain(`data/results/trial-runs/${agent}-builtin-capability.jsonl`);
       }
     });
 
@@ -270,7 +270,7 @@ describe("run-trials.ts", () => {
         ]);
 
         expect(exitCode).toBe(0);
-        expect(stdout).toContain(`data/results/trials/${agent}-builtin-regression.jsonl`);
+        expect(stdout).toContain(`data/results/trial-runs/${agent}-builtin-regression.jsonl`);
       }
     });
   });
@@ -343,7 +343,7 @@ describe("run-trials.ts", () => {
         "--dry-run",
       ]);
 
-      expect(stdout).toContain("-o data/results/trials/droid-builtin.jsonl");
+      expect(stdout).toContain("-o data/results/trial-runs/droid-builtin.jsonl");
     });
 
     test("command includes --progress flag", async () => {
@@ -375,7 +375,7 @@ describe("run-trials.ts", () => {
       expect(stdout).toContain("data/prompts/trials/prompts-you.jsonl");
       expect(stdout).toContain("agent-schemas/codex.json");
       expect(stdout).toContain("-k 12");
-      expect(stdout).toContain("data/results/trials/codex-you-capability.jsonl");
+      expect(stdout).toContain("data/results/trial-runs/codex-you-capability.jsonl");
     });
   });
 });

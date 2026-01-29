@@ -51,83 +51,61 @@ Required keys:
 - `OPENAI_API_KEY` - Codex agent
 - `YOU_API_KEY` - You.com MCP tool
 
-### 3. Generate MCP Prompt Variants
+### 3. Generate Test Prompts
 
-MCP evaluations require special prompt files with metadata. Generate them first:
+Generate test prompts (includes MCP variants automatically):
 
 ```bash
-# Generate MCP variants for all prompt sets
-bun run generate:mcp
-
-# Or regenerate test samples (includes MCP variants automatically)
-bun run sample:test
+bun run sample:test        # 5 prompts for quick testing
+bun run sample:trials      # 30 prompts for pass@k analysis
 ```
 
 ### 4. Run Evaluations
 
-#### Test Workflow (5 prompts, ~5 minutes)
+#### Test Mode (5 prompts, ~5 minutes)
 
 ```bash
-# Run all agents in parallel (8 scenarios: 4 agents × 2 tools)
-bun run run
+bun run run              # All agents, test dataset
+bun run run:test         # Explicit test mode
+```
 
-# Or run specific agent+tool combinations
+#### Full Mode (151 prompts, ~2 hours)
+
+```bash
+bun run run:full         # All agents, full dataset
+```
+
+#### Custom Runs
+
+```bash
+# Specific agent+tool combinations via Docker
 docker compose run --rm -e SEARCH_PROVIDER=builtin claude-code
 docker compose run --rm -e SEARCH_PROVIDER=you gemini
 ```
 
-#### Full Workflow (151 prompts, ~2 hours)
-
-```bash
-# Run all agents with full dataset
-bun run run:full
-```
-
 ### 5. Analyze Results
 
-Compare results using the flexible CLI tool:
+Compare agent performance using npm scripts:
 
 ```bash
-# Default: all agents, test mode, weighted strategy
-bun scripts/compare.ts
-
-# Compare full dataset
-bun scripts/compare.ts --mode full
-
-# Filter by agent or search provider
-bun scripts/compare.ts --agent gemini --agent claude-code
-bun scripts/compare.ts --search-provider builtin
-
-# Use statistical strategy
-bun scripts/compare.ts --strategy statistical
-
-# Combine flags
-bun scripts/compare.ts --mode full --search-provider you --strategy statistical
-
-# Preview configuration
-bun scripts/compare.ts --dry-run
-```
-
-Or use npm shortcuts for common comparisons:
-
-```bash
-# Test data comparisons
-bun run compare:test-weighted       # All agents, both modes
+# Test mode comparisons
+bun run compare                     # Default: test mode, weighted
+bun run compare:test                # Explicit test mode
 bun run compare:test-statistical    # Statistical analysis
-bun run compare:test-builtin        # Builtin only
-bun run compare:test-you            # MCP only
 
-# Flexible CLI shortcuts
-bun run compare                     # Test mode, all agents, weighted
-bun run compare:full                # Full mode, latest run
-bun run compare:statistical         # Test mode, statistical strategy
+# Full mode comparisons
+bun run compare:full                # Full dataset, weighted
+bun run compare:full-statistical    # Full dataset, statistical
+
+# Advanced: Custom filters (direct CLI)
+bun scripts/compare.ts --agent gemini --search-provider you
 ```
 
-View results:
+View comparison results:
 
 ```bash
-cat data/comparison-all-weighted-test.json | jq '.meta, .quality'
-cat data/comparison-all-weighted-test.json | jq '.headToHead.pairwise'
+cat data/comparisons/test-runs/all-weighted.json | jq '.quality'
+cat data/comparisons/runs/*/all-weighted.json | jq '.headToHead.pairwise'
 ```
 
 ## Pass@k Analysis
@@ -135,23 +113,24 @@ cat data/comparison-all-weighted-test.json | jq '.headToHead.pairwise'
 Run multiple trials per prompt to measure agent reliability:
 
 ```bash
-# Default: Droid agent, test set, k=5
-bun run trials
+# Quick start
+bun run trials                      # Default: k=5 trials
+bun run trials:capability           # Capability mode: k=10
+bun run trials:regression           # Regression mode: k=3 (faster)
 
-# Capability exploration (k=10)
-bun run trials:capability
-
-# Regression safety (k=3, faster)
-bun run trials:regression
-
-# Custom: specify agent and k value
+# Custom configuration
 bun run trials -- --agent gemini -k 7
-
-# View metrics
-cat data/results/trials/droid-test.jsonl | jq '{id, passRate, passAtK, passExpK}'
 ```
 
-**Metrics:** `passAtK` = capability (can do task?), `passExpK` = reliability (always succeeds?)
+View pass@k metrics:
+
+```bash
+cat data/results/trials/*.jsonl | jq '{id, passRate, passAtK, passExpK}'
+```
+
+**Metrics:**
+- `passAtK` - Capability (can it do the task at all?)
+- `passExpK` - Reliability (does it always succeed?)
 
 ## Architecture
 
@@ -240,18 +219,11 @@ Prompts are organized by dataset type, with each dataset in its own directory co
 }
 ```
 
-To regenerate test prompts with a new random sample:
+**Regenerate prompts:**
 
 ```bash
 bun run sample:test        # 5 prompts → data/prompts/test/
 bun run sample:trials      # 30 prompts → data/prompts/trials/
-```
-
-Or use the script directly:
-
-```bash
-bun scripts/sample.ts --dir test --count 5
-bun scripts/sample.ts --dir trials --count 30
 ```
 
 All prompts are designed to trigger web search with time-sensitive queries and recent events.
@@ -291,13 +263,9 @@ data/results/
 
 **Versioning:** Each full run is committed with a dated directory. See `MANIFEST.jsonl` for run metadata and commit history.
 
-**Usage:**
+**Compare runs:**
 ```bash
-# Compare latest run (default)
-bun scripts/compare.ts --mode full
-
-# Compare specific historical run
-bun scripts/compare.ts --mode full --run-date 2026-01-24
+bun run compare:full                # Latest full run
 
 # View run history
 cat data/results/MANIFEST.jsonl | jq .
@@ -360,20 +328,15 @@ data/comparisons/runs/            # Full mode comparisons
     └── ...
 ```
 
-### Usage Examples
+### View Comparison Results
 
 ```bash
-# Generate comparison (outputs to versioned directory)
-bun scripts/compare.ts --mode full
+# Quality rankings and performance metrics
+jq '.quality' data/comparisons/runs/*/all-weighted.json
+jq '.performance' data/comparisons/test-runs/all-weighted.json
 
-# View quality rankings
-cat data/comparisons/runs/2026-01-24/all-weighted.json | jq '.quality'
-
-# View performance metrics
-cat data/comparisons/test-runs/all-weighted.json | jq '.performance'
-
-# View head-to-head win rates
-cat data/comparisons/test-runs/all-statistical.json | jq '.headToHead.pairwise'
+# Head-to-head win rates
+jq '.headToHead.pairwise' data/comparisons/test-runs/all-statistical.json
 ```
 
 ## Inline Grader
@@ -451,15 +414,14 @@ See `.claude/skills/web-search-agent-evals/SKILL.md` for detailed guide.
 
 ### Adding MCP Tools
 
-1. **Add to mcp-servers.ts** - Define server configuration with name, URL, auth, and expectedTool
+1. **Add to mcp-servers.ts** - Define server configuration with name, URL, auth, and expectedTools
 2. **Update docker/entrypoint** - Add case to `configureMcp()` function for each agent CLI
 3. **Update .env and .env.example** - Add required API keys
-4. **Generate MCP prompts** - Run `bun scripts/generate-mcp-prompts.ts --mcp-key <new-key>` to create MCP variants
-5. **Sample test prompts** - Run `bun run sample:test` to include new MCP variants in test set
+4. **Sample test prompts** - Run `bun run sample:test` to include new MCP variants
 
 See `.claude/skills/web-search-agent-evals/SKILL.md` for detailed guide.
 
-**Note:** Scripts (`run.ts`, `run-trials.ts`, `sample.ts`) automatically pick up new MCP servers from `mcp-servers.ts`, so no manual updates needed.
+**Note:** All scripts automatically pick up new MCP servers from `mcp-servers.ts`.
 
 ## Troubleshooting
 

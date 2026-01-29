@@ -7,7 +7,7 @@ import type { McpServerKey } from "/eval/mcp-servers.ts";
  * Docker entrypoint for ACP evaluation containers
  *
  * @remarks
- * Configures MCP servers dynamically based on MCP_TOOL environment variable,
+ * Configures MCP servers dynamically based on SEARCH_PROVIDER environment variable,
  * then executes the agent-eval-harness capture command with derived paths.
  *
  * **Environment variables:**

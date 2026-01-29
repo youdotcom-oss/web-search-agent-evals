@@ -15,7 +15,7 @@ This evaluation system runs a matrix comparison: 4 agents × 2 tools = 8 pairing
 
 ```mermaid
 flowchart TD
-    Env[MCP_TOOL & DATASET env vars] --> Entrypoint[docker/entrypoint]
+    Env[SEARCH_PROVIDER & DATASET env vars] --> Entrypoint[docker/entrypoint]
     Entrypoint -->|builtin| SkipMCP[Skip MCP setup]
     Entrypoint -->|you| ConfigMCP[Configure MCP via CLI]
 
@@ -204,7 +204,7 @@ docker/
 ```
 
 The entrypoint script:
-1. Reads `MCP_TOOL` environment variable (`builtin` or `you`)
+1. Reads `SEARCH_PROVIDER` environment variable (`builtin` or `you`)
 2. Reads `DATASET` environment variable (`test` or `full`)
 3. Configures MCP via agent CLI if needed (skips for `builtin`)
 4. Runs `@plaited/agent-eval-harness capture` with appropriate prompts
@@ -222,7 +222,7 @@ Prompts are organized by dataset type, with each dataset in its own directory co
 | `trials/prompts.jsonl` | 30 | Standard | `SEARCH_PROVIDER=builtin` |
 | `trials/prompts-you.jsonl` | 30 | MCP variant | `SEARCH_PROVIDER=you` |
 
-**Test and trials prompts** are randomly sampled from the full dataset. All prompts use unified "Use web search to find:" format. MCP variants add metadata (`mcpServer`, `expectedTools`) without changing prompt text.
+**Test and trials prompts** are randomly sampled from the full dataset. **Builtin prompts** are plain queries. **MCP prompts** add "Use {server-name} and answer\n" prefix and metadata (`mcpServer`, `expectedTools`).
 
 **Metadata structure** (MCP variants only):
 ```json
@@ -440,7 +440,7 @@ See `.claude/skills/web-search-agent-evals/SKILL.md` for detailed guide.
 cat .env | grep API_KEY
 
 # Test inside container
-docker compose run --rm -e MCP_TOOL=you claude-code bash -c "cat ~/.mcp.json"
+docker compose run --rm -e SEARCH_PROVIDER=you claude-code bash -c "cat ~/.mcp.json"
 ```
 
 ### Agent Schema Issues
@@ -509,6 +509,6 @@ See `@AGENTS.md` for development rules and conventions.
 ## Built With
 
 - **[@plaited/agent-eval-harness](https://www.npmjs.com/package/@plaited/agent-eval-harness)** - Trajectory capture framework
-- **[Zod](https://zod.dev)** - TypeScript-first schema validation
+- **[Zod](https://zod.dev)** - TypeScript-first schema validation with runtime type checking (schemas in `scripts/schemas/`)
 - **[Bun](https://bun.sh)** - Fast TypeScript runtime
 - **[Docker](https://www.docker.com)** - Isolated execution

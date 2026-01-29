@@ -88,16 +88,16 @@ bun run trials -- --agent claude-code --search-provider builtin
 # Custom k value
 bun run trials -- -k 7              # All agents/providers, k=7
 
-# View results (multiple files, one per agent-provider combo)
-cat data/results/trials/droid-builtin.jsonl | jq '{id, passRate, passAtK, passExpK}'
-cat data/results/trials/gemini-you.jsonl | jq '.passRate'
+# View results
+cat data/results/trials/2026-01-29/droid/builtin.jsonl | jq '{id, passRate, passAtK, passExpK}'
+cat data/results/trials/*/gemini/you.jsonl | jq '.passRate'
 ```
 
-**Metrics:** 
+**Metrics:**
 - `passAtK` = capability (can do task?), computed as 1 - (1 - p)^k
 - `passExpK` = reliability (always succeeds?), computed as p^k
 
-**Output:** Results written to `data/results/trials/[agent]-[provider].jsonl` (or `*-capability.jsonl` / `*-regression.jsonl` for non-default types)
+**Output:** Results written to `data/results/trials/YYYY-MM-DD/{agent}/{provider}.jsonl` (same nested structure as runs)
 
 See [@agent-eval-harness](../agent-eval-harness@plaited_agent-eval-harness/SKILL.md) skill for detailed trials command documentation.
 

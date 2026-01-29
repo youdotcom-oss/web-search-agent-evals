@@ -132,14 +132,15 @@ bun run trials -- -k 7              # All agents/providers, k=7
 View pass@k metrics:
 
 ```bash
-cat data/results/trials/*.jsonl | jq '{id, passRate, passAtK, passExpK}'
+cat data/results/trials/2026-01-29/*/builtin.jsonl | jq '{id, passRate, passAtK, passExpK}'
+cat data/results/trials/*/droid/builtin.jsonl | jq '.passRate'
 ```
 
 **Metrics:**
 - `passAtK` - Capability (can it do the task at all?)
 - `passExpK` - Reliability (does it always succeed?)
 
-**Output:** Results written to `data/results/trials/[agent]-[provider].jsonl` (or `*-capability.jsonl` / `*-regression.jsonl` for non-default types)
+**Output:** Results written to `data/results/trials/YYYY-MM-DD/{agent}/{provider}.jsonl`
 
 ## Architecture
 

@@ -41,7 +41,7 @@ Deep dive into multi-trial evaluation results to measure agent reliability.
 - Per-prompt trial heatmap (visual pattern inspection)
 - Pass rate distributions
 
-**Data source:** `data/results/trials/{agent}-{mode}.jsonl`
+**Data source:** `data/results/trials/YYYY-MM-DD/{agent}/{provider}.jsonl`
 
 **View/Run:** Same options as comparison.ipynb
 
@@ -238,10 +238,17 @@ df = pd.DataFrame(results)
 AGENT = 'droid'
 PROVIDER = 'builtin'
 TRIAL_TYPE = 'default'  # or 'capability', 'regression'
+RUN_DATE = None  # None for latest, or '2026-01-29' for specific date
 
-# Build filename based on trial type
+# Find latest date if not specified
+trials_dir = DATA_DIR / 'results' / 'trials'
+if RUN_DATE is None:
+    dirs = sorted([d.name for d in trials_dir.iterdir() if d.is_dir() and d.name[0].isdigit()])
+    RUN_DATE = dirs[-1]
+
+# Build filename based on trial type (same structure as runs)
 suffix = '' if TRIAL_TYPE == 'default' else f'-{TRIAL_TYPE}'
-trials_file = DATA_DIR / 'results' / 'trials' / f'{AGENT}-{PROVIDER}{suffix}.jsonl'
+trials_file = trials_dir / RUN_DATE / AGENT / f'{PROVIDER}{suffix}.jsonl'
 
 with open(trials_file) as f:
     trials = [json.loads(line) for line in f]

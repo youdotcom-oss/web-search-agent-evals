@@ -24,9 +24,10 @@
  *
  * ## Output Format
  *
- * Results written to `data/results/trials/`:
+ * Results written to `data/results/trials/YYYY-MM-DD/{agent}/{provider}.jsonl`:
  * ```
- * trials/[agent]-[provider]-[type].jsonl    # Per-agent trial results
+ * trials/2026-01-29/claude-code/builtin.jsonl
+ * trials/2026-01-29/gemini/you.jsonl
  * ```
  *
  * Each record contains:
@@ -44,7 +45,7 @@
  *
  * Usage:
  *   bun scripts/run-trials.ts                              # All agents/providers, k=5
- *   bun scripts/run-trials.ts --type capability            # All agents, k=10
+ *   bun scripts/run-trials.ts --trial-type capability      # All agents, k=10
  *   bun scripts/run-trials.ts --agent gemini               # Single agent, all providers
  *   bun scripts/run-trials.ts --search-provider you        # All agents, MCP only
  *   bun scripts/run-trials.ts -k 7                         # Custom k value
@@ -101,7 +102,7 @@ const parseArgs = (args: string[]): TrialsOptions => {
       }
       searchProviders.push(providerArg as SearchProvider);
       i++;
-    } else if (args[i] === "--type" && i + 1 < args.length) {
+    } else if (args[i] === "--trial-type" && i + 1 < args.length) {
       const typeArg = args[i + 1];
       if (typeArg !== "default" && typeArg !== "capability" && typeArg !== "regression") {
         throw new Error(`Invalid trial type: ${typeArg}. Must be "default", "capability", or "regression"`);
@@ -158,21 +159,6 @@ const getKValue = (trialType: TrialType, override?: number): number => {
 };
 
 /**
- * Get output file path for trials results
- *
- * @param agent - Agent name
- * @param searchProvider - Search provider (builtin or MCP server key)
- * @param trialType - Type of trial
- * @returns Output file path
- *
- * @internal
- */
-const getOutputPath = (agent: Agent, searchProvider: SearchProvider, trialType: TrialType): string => {
-  const suffix = trialType === "default" ? "" : `-${trialType}`;
-  return `/eval/data/results/trials/${agent}-${searchProvider}${suffix}.jsonl`;
-};
-
-/**
  * Get prompt dataset path for trials
  *
  * @param searchProvider - Search provider (builtin or MCP server key)
@@ -211,7 +197,6 @@ const runTrials = (
     const label = `[${scenarioId}/${totalScenarios}] ${agent}-${searchProvider}`;
     const dataset = getPromptPath(searchProvider);
     const schema = `/eval/agent-schemas/${agent}.json`;
-    const outputPath = getOutputPath(agent, searchProvider, trialType);
     const grader = "/eval/scripts/inline-grader.ts";
 
     const startTime = Date.now();
@@ -221,6 +206,7 @@ const runTrials = (
     console.log(`${"=".repeat(80)}\n`);
 
     // Build trials command to run inside Docker container
+    // Note: Output path now determined by entrypoint based on trials mode detection
     const trialsCmd = [
       "bunx",
       "@plaited/agent-eval-harness",
@@ -232,12 +218,15 @@ const runTrials = (
       k.toString(),
       "--grader",
       grader,
-      "-o",
-      outputPath,
       "--progress",
       "--cwd",
       "/workspace",
     ];
+
+    // Add trial type if not default (for entrypoint to detect)
+    if (trialType !== "default") {
+      trialsCmd.push("--trial-type", trialType);
+    }
 
     // Run via Docker compose with environment variables
     const proc = spawn(
@@ -352,11 +341,13 @@ const main = async () => {
 
     if (options.dryRun) {
       console.log("[DRY RUN] Execution plan:");
+      const runDate = new Date().toISOString().split("T")[0];
       for (let i = 0; i < runs.length; i++) {
         const run = runs[i];
         if (!run) continue;
         const dataset = getPromptPath(run.searchProvider);
-        const outputPath = getOutputPath(run.agent, run.searchProvider, options.trialType);
+        const typeSuffix = options.trialType === "default" ? "" : `-${options.trialType}`;
+        const outputPath = `/eval/data/results/trials/${runDate}/${run.agent}/${run.searchProvider}${typeSuffix}.jsonl`;
         console.log(`  [${i + 1}/${runs.length}] ${run.agent}-${run.searchProvider}:`);
         console.log(`    Dataset: ${dataset}`);
         console.log(`    Output: ${outputPath}`);

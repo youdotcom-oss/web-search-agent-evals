@@ -8,6 +8,9 @@
     "check:write": "bun run format && bun run lint:fix && bun run format:package",
     "clean": "rm -rf data/results/*/*.jsonl",
     "compare": "bun scripts/compare.ts",
+    "compare-trials": "bun scripts/compare-trials.ts",
+    "compare-trials:capability": "bun scripts/compare-trials.ts --trial-type capability",
+    "compare-trials:statistical": "bun scripts/compare-trials.ts --strategy statistical",
     "compare:full": "bun scripts/compare.ts --mode full",
     "compare:full-statistical": "bun scripts/compare.ts --mode full --strategy statistical",
     "compare:test": "bun scripts/compare.ts --mode test",
@@ -26,8 +29,8 @@
     "sample:trials": "bun run generate:mcp && bun scripts/sample.ts --dir trials --count 30",
     "test": "bun test",
     "trials": "bun scripts/run-trials.ts",
-    "trials:capability": "bun scripts/run-trials.ts --type capability",
-    "trials:regression": "bun scripts/run-trials.ts --type regression",
+    "trials:capability": "bun scripts/run-trials.ts --trial-type capability",
+    "trials:regression": "bun scripts/run-trials.ts --trial-type regression",
     "typecheck": "tsc --noEmit"
   },
   "lint-staged": {
@@ -42,7 +45,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",
     "@google/genai": "^1.38.0",
-    "@plaited/agent-eval-harness": "^0.7.0"
+    "@plaited/agent-eval-harness": "^0.8.0"
   },
   "devDependencies": {
     "@biomejs/biome": "2.3.13",

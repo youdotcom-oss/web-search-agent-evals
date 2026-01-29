@@ -41,24 +41,24 @@ describe("run-trials.ts", () => {
       expect(stdout).toContain("4 trial scenarios"); // 4 agents × you
     });
 
-    test("accepts --type capability", async () => {
-      const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--type", "capability", "--dry-run"]);
+    test("accepts --trial-type capability", async () => {
+      const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--trial-type", "capability", "--dry-run"]);
 
       expect(exitCode).toBe(0);
       expect(stdout).toContain("Trial type: capability");
       expect(stdout).toContain("(k=10)");
     });
 
-    test("accepts --type regression", async () => {
-      const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--type", "regression", "--dry-run"]);
+    test("accepts --trial-type regression", async () => {
+      const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--trial-type", "regression", "--dry-run"]);
 
       expect(exitCode).toBe(0);
       expect(stdout).toContain("Trial type: regression");
       expect(stdout).toContain("(k=3)");
     });
 
-    test("accepts --type default", async () => {
-      const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--type", "default", "--dry-run"]);
+    test("accepts --trial-type default", async () => {
+      const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--trial-type", "default", "--dry-run"]);
 
       expect(exitCode).toBe(0);
       expect(stdout).toContain("Trial type: default");
@@ -78,7 +78,7 @@ describe("run-trials.ts", () => {
         "codex",
         "--search-provider",
         "you",
-        "--type",
+        "--trial-type",
         "capability",
         "-k",
         "15",
@@ -112,7 +112,7 @@ describe("run-trials.ts", () => {
     });
 
     test("rejects invalid trial type", async () => {
-      const { stderr, exitCode } = await runScript(SCRIPT_PATH, ["--type", "invalid-type"]);
+      const { stderr, exitCode } = await runScript(SCRIPT_PATH, ["--trial-type", "invalid-type"]);
 
       expect(exitCode).toBe(1);
       expect(stderr).toContain("Invalid trial type: invalid-type");
@@ -146,28 +146,34 @@ describe("run-trials.ts", () => {
 
   describe("getKValue - k value logic", () => {
     test("default type returns k=5", async () => {
-      const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--type", "default", "--dry-run"]);
+      const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--trial-type", "default", "--dry-run"]);
 
       expect(exitCode).toBe(0);
       expect(stdout).toContain("(k=5)");
     });
 
     test("capability type returns k=10", async () => {
-      const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--type", "capability", "--dry-run"]);
+      const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--trial-type", "capability", "--dry-run"]);
 
       expect(exitCode).toBe(0);
       expect(stdout).toContain("(k=10)");
     });
 
     test("regression type returns k=3", async () => {
-      const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--type", "regression", "--dry-run"]);
+      const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--trial-type", "regression", "--dry-run"]);
 
       expect(exitCode).toBe(0);
       expect(stdout).toContain("(k=3)");
     });
 
     test("custom -k value overrides type default", async () => {
-      const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--type", "capability", "-k", "12", "--dry-run"]);
+      const { stdout, exitCode } = await runScript(SCRIPT_PATH, [
+        "--trial-type",
+        "capability",
+        "-k",
+        "12",
+        "--dry-run",
+      ]);
 
       expect(exitCode).toBe(0);
       expect(stdout).toContain("(k=12)");
@@ -175,27 +181,28 @@ describe("run-trials.ts", () => {
     });
   });
 
-  describe("getOutputPath - output file naming", () => {
+  describe("output path - dated folder structure", () => {
     test("default type omits suffix", async () => {
-      const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--type", "default", "--dry-run"]);
+      const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--trial-type", "default", "--dry-run"]);
 
       expect(exitCode).toBe(0);
-      expect(stdout).toContain("claude-code-builtin.jsonl");
-      expect(stdout).not.toContain("claude-code-builtin-default.jsonl");
+      // Check for dated path structure: trials/YYYY-MM-DD/agent/provider.jsonl
+      expect(stdout).toMatch(/trials\/\d{4}-\d{2}-\d{2}\/claude-code\/builtin\.jsonl/);
+      expect(stdout).not.toContain("builtin-default.jsonl");
     });
 
     test("capability type adds suffix", async () => {
-      const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--type", "capability", "--dry-run"]);
+      const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--trial-type", "capability", "--dry-run"]);
 
       expect(exitCode).toBe(0);
-      expect(stdout).toContain("claude-code-builtin-capability.jsonl");
+      expect(stdout).toMatch(/trials\/\d{4}-\d{2}-\d{2}\/claude-code\/builtin-capability\.jsonl/);
     });
 
     test("regression type adds suffix", async () => {
-      const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--type", "regression", "--dry-run"]);
+      const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--trial-type", "regression", "--dry-run"]);
 
       expect(exitCode).toBe(0);
-      expect(stdout).toContain("claude-code-builtin-regression.jsonl");
+      expect(stdout).toMatch(/trials\/\d{4}-\d{2}-\d{2}\/claude-code\/builtin-regression\.jsonl/);
     });
   });
 
@@ -230,11 +237,12 @@ describe("run-trials.ts", () => {
       expect(stdout).toContain("Dataset: /eval/data/prompts/trials/prompts-you.jsonl");
     });
 
-    test("shows correct output paths", async () => {
+    test("shows correct output paths with date", async () => {
       const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--dry-run"]);
 
       expect(exitCode).toBe(0);
       expect(stdout).toContain("Output: /eval/data/results/trials/");
+      expect(stdout).toMatch(/trials\/\d{4}-\d{2}-\d{2}\//); // Verify date format
       expect(stdout).toContain(".jsonl");
     });
   });

@@ -5,15 +5,19 @@
  *
  * @remarks
  * Prompts user for:
- * - Mode: test-runs or specific dated run
- * - Agent: claude-code, gemini, droid, codex
- * - Search provider: builtin, you, etc.
+ * - Mode: test-runs or specific dated run (with list of available dates)
+ * - Agents: multi-select via space-separated numbers or "all"
+ * - Search providers: multi-select via space-separated numbers or "all"
  * - Sample count: number of failures to sample (default 5)
+ *
+ * Supports batch generation: selecting multiple agents and providers generates
+ * all combinations (e.g., 2 agents × 2 providers = 4 reports).
  *
  * Cleans calibration folder before generating new reports.
  *
  * Usage:
  *   bun scripts/calibrate.ts
+ *   bun run calibrate
  *
  * @public
  */
@@ -184,40 +188,58 @@ const main = async () => {
     prefix = selectedDate;
   }
 
-  // Step 2: Choose agent
-  console.log("\nSelect agent:");
+  // Step 2: Choose agents (multi-select)
+  console.log("\nSelect agents (space-separated numbers, or 'all'):");
   ALL_AGENTS.forEach((agent, i) => {
     console.log(`  ${i + 1}. ${agent}`);
   });
 
-  const agentChoice = await prompt(`\nEnter choice (1-${ALL_AGENTS.length}) [1]: `);
-  const agentIndex = agentChoice ? Number.parseInt(agentChoice, 10) - 1 : 0;
+  const agentChoice = await prompt(`\nEnter choices (e.g., "1 3" or "all") [all]: `);
+  let selectedAgents: Agent[];
 
-  if (agentIndex < 0 || agentIndex >= ALL_AGENTS.length) {
-    console.error("❌ Invalid choice");
-    process.exit(1);
+  if (!agentChoice || agentChoice === "all") {
+    selectedAgents = [...ALL_AGENTS];
+  } else {
+    const indices = agentChoice
+      .split(/\s+/)
+      .map((s) => Number.parseInt(s, 10) - 1)
+      .filter((i) => i >= 0 && i < ALL_AGENTS.length);
+
+    if (indices.length === 0) {
+      console.error("❌ Invalid choices");
+      process.exit(1);
+    }
+
+    selectedAgents = indices.map((i) => ALL_AGENTS[i] as Agent);
   }
 
-  const agent = ALL_AGENTS[agentIndex];
-
-  // Step 3: Choose search provider
+  // Step 3: Choose search providers (multi-select)
   const mcpKeys = Object.keys(MCP_SERVERS) as McpServerKey[];
   const allProviders: SearchProvider[] = ["builtin", ...mcpKeys];
 
-  console.log("\nSelect search provider:");
+  console.log("\nSelect search providers (space-separated numbers, or 'all'):");
   allProviders.forEach((provider, i) => {
     console.log(`  ${i + 1}. ${provider}`);
   });
 
-  const providerChoice = await prompt(`\nEnter choice (1-${allProviders.length}) [1]: `);
-  const providerIndex = providerChoice ? Number.parseInt(providerChoice, 10) - 1 : 0;
+  const providerChoice = await prompt(`\nEnter choices (e.g., "1 2" or "all") [all]: `);
+  let selectedProviders: SearchProvider[];
 
-  if (providerIndex < 0 || providerIndex >= allProviders.length) {
-    console.error("❌ Invalid choice");
-    process.exit(1);
+  if (!providerChoice || providerChoice === "all") {
+    selectedProviders = [...allProviders];
+  } else {
+    const indices = providerChoice
+      .split(/\s+/)
+      .map((s) => Number.parseInt(s, 10) - 1)
+      .filter((i) => i >= 0 && i < allProviders.length);
+
+    if (indices.length === 0) {
+      console.error("❌ Invalid choices");
+      process.exit(1);
+    }
+
+    selectedProviders = indices.map((i) => allProviders[i] as SearchProvider);
   }
-
-  const searchProvider = allProviders[providerIndex];
 
   // Step 4: Choose sample count
   const sampleInput = await prompt("\nNumber of samples [5]: ");
@@ -228,25 +250,60 @@ const main = async () => {
     process.exit(1);
   }
 
-  // Build paths
-  const inputFile = join(process.cwd(), baseDir, agent, `${searchProvider}.jsonl`);
-  const outputFile = join(process.cwd(), "data", "calibration", `${prefix}-${agent}-${searchProvider}.md`);
-
-  // Check if input file exists
-  if (!(await Bun.file(inputFile).exists())) {
-    console.error(`❌ Input file not found: ${inputFile}`);
-    process.exit(1);
+  // Build combinations
+  const combinations: Array<{ agent: Agent; provider: SearchProvider }> = [];
+  for (const agent of selectedAgents) {
+    for (const provider of selectedProviders) {
+      combinations.push({ agent, provider });
+    }
   }
 
-  // Run calibration
-  const exitCode = await runCalibrate(inputFile, outputFile, sampleCount);
+  console.log(`\n📊 Will generate ${combinations.length} calibration report(s):\n`);
+  combinations.forEach(({ agent, provider }) => {
+    console.log(`   - ${agent} with ${provider}`);
+  });
 
-  if (exitCode === 0) {
-    console.log(`\n✅ Calibration complete!`);
-    console.log(`📄 Report saved to: ${outputFile}`);
-  } else {
-    console.error(`\n❌ Calibration failed with exit code ${exitCode}`);
-    process.exit(exitCode);
+  const confirm = await prompt("\nProceed? (y/n) [y]: ");
+  if (confirm && confirm.toLowerCase() !== "y" && confirm !== "") {
+    console.log("❌ Cancelled");
+    process.exit(0);
+  }
+
+  // Run calibrations
+  let successCount = 0;
+  let failCount = 0;
+
+  for (const { agent, provider } of combinations) {
+    const inputFile = join(process.cwd(), baseDir, agent, `${provider}.jsonl`);
+    const outputFile = join(process.cwd(), "data", "calibration", `${prefix}-${agent}-${provider}.md`);
+
+    // Check if input file exists
+    if (!(await Bun.file(inputFile).exists())) {
+      console.log(`\n⚠️  Skipping ${agent}-${provider}: input file not found`);
+      failCount++;
+      continue;
+    }
+
+    // Run calibration
+    const exitCode = await runCalibrate(inputFile, outputFile, sampleCount);
+
+    if (exitCode === 0) {
+      successCount++;
+    } else {
+      failCount++;
+    }
+  }
+
+  // Summary
+  console.log(`\n${"=".repeat(80)}`);
+  console.log("CALIBRATION SUMMARY");
+  console.log("=".repeat(80));
+  console.log(`✅ Success: ${successCount}/${combinations.length}`);
+  console.log(`❌ Failed:  ${failCount}/${combinations.length}`);
+  console.log("=".repeat(80));
+
+  if (failCount > 0) {
+    process.exit(1);
   }
 };
 

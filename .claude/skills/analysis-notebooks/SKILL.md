@@ -92,7 +92,8 @@ RUN_DATE = None      # For full mode: '2026-01-24' or None for latest
 **trials.ipynb:**
 ```python
 AGENT = 'droid'      # Options: 'claude-code', 'gemini', 'droid', 'codex'
-MODE = 'test'        # Options: 'test', 'trials', 'full'
+PROVIDER = 'builtin' # Options: 'builtin', 'you' (or other MCP server keys)
+TRIAL_TYPE = 'default'  # Options: 'default', 'capability', 'regression'
 ```
 
 ## Data Requirements
@@ -116,11 +117,16 @@ bun run compare:full-statistical
 Requires trials data to exist:
 
 ```bash
-# Run trials first
-bun run trials                                  # Default: droid, test, k=5
-bun run trials -- --agent gemini --mode trials -k 10
+# Run trials first (all agents × all providers)
+bun run trials                                  # All agents/providers, k=5
+bun run trials:capability                       # All agents/providers, k=10
 
-# Output: data/results/trials/{agent}-{mode}.jsonl
+# Or filter to specific combinations
+bun run trials -- --agent gemini                # Single agent, all providers
+bun run trials -- --search-provider you         # All agents, MCP only
+
+# Output: data/results/trials/{agent}-{provider}.jsonl
+# e.g., droid-builtin.jsonl, gemini-you.jsonl, etc.
 ```
 
 ## Creating Custom Notebooks
@@ -230,9 +236,12 @@ df = pd.DataFrame(results)
 **For trials analysis:**
 ```python
 AGENT = 'droid'
-MODE = 'test'
+PROVIDER = 'builtin'
+TRIAL_TYPE = 'default'  # or 'capability', 'regression'
 
-trials_file = DATA_DIR / 'results' / 'trials' / f'{AGENT}-{MODE}.jsonl'
+# Build filename based on trial type
+suffix = '' if TRIAL_TYPE == 'default' else f'-{TRIAL_TYPE}'
+trials_file = DATA_DIR / 'results' / 'trials' / f'{AGENT}-{PROVIDER}{suffix}.jsonl'
 
 with open(trials_file) as f:
     trials = [json.loads(line) for line in f]

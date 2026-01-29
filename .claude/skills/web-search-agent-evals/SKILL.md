@@ -72,21 +72,32 @@ cat data/comparisons/runs/2026-01-24/all-weighted.json | jq '.headToHead.pairwis
 
 ### Pass@k Trials
 
-Run multiple trials per prompt to measure reliability:
+Run multiple trials per prompt across all agents and search providers to measure reliability:
 
 ```bash
-bun run trials              # Default: Droid, test set, k=5
-bun run trials:capability   # k=10 for capability exploration
-bun run trials:regression   # k=3 for faster regression checks
+# Run all agents × all providers (8 combinations in parallel)
+bun run trials                      # All agents/providers, k=5 (default)
+bun run trials:capability           # All agents/providers, k=10
+bun run trials:regression           # All agents/providers, k=3 (faster)
 
-# Custom agent and k value
-bun run trials -- --agent gemini -k 7 --mode full
+# Filter to specific agents or providers
+bun run trials -- --agent gemini                    # Single agent, all providers
+bun run trials -- --search-provider you             # All agents, MCP only
+bun run trials -- --agent claude-code --search-provider builtin
 
-# View results
-cat data/results/trials/droid-test.jsonl | jq '{id, passRate, passAtK, passExpK}'
+# Custom k value
+bun run trials -- -k 7              # All agents/providers, k=7
+
+# View results (multiple files, one per agent-provider combo)
+cat data/results/trials/droid-builtin.jsonl | jq '{id, passRate, passAtK, passExpK}'
+cat data/results/trials/gemini-you.jsonl | jq '.passRate'
 ```
 
-**Metrics:** `passAtK` = capability (can do task?), `passExpK` = reliability (always succeeds?)
+**Metrics:** 
+- `passAtK` = capability (can do task?), computed as 1 - (1 - p)^k
+- `passExpK` = reliability (always succeeds?), computed as p^k
+
+**Output:** Results written to `data/results/trials/[agent]-[provider].jsonl` (or `*-capability.jsonl` / `*-regression.jsonl` for non-default types)
 
 See [@agent-eval-harness](../agent-eval-harness@plaited_agent-eval-harness/SKILL.md) skill for detailed trials command documentation.
 

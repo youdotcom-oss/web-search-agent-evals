@@ -61,6 +61,11 @@ jobs:
             REPO: ${{ github.repository }}
             PR NUMBER: ${{ github.event.pull_request.number }}
 
+            Before reviewing, gather existing PR feedback:
+            - `gh pr view ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --json comments,reviews,reviewThreads`
+
+            Note: Security alerts (Dependabot/code scanning) cannot be accessed with the default GitHub Actions token.
+
             Please review this pull request and provide feedback on:
             - Code quality and best practices
             - Potential bugs or issues

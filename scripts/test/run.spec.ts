@@ -96,7 +96,7 @@ describe("run.ts", () => {
 
       expect(exitCode).toBe(1);
       expect(stderr).toContain("Invalid search provider: invalid");
-      expect(stderr).toContain('Must be "builtin" or "you"');
+      expect(stderr).toContain("Must be one of: builtin, you");
     });
   });
 

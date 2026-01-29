@@ -6,12 +6,12 @@ const SCRIPT_PATH = join(import.meta.dir, "..", "run-trials.ts");
 
 describe("run-trials.ts", () => {
   describe("parseArgs - valid inputs", () => {
-    test("uses defaults: droid agent, test mode, default type", async () => {
+    test("uses defaults: droid agent, builtin provider, default type", async () => {
       const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--dry-run"]);
 
       expect(exitCode).toBe(0);
       expect(stdout).toContain("Agent: droid");
-      expect(stdout).toContain("Mode: test");
+      expect(stdout).toContain("Search provider: builtin");
       expect(stdout).toContain("Trial type: default");
       expect(stdout).toContain("k: 5");
     });
@@ -23,18 +23,18 @@ describe("run-trials.ts", () => {
       expect(stdout).toContain("Agent: gemini");
     });
 
-    test("accepts --mode full", async () => {
-      const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--mode", "full", "--dry-run"]);
+    test("accepts --search-provider builtin", async () => {
+      const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--search-provider", "builtin", "--dry-run"]);
 
       expect(exitCode).toBe(0);
-      expect(stdout).toContain("Mode: full");
+      expect(stdout).toContain("Search provider: builtin");
     });
 
-    test("accepts --mode test", async () => {
-      const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--mode", "test", "--dry-run"]);
+    test("accepts --search-provider you", async () => {
+      const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--search-provider", "you", "--dry-run"]);
 
       expect(exitCode).toBe(0);
-      expect(stdout).toContain("Mode: test");
+      expect(stdout).toContain("Search provider: you");
     });
 
     test("accepts --type capability", async () => {
@@ -72,8 +72,8 @@ describe("run-trials.ts", () => {
       const { stdout, exitCode } = await runScript(SCRIPT_PATH, [
         "--agent",
         "codex",
-        "--mode",
-        "full",
+        "--search-provider",
+        "you",
         "--type",
         "capability",
         "-k",
@@ -83,7 +83,7 @@ describe("run-trials.ts", () => {
 
       expect(exitCode).toBe(0);
       expect(stdout).toContain("Agent: codex");
-      expect(stdout).toContain("Mode: full");
+      expect(stdout).toContain("Search provider: you");
       expect(stdout).toContain("Trial type: capability");
       expect(stdout).toContain("k: 15");
     });
@@ -98,12 +98,12 @@ describe("run-trials.ts", () => {
       expect(stderr).toContain("Must be one of:");
     });
 
-    test("rejects invalid mode", async () => {
-      const { stderr, exitCode } = await runScript(SCRIPT_PATH, ["--mode", "invalid"]);
+    test("rejects invalid search provider", async () => {
+      const { stderr, exitCode } = await runScript(SCRIPT_PATH, ["--search-provider", "invalid"]);
 
       expect(exitCode).toBe(1);
-      expect(stderr).toContain("Invalid mode: invalid");
-      expect(stderr).toContain('Must be "test" or "full"');
+      expect(stderr).toContain("Invalid search provider: invalid");
+      expect(stderr).toContain("Must be one of: builtin, you");
     });
 
     test("rejects invalid trial type", async () => {
@@ -184,64 +184,64 @@ describe("run-trials.ts", () => {
   });
 
   describe("getOutputPath - output path generation", () => {
-    test("default type, test mode", async () => {
+    test("default type with builtin provider", async () => {
       const { stdout, exitCode } = await runScript(SCRIPT_PATH, [
         "--agent",
         "droid",
         "--type",
         "default",
-        "--mode",
-        "test",
+        "--search-provider",
+        "builtin",
         "--dry-run",
       ]);
 
       expect(exitCode).toBe(0);
-      expect(stdout).toContain("data/results/trials/droid-test.jsonl");
+      expect(stdout).toContain("data/results/trials/droid-builtin.jsonl");
     });
 
-    test("default type, full mode", async () => {
+    test("default type with you provider", async () => {
       const { stdout, exitCode } = await runScript(SCRIPT_PATH, [
         "--agent",
         "gemini",
         "--type",
         "default",
-        "--mode",
-        "full",
+        "--search-provider",
+        "you",
         "--dry-run",
       ]);
 
       expect(exitCode).toBe(0);
-      expect(stdout).toContain("data/results/trials/gemini-full.jsonl");
+      expect(stdout).toContain("data/results/trials/gemini-you.jsonl");
     });
 
-    test("capability type (mode ignored)", async () => {
+    test("capability type with builtin provider", async () => {
       const { stdout, exitCode } = await runScript(SCRIPT_PATH, [
         "--agent",
         "claude-code",
         "--type",
         "capability",
-        "--mode",
-        "test",
+        "--search-provider",
+        "builtin",
         "--dry-run",
       ]);
 
       expect(exitCode).toBe(0);
-      expect(stdout).toContain("data/results/trials/claude-code-capability.jsonl");
+      expect(stdout).toContain("data/results/trials/claude-code-builtin-capability.jsonl");
     });
 
-    test("regression type (mode ignored)", async () => {
+    test("regression type with you provider", async () => {
       const { stdout, exitCode } = await runScript(SCRIPT_PATH, [
         "--agent",
         "codex",
         "--type",
         "regression",
-        "--mode",
-        "full",
+        "--search-provider",
+        "you",
         "--dry-run",
       ]);
 
       expect(exitCode).toBe(0);
-      expect(stdout).toContain("data/results/trials/codex-regression.jsonl");
+      expect(stdout).toContain("data/results/trials/codex-you-regression.jsonl");
     });
 
     test("all agents with capability type", async () => {
@@ -255,7 +255,7 @@ describe("run-trials.ts", () => {
         ]);
 
         expect(exitCode).toBe(0);
-        expect(stdout).toContain(`data/results/trials/${agent}-capability.jsonl`);
+        expect(stdout).toContain(`data/results/trials/${agent}-builtin-capability.jsonl`);
       }
     });
 
@@ -270,7 +270,7 @@ describe("run-trials.ts", () => {
         ]);
 
         expect(exitCode).toBe(0);
-        expect(stdout).toContain(`data/results/trials/${agent}-regression.jsonl`);
+        expect(stdout).toContain(`data/results/trials/${agent}-builtin-regression.jsonl`);
       }
     });
   });
@@ -288,11 +288,11 @@ describe("run-trials.ts", () => {
       expect(stdout).toContain("[DRY RUN]");
     });
 
-    test("shows agent, mode, trial type, k value", async () => {
+    test("shows agent, search provider, trial type, k value", async () => {
       const { stdout } = await runScript(SCRIPT_PATH, ["--dry-run"]);
 
       expect(stdout).toContain("Agent:");
-      expect(stdout).toContain("Mode:");
+      expect(stdout).toContain("Search provider:");
       expect(stdout).toContain("Trial type:");
       expect(stdout).toContain("k:");
     });
@@ -304,16 +304,16 @@ describe("run-trials.ts", () => {
       expect(stdout).toContain("bunx @plaited/agent-eval-harness trials");
     });
 
-    test("command includes correct dataset path for test mode", async () => {
-      const { stdout } = await runScript(SCRIPT_PATH, ["--mode", "test", "--dry-run"]);
+    test("command includes correct dataset path for builtin provider", async () => {
+      const { stdout } = await runScript(SCRIPT_PATH, ["--search-provider", "builtin", "--dry-run"]);
 
-      expect(stdout).toContain("data/prompts/test.jsonl");
+      expect(stdout).toContain("data/prompts/trials/prompts.jsonl");
     });
 
-    test("command includes correct dataset path for full mode", async () => {
-      const { stdout } = await runScript(SCRIPT_PATH, ["--mode", "full", "--dry-run"]);
+    test("command includes correct dataset path for you provider", async () => {
+      const { stdout } = await runScript(SCRIPT_PATH, ["--search-provider", "you", "--dry-run"]);
 
-      expect(stdout).toContain("data/prompts/full.jsonl");
+      expect(stdout).toContain("data/prompts/trials/prompts-you.jsonl");
     });
 
     test("command includes correct schema path", async () => {
@@ -335,9 +335,15 @@ describe("run-trials.ts", () => {
     });
 
     test("command includes output path", async () => {
-      const { stdout } = await runScript(SCRIPT_PATH, ["--agent", "droid", "--mode", "test", "--dry-run"]);
+      const { stdout } = await runScript(SCRIPT_PATH, [
+        "--agent",
+        "droid",
+        "--search-provider",
+        "builtin",
+        "--dry-run",
+      ]);
 
-      expect(stdout).toContain("-o data/results/trials/droid-test.jsonl");
+      expect(stdout).toContain("-o data/results/trials/droid-builtin.jsonl");
     });
 
     test("command includes --progress flag", async () => {
@@ -350,8 +356,8 @@ describe("run-trials.ts", () => {
       const { stdout, exitCode } = await runScript(SCRIPT_PATH, [
         "--agent",
         "codex",
-        "--mode",
-        "full",
+        "--search-provider",
+        "you",
         "--type",
         "capability",
         "-k",
@@ -362,14 +368,14 @@ describe("run-trials.ts", () => {
       expect(exitCode).toBe(0);
       expect(stdout).toContain("[DRY RUN]");
       expect(stdout).toContain("Agent: codex");
-      expect(stdout).toContain("Mode: full");
+      expect(stdout).toContain("Search provider: you");
       expect(stdout).toContain("Trial type: capability");
       expect(stdout).toContain("k: 12");
       expect(stdout).toContain("bunx @plaited/agent-eval-harness trials");
-      expect(stdout).toContain("data/prompts/full.jsonl");
+      expect(stdout).toContain("data/prompts/trials/prompts-you.jsonl");
       expect(stdout).toContain("agent-schemas/codex.json");
       expect(stdout).toContain("-k 12");
-      expect(stdout).toContain("data/results/trials/codex-capability.jsonl");
+      expect(stdout).toContain("data/results/trials/codex-you-capability.jsonl");
     });
   });
 });

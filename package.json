@@ -12,7 +12,6 @@
     "compare:full-statistical": "bun scripts/compare.ts --mode full --strategy statistical",
     "compare:test": "bun scripts/compare.ts --mode test",
     "compare:test-statistical": "bun scripts/compare.ts --mode test --strategy statistical",
-    "finalize-run": "bun scripts/finalize-run.ts",
     "format": "biome format --write",
     "format:check": "biome format",
     "format:package": "format-package --write",

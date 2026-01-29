@@ -145,7 +145,7 @@ jobs:
           path: data/results/
           merge-multiple: true
 
-      - name: Create results branch and commit (three-step workflow)
+      - name: Create results branch and commit
         id: create-results-branch
         run: |
           RUN_DATE=$(date +%Y-%m-%d)
@@ -155,7 +155,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git checkout -b "$BRANCH_NAME"
 
-          # Step 1: Commit raw results
+          # Commit raw results
           git add data/results/runs/
           git commit -m "feat: add ${RUN_DATE} evaluation results
 
@@ -167,13 +167,6 @@ jobs:
           - Prompts: 1,254 web search queries
 
           Results ready for downstream data science analysis."
-
-          # Step 2: Run finalize-run to create manifest
-          bun run finalize-run "${RUN_DATE}"
-
-          # Step 3: Commit manifest
-          git add data/results/latest.json data/results/MANIFEST.jsonl
-          git commit -m "chore: update manifest for ${RUN_DATE} run [skip ci]"
 
           git push -u origin "$BRANCH_NAME"
 
@@ -198,8 +191,6 @@ jobs:
             - **Trigger:** ${{ github.event_name }}
 
             **Results:**
-            - `data/results/runs/${{ steps.create-results-branch.outputs.run_date }}/` - Raw results
-            - `data/results/MANIFEST.jsonl` - Run metadata
-            - `data/results/latest.json` - Pointer to this run
+            - `data/results/runs/${{ steps.create-results-branch.outputs.run_date }}/` - Raw results (4 agents × 2 tools)
 
             Ready for downstream data science analysis.

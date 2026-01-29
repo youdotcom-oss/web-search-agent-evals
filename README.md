@@ -171,7 +171,6 @@ To add new MCP tools, see `.claude/skills/web-search-agent-evals/SKILL.md`.
 | `calibrate.ts` | Interactive grader calibration tool |
 | `generate-mcp-prompts.ts` | Generate MCP variant prompts with metadata |
 | `sample.ts` | Sample prompts for test/trials datasets |
-| `finalize-run.ts` | Archive full runs with dated snapshots |
 
 See "Analyze Results" in Quick Start for comparison usage examples.
 
@@ -248,27 +247,22 @@ data/results/test-runs/
 Dated snapshots for long-term analysis:
 ```
 data/results/
-├── runs/
-│   ├── 2026-01-24/
-│   │   ├── claude-code/
-│   │   │   ├── builtin.jsonl
-│   │   │   └── you.jsonl
-│   │   ├── gemini/
-│   │   ├── droid/
-│   │   └── codex/
-│   └── 2026-02-15/
-├── latest.json           # Pointer to most recent run
-└── MANIFEST.jsonl        # Run metadata
+└── runs/
+    ├── 2026-01-24/
+    │   ├── claude-code/
+    │   │   ├── builtin.jsonl
+    │   │   └── you.jsonl
+    │   ├── gemini/
+    │   ├── droid/
+    │   └── codex/
+    └── 2026-02-15/
 ```
 
-**Versioning:** Each full run is committed with a dated directory. See `MANIFEST.jsonl` for run metadata and commit history.
+**Versioning:** Each full run is committed with a dated directory.
 
 **Compare runs:**
 ```bash
 bun run compare:full                # Latest full run
-
-# View run history
-cat data/results/MANIFEST.jsonl | jq .
 ```
 
 Each result includes full trajectory (messages, tool calls, timing, token usage).
@@ -474,8 +468,7 @@ evals/
 │   ├── inline-grader.ts    # Hybrid grader
 │   ├── calibrate.ts        # Grader calibration tool
 │   ├── generate-mcp-prompts.ts  # MCP variant generator
-│   ├── sample.ts           # Prompt sampler
-│   └── finalize-run.ts     # Run archiver
+│   └── sample.ts           # Prompt sampler
 │
 ├── docker/                 # Container infrastructure
 │   ├── base.Dockerfile

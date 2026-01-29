@@ -50,10 +50,9 @@
  *
  * ## Result Path Convention
  *
- * - **Test mode**: `data/results/test/results-[agent]-[provider].jsonl`
- * - **Full mode**: `data/results/full/results-[agent]-[provider].jsonl`
- * - **Dated runs**: `data/results/runs/[date]/results-[agent]-[provider].jsonl`
- * - **Fixtures**: `[fixture-dir]/results-[agent]-[provider].jsonl`
+ * - **Test mode**: `data/results/test-runs/[agent]/[provider].jsonl`
+ * - **Full mode**: `data/results/runs/[date]/[agent]/[provider].jsonl`
+ * - **Fixtures**: `[fixture-dir]/results/runs/[date]/[agent]/[provider].jsonl`
  *
  * Usage:
  *   bun scripts/compare.ts --mode test                              # Compare test results
@@ -151,12 +150,18 @@ const parseArgs = (args: string[]): CompareOptions => {
 
 const getLatestRunPath = async (fixtureDir?: string): Promise<string> => {
   const dataDir = fixtureDir || "data";
-  const latestFile = Bun.file(`${dataDir}/results/latest.json`);
-  if (await latestFile.exists()) {
-    const latest = await latestFile.json();
-    return latest.path;
+  const runsDir = `${dataDir}/results/runs`;
+
+  // Scan runs directory for dated folders
+  const dirs = await Array.fromAsync(new Bun.Glob("*").scan({ cwd: runsDir, onlyFiles: false }));
+
+  if (dirs.length === 0) {
+    throw new Error(`No runs found in ${runsDir}`);
   }
-  throw new Error("No latest run found. Run finalize-run first.");
+
+  // Sort by date (YYYY-MM-DD format sorts lexicographically) and take the latest
+  const latestDate = dirs.sort().reverse()[0];
+  return `runs/${latestDate}`;
 };
 
 const buildResultPath = async ({

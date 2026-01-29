@@ -158,27 +158,21 @@ Written to `data/results/test-runs/<agent>/<searchProvider>.jsonl` for quick dev
 ### Full Run Results (Historical Archive)
 Stored in dated directories: `data/results/runs/YYYY-MM-DD/<agent>/<searchProvider>.jsonl`
 
-**Latest run pointer:** `data/results/latest.json` points to most recent full run.
-
 **Versioning workflow:**
 1. Run full evaluation: `bun run run:full`
-2. Finalize run metadata: `bun run finalize-run`
-3. Commit results: `git add data/results/ && git commit -m "feat: full evaluation run YYYY-MM-DD"`
+2. Commit results: `git add data/results/ && git commit -m "feat: full evaluation run YYYY-MM-DD"`
 
 **Directory structure:**
 - Test mode: `test-runs/<agent>/<searchProvider>.jsonl`
 - Full mode: `runs/YYYY-MM-DD/<agent>/<searchProvider>.jsonl`
 
-**Compare historical runs:**
+**Compare runs:**
 ```bash
-# Latest run (default)
+# Latest run (automatically detected from runs/ directory)
 bun scripts/compare.ts --mode full
 
 # Specific run
 bun scripts/compare.ts --mode full --run-date 2026-01-24
-
-# View run manifest
-cat data/results/MANIFEST.jsonl | jq .
 ```
 
 ## Adding a New Agent

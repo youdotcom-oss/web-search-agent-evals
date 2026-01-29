@@ -54,7 +54,7 @@ describe("inline-grader", () => {
       const result = await grade({
         input: "Test query",
         output: "This is a response with enough characters to pass the threshold",
-        trajectory: [{ type: "tool_call", name: "WebSearch", status: "success" }],
+        trajectory: [{ type: "tool_call", name: "WebSearch", status: "success", timestamp: Date.now() }],
       });
 
       expect(result.reasoning).toContain("basic=10");
@@ -67,7 +67,7 @@ describe("inline-grader", () => {
         input: "Test query",
         output:
           "According to http://example.com, the answer is 42. This response has sufficient length to pass basic checks.",
-        trajectory: [{ type: "tool_call", name: "WebSearch", status: "success" }],
+        trajectory: [{ type: "tool_call", name: "WebSearch", status: "success", timestamp: Date.now() }],
       });
 
       expect(result.reasoning).toContain("sources=10");
@@ -78,7 +78,7 @@ describe("inline-grader", () => {
         input: "Test query",
         output:
           "According to https://example.com, the answer is 42. This response has sufficient length to pass basic checks.",
-        trajectory: [{ type: "tool_call", name: "WebSearch", status: "success" }],
+        trajectory: [{ type: "tool_call", name: "WebSearch", status: "success", timestamp: Date.now() }],
       });
 
       expect(result.reasoning).toContain("sources=10");
@@ -89,7 +89,7 @@ describe("inline-grader", () => {
         input: "Test query",
         output:
           "The answer is 42. Source: Documentation Page 5. This response has sufficient length to pass basic checks.",
-        trajectory: [{ type: "tool_call", name: "WebSearch", status: "success" }],
+        trajectory: [{ type: "tool_call", name: "WebSearch", status: "success", timestamp: Date.now() }],
       });
 
       expect(result.reasoning).toContain("sources=10");
@@ -100,7 +100,7 @@ describe("inline-grader", () => {
         input: "Test query",
         output:
           "The answer is 42. Reference: API Documentation. This response has sufficient length to pass basic checks.",
-        trajectory: [{ type: "tool_call", name: "WebSearch", status: "success" }],
+        trajectory: [{ type: "tool_call", name: "WebSearch", status: "success", timestamp: Date.now() }],
       });
 
       expect(result.reasoning).toContain("sources=10");
@@ -111,7 +111,7 @@ describe("inline-grader", () => {
         input: "Test query",
         output:
           "The answer is 42. This response has no sources or URLs but has sufficient length to pass basic checks.",
-        trajectory: [{ type: "tool_call", name: "WebSearch", status: "success" }],
+        trajectory: [{ type: "tool_call", name: "WebSearch", status: "success", timestamp: Date.now() }],
       });
 
       expect(result.reasoning).toContain("sources=0");
@@ -123,7 +123,7 @@ describe("inline-grader", () => {
       const result = await grade({
         input: "Test query",
         output: "Result from web search with sufficient length for basic output check.",
-        trajectory: [{ type: "tool_call", name: "WebSearch" }],
+        trajectory: [{ type: "tool_call", name: "WebSearch", status: "success", timestamp: Date.now() }],
         metadata: {}, // No mcpServer or expectedTools
       });
 
@@ -151,6 +151,8 @@ describe("inline-grader", () => {
           {
             type: "tool_call",
             name: "mcp__ydc-server__you-search",
+            status: "success",
+            timestamp: Date.now(),
           },
         ],
         metadata: {
@@ -171,6 +173,9 @@ describe("inline-grader", () => {
           {
             type: "tool_call",
             name: "you-search",
+            status: "success",
+            timestamp: Date.now(),
+            // @ts-expect-error - Codex format includes mcpServer field not in official schema
             mcpServer: "ydc-server",
           },
         ],
@@ -192,6 +197,8 @@ describe("inline-grader", () => {
           {
             type: "tool_call",
             name: "ydc-server___you-search",
+            status: "success",
+            timestamp: Date.now(),
           },
         ],
         metadata: {
@@ -212,6 +219,8 @@ describe("inline-grader", () => {
           {
             type: "tool_call",
             name: "you-search",
+            status: "success",
+            timestamp: Date.now(),
           },
         ],
         metadata: {
@@ -232,6 +241,8 @@ describe("inline-grader", () => {
           {
             type: "tool_call",
             name: "you-search-1234567890",
+            status: "success",
+            timestamp: Date.now(),
           },
         ],
         metadata: {
@@ -251,6 +262,8 @@ describe("inline-grader", () => {
           {
             type: "tool_call",
             name: "mcp__wrong-server__wrong-tool",
+            status: "success",
+            timestamp: Date.now(),
           },
         ],
         metadata: {
@@ -286,6 +299,8 @@ describe("inline-grader", () => {
           {
             type: "tool_call",
             name: "toolu_123___something",
+            status: "success",
+            timestamp: Date.now(),
           },
         ],
         metadata: {
@@ -309,6 +324,7 @@ describe("inline-grader", () => {
             type: "tool_call",
             name: "WebSearch",
             status: "error",
+            timestamp: Date.now(),
           },
         ],
       });
@@ -328,6 +344,7 @@ describe("inline-grader", () => {
             type: "tool_call",
             name: "WebSearch",
             status: "failed",
+            timestamp: Date.now(),
           },
         ],
       });
@@ -342,7 +359,7 @@ describe("inline-grader", () => {
       const result = await grade({
         input: "Test query",
         output: "Execution timed out after 120 seconds",
-        trajectory: [{ type: "tool_call", name: "WebSearch" }],
+        trajectory: [{ type: "tool_call", name: "WebSearch", status: "success", timestamp: Date.now() }],
       });
 
       expect(result.pass).toBe(false);
@@ -355,7 +372,7 @@ describe("inline-grader", () => {
       const result = await grade({
         input: "Test query",
         output: "The operation timed out while searching",
-        trajectory: [{ type: "tool_call", name: "WebSearch" }],
+        trajectory: [{ type: "tool_call", name: "WebSearch", status: "success", timestamp: Date.now() }],
       });
 
       expect(result.pass).toBe(false);
@@ -372,6 +389,7 @@ describe("inline-grader", () => {
             type: "tool_call",
             name: "WebSearch",
             status: "success",
+            timestamp: Date.now(),
           },
         ],
       });
@@ -386,7 +404,7 @@ describe("inline-grader", () => {
         input: "Test query",
         output:
           "Complete response with tool usage, no errors, and sources from https://example.com to validate scoring.",
-        trajectory: [{ type: "tool_call", name: "WebSearch" }],
+        trajectory: [{ type: "tool_call", name: "WebSearch", status: "success", timestamp: Date.now() }],
         metadata: {},
       });
 
@@ -398,7 +416,7 @@ describe("inline-grader", () => {
       const result = await grade({
         input: "Test query",
         output: "Response with sufficient length, tool usage, and source https://example.com for passing grade.",
-        trajectory: [{ type: "tool_call", name: "WebSearch" }],
+        trajectory: [{ type: "tool_call", name: "WebSearch", status: "success", timestamp: Date.now() }],
         metadata: {},
       });
 
@@ -428,7 +446,7 @@ describe("inline-grader", () => {
       const result = await grade({
         input: "Test query",
         output: "Response for latency test with sufficient length and source https://example.com",
-        trajectory: [{ type: "tool_call", name: "WebSearch" }],
+        trajectory: [{ type: "tool_call", name: "WebSearch", status: "success", timestamp: Date.now() }],
       });
 
       expect(result.metadata?.graderLatency).toBeGreaterThan(0);
@@ -438,7 +456,7 @@ describe("inline-grader", () => {
       const result = await grade({
         input: "Test query",
         output: "Response for LLM latency test with sufficient length and source https://example.com",
-        trajectory: [{ type: "tool_call", name: "WebSearch" }],
+        trajectory: [{ type: "tool_call", name: "WebSearch", status: "success", timestamp: Date.now() }],
       });
 
       // If GEMINI_API_KEY is set, should have LLM latency
@@ -459,6 +477,8 @@ describe("inline-grader", () => {
           {
             type: "tool_call",
             name: "mcp__ydc-server__you-search",
+            status: "success",
+            timestamp: Date.now(),
           },
         ],
         metadata: {
@@ -475,7 +495,7 @@ describe("inline-grader", () => {
       const result = await grade({
         input: "Test query",
         output: "Response without MCP expectations and sufficient length for validation.",
-        trajectory: [{ type: "tool_call", name: "WebSearch" }],
+        trajectory: [{ type: "tool_call", name: "WebSearch", status: "success", timestamp: Date.now() }],
         metadata: {},
       });
 
@@ -487,7 +507,7 @@ describe("inline-grader", () => {
       const result = await grade({
         input: "Test query",
         output: "Response for score metadata validation with source https://example.com",
-        trajectory: [{ type: "tool_call", name: "WebSearch" }],
+        trajectory: [{ type: "tool_call", name: "WebSearch", status: "success", timestamp: Date.now() }],
       });
 
       expect(result.metadata?.deterministicScore).toBeDefined();
@@ -502,7 +522,7 @@ describe("inline-grader", () => {
       const result = await grade({
         input: ["First turn", "Second turn", "Third turn"],
         output: "Response to multi-turn conversation with sufficient length and source https://example.com",
-        trajectory: [{ type: "tool_call", name: "WebSearch" }],
+        trajectory: [{ type: "tool_call", name: "WebSearch", status: "success", timestamp: Date.now() }],
       });
 
       expect(result.pass).toBeDefined();
@@ -513,7 +533,7 @@ describe("inline-grader", () => {
       const result = await grade({
         input: "Single turn query",
         output: "Response to single turn with sufficient length and source https://example.com",
-        trajectory: [{ type: "tool_call", name: "WebSearch" }],
+        trajectory: [{ type: "tool_call", name: "WebSearch", status: "success", timestamp: Date.now() }],
       });
 
       expect(result.pass).toBeDefined();

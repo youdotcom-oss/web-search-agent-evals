@@ -360,7 +360,39 @@ JSON:
  *
  * @returns Grading result with pass/fail, normalized score (0-1), reasoning, and metadata
  */
-export const grade: Grader = async ({ input, output, hint, trajectory, metadata }) => {
+/**
+ * Custom grader result with additional metadata
+ *
+ * @internal
+ */
+type CustomGraderResult = {
+  pass: boolean;
+  score: number;
+  reasoning: string;
+  metadata: {
+    expectedMcp: boolean;
+    mcpToolCalled: boolean;
+    deterministicScore?: number;
+    llmScore?: number;
+    hasErrors: boolean;
+    hasTimeout: boolean;
+    graderLatency?: number;
+    llmLatency?: number;
+  };
+};
+
+/**
+ * Grade function that returns custom result with metadata
+ *
+ * @internal
+ */
+export const grade = async ({
+  input,
+  output,
+  hint,
+  trajectory,
+  metadata,
+}: Parameters<Grader>[0]): Promise<CustomGraderResult> => {
   // Normalize input to string
   const inputStr = Array.isArray(input) ? input.join(" ") : input;
 

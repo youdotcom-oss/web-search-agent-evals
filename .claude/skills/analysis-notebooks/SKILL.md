@@ -371,7 +371,7 @@ if 'metadata' in first:
 
 Required packages (in `notebooks/requirements.txt`):
 
-```
+```txt
 pandas>=2.0.0
 matplotlib>=3.7.0
 seaborn>=0.12.0

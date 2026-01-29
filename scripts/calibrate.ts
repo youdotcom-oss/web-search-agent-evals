@@ -184,6 +184,10 @@ const main = async () => {
     }
 
     const selectedDate = runDates[dateIndex];
+    if (!selectedDate) {
+      console.error("❌ Invalid date selection");
+      process.exit(1);
+    }
     baseDir = `data/results/runs/${selectedDate}`;
     prefix = selectedDate;
   }

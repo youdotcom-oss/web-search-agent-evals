@@ -140,7 +140,7 @@ Prompts are organized by dataset type, with each in its own directory. The forma
 Prompts are organized by dataset type, with each in its own directory:
 
 | File | Prompts | Metadata | Use With |
-|------|---------|----------|----------|
+| ------ | --------- | ---------- | ---------- |
 | `full/prompts.jsonl` | 151 | No MCP | `SEARCH_PROVIDER=builtin` |
 | `full/prompts-you.jsonl` | 151 | `mcp_server="ydc-server"`, `expected_tool="you-search"` | `SEARCH_PROVIDER=you` |
 | `test/prompts.jsonl` | 5 | No MCP | `SEARCH_PROVIDER=builtin` |

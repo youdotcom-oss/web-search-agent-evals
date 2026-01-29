@@ -163,13 +163,13 @@ const buildCaptureCommand = async (): Promise<string[]> => {
     const outputDir = `/eval/data/results/trials/${runDate}/${AGENT}`;
     await $`mkdir -p ${outputDir}`.quiet();
 
-    // Extract trial type from command args (default/capability/regression)
-    const trialTypeMatch = Bun.argv.find(arg => arg.includes('--trial-type'));
-    const trialType = trialTypeMatch ? trialTypeMatch.split('=')[1] : 'default';
+    // Extract trial type from environment variable (default/capability/regression)
+    const trialType = process.env.TRIAL_TYPE || 'default';
     const typeSuffix = trialType === 'default' ? '' : `-${trialType}`;
 
     outputFile = `${outputDir}/${SEARCH_PROVIDER}${typeSuffix}.jsonl`;
     console.log(`📊 Trials mode detected`);
+    console.log(`   Trial type: ${trialType}`);
     console.log(`   Output: ${outputFile}`);
   } else if (DATASET === "test") {
     // Test results: test-runs directory

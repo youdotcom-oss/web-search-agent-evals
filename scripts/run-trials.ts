@@ -223,19 +223,16 @@ const runTrials = (
       "/workspace",
     ];
 
-    // Add trial type if not default (for entrypoint to detect)
+    // Run via Docker compose with environment variables
+    // Pass trial type as TRIAL_TYPE env var for entrypoint to detect
+    const envVars = ["-e", `SEARCH_PROVIDER=${searchProvider}`];
     if (trialType !== "default") {
-      trialsCmd.push("--trial-type", trialType);
+      envVars.push("-e", `TRIAL_TYPE=${trialType}`);
     }
 
-    // Run via Docker compose with environment variables
-    const proc = spawn(
-      "docker",
-      ["compose", "run", "--rm", "-e", `SEARCH_PROVIDER=${searchProvider}`, agent, ...trialsCmd],
-      {
-        stdio: "pipe", // Capture output for selective logging
-      },
-    );
+    const proc = spawn("docker", ["compose", "run", "--rm", ...envVars, agent, ...trialsCmd], {
+      stdio: "pipe", // Capture output for selective logging
+    });
 
     let currentPrompt = "";
     let hasError = false;

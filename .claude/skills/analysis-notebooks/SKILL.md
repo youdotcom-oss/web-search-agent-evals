@@ -141,9 +141,9 @@ cp notebooks/comparison.ipynb notebooks/my-analysis.ipynb
 
 ### 2. Essential Setup Cells
 
-**Always include these first two cells:**
+#### Always include these first two cells:
 
-**Cell 1: Colab Detection & Repo Clone**
+#### Cell 1: Colab Detection & Repo Clone
 ```python
 import os
 from pathlib import Path
@@ -170,7 +170,7 @@ else:
     print("✓ Running locally")
 ```
 
-**Cell 2: Dependencies & Path Setup**
+#### Cell 2: Dependencies & Path Setup
 ```python
 import json
 import pandas as pd
@@ -244,6 +244,8 @@ RUN_DATE = None  # None for latest, or '2026-01-29' for specific date
 trials_dir = DATA_DIR / 'results' / 'trials'
 if RUN_DATE is None:
     dirs = sorted([d.name for d in trials_dir.iterdir() if d.is_dir() and d.name[0].isdigit()])
+    if not dirs:
+        raise FileNotFoundError(f"No trial runs found in: {trials_dir}")
     RUN_DATE = dirs[-1]
 
 # Build filename based on trial type (same structure as runs)

@@ -1,4 +1,71 @@
 #!/usr/bin/env bun
+
+/**
+ * Statistical comparison tool for agent evaluation results
+ *
+ * @remarks
+ * Compares agent performance across different runs using statistical analysis or weighted scoring.
+ * Generates comparison reports and visualizations to identify performance differences.
+ *
+ * ## Comparison Strategies
+ *
+ * - **weighted**: Score-based comparison using deterministic and LLM scores
+ *   - Analyzes score distributions and pass rates
+ *   - Generates statistical summaries (mean, median, std dev)
+ *   - Useful for overall performance assessment
+ *
+ * - **statistical**: Hypothesis testing for statistical significance
+ *   - Uses statistical tests (t-test, Mann-Whitney U) to compare distributions
+ *   - Provides p-values and confidence intervals
+ *   - Useful for determining if differences are statistically significant
+ *
+ * ## Run Labeling Format
+ *
+ * Runs are labeled using the pattern:
+ * ```
+ * [agent]-[search-provider]
+ * ```
+ *
+ * Examples:
+ * - `claude-code-builtin` - Claude Code with builtin search
+ * - `gemini-you` - Gemini with You.com MCP server
+ * - `droid-builtin` - DROID with builtin search
+ *
+ * ## Output Paths
+ *
+ * Results are written to:
+ * ```
+ * data/comparisons/[mode]/comparison-[timestamp].json
+ * ```
+ *
+ * For dated runs:
+ * ```
+ * data/comparisons/runs/[date]/comparison-[timestamp].json
+ * ```
+ *
+ * For fixture-based comparisons:
+ * ```
+ * [fixture-dir]/comparison-[timestamp].json
+ * ```
+ *
+ * ## Result Path Convention
+ *
+ * - **Test mode**: `data/results/test/results-[agent]-[provider].jsonl`
+ * - **Full mode**: `data/results/full/results-[agent]-[provider].jsonl`
+ * - **Dated runs**: `data/results/runs/[date]/results-[agent]-[provider].jsonl`
+ * - **Fixtures**: `[fixture-dir]/results-[agent]-[provider].jsonl`
+ *
+ * Usage:
+ *   bun scripts/compare.ts --mode test                              # Compare test results
+ *   bun scripts/compare.ts --mode full --strategy statistical       # Statistical comparison
+ *   bun scripts/compare.ts --agent claude-code --search-provider you  # Specific combo
+ *   bun scripts/compare.ts --run-date 2026-01-15                    # Compare dated run
+ *   bun scripts/compare.ts --fixture-dir ./test-fixtures            # Compare fixtures
+ *   bun scripts/compare.ts --dry-run                                # Show what would run
+ *
+ * @public
+ */
+
 import { spawn } from "node:child_process";
 import { MCP_SERVERS, type McpServerKey } from "../mcp-servers.ts";
 

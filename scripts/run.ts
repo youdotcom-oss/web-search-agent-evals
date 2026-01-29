@@ -1,4 +1,58 @@
 #!/usr/bin/env bun
+
+/**
+ * Parallel evaluation runner for web search agents
+ *
+ * @remarks
+ * Runs multiple agent × search provider combinations in parallel using Docker Compose.
+ * Each combination is executed as a separate scenario with isolated output and status tracking.
+ *
+ * ## Execution Model
+ *
+ * The script creates an agent × search provider matrix and runs each combination:
+ * - **Agents**: claude-code, gemini, droid, codex
+ * - **Search Providers**: builtin (no MCP) or MCP servers (you, exa, etc.)
+ * - **Modes**: test (5 prompts) or full (151 prompts)
+ *
+ * Each scenario runs in a separate Docker container with isolated environment variables:
+ * ```bash
+ * docker compose run --rm \
+ *   -e SEARCH_PROVIDER=you \
+ *   -e DATASET=test \
+ *   claude-code
+ * ```
+ *
+ * ## Output Format
+ *
+ * Results are written to `data/results/[mode]/` with naming pattern:
+ * ```
+ * results-[agent]-[search-provider].jsonl
+ * ```
+ *
+ * ## Status Reporting
+ *
+ * Each scenario logs:
+ * - Start/completion timestamps with duration
+ * - Real-time stdout/stderr from Docker containers
+ * - Exit codes with visual indicators (✅ success, ❌ failure)
+ * - Summary report of all scenarios at the end
+ *
+ * ## Error Handling
+ *
+ * - Non-zero exit codes are reported but don't stop other scenarios
+ * - All scenarios run to completion regardless of failures
+ * - Final exit code reflects worst outcome (0 = all pass, >0 = any failed)
+ *
+ * Usage:
+ *   bun scripts/run.ts                                    # All agents, current mode
+ *   bun scripts/run.ts --agent claude-code                # Single agent
+ *   bun scripts/run.ts --mode test                        # Test mode (5 prompts)
+ *   bun scripts/run.ts --search-provider you              # Specific MCP server
+ *   bun scripts/run.ts --dry-run                          # Show what would run
+ *
+ * @public
+ */
+
 import { spawn } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";

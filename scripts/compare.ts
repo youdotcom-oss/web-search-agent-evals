@@ -153,14 +153,15 @@ const getLatestRunPath = async (fixtureDir?: string): Promise<string> => {
   const runsDir = `${dataDir}/results/runs`;
 
   // Scan runs directory for dated folders
-  const dirs = await Array.fromAsync(new Bun.Glob("*").scan({ cwd: runsDir, onlyFiles: false }));
+  const entries = await Array.fromAsync(new Bun.Glob("*").scan({ cwd: runsDir, onlyFiles: false }));
+  const datedDirs = entries.filter((entry) => /^\d{4}-\d{2}-\d{2}$/.test(entry));
 
-  if (dirs.length === 0) {
-    throw new Error(`No runs found in ${runsDir}`);
+  if (datedDirs.length === 0) {
+    throw new Error(`No dated runs found in ${runsDir}`);
   }
 
   // Sort by date (YYYY-MM-DD format sorts lexicographically) and take the latest
-  const latestDate = dirs.sort().reverse()[0];
+  const latestDate = datedDirs.sort().reverse()[0];
   return `runs/${latestDate}`;
 };
 

@@ -110,16 +110,23 @@ cat data/comparisons/runs/*/all-weighted.json | jq '.headToHead.pairwise'
 
 ## Pass@k Analysis
 
-Run multiple trials per prompt to measure agent reliability:
+Run multiple trials per prompt across all agents and search providers to measure reliability:
 
 ```bash
-# Quick start
-bun run trials                      # Default: k=5 trials
-bun run trials:capability           # Capability mode: k=10
-bun run trials:regression           # Regression mode: k=3 (faster)
+# Run all agents × all providers (8 combinations, k=5 each)
+bun run trials                      # Default: all agents/providers, k=5
 
-# Custom configuration
-bun run trials -- --agent gemini -k 7
+# Different trial types
+bun run trials:capability           # All agents/providers, k=10 (capability exploration)
+bun run trials:regression           # All agents/providers, k=3 (fast regression checks)
+
+# Filter to specific agents or providers
+bun run trials -- --agent gemini                    # Single agent, all providers
+bun run trials -- --search-provider you             # All agents, MCP only
+bun run trials -- --agent claude-code --search-provider builtin
+
+# Custom k value
+bun run trials -- -k 7              # All agents/providers, k=7
 ```
 
 View pass@k metrics:
@@ -131,6 +138,8 @@ cat data/results/trials/*.jsonl | jq '{id, passRate, passAtK, passExpK}'
 **Metrics:**
 - `passAtK` - Capability (can it do the task at all?)
 - `passExpK` - Reliability (does it always succeed?)
+
+**Output:** Results written to `data/results/trials/[agent]-[provider].jsonl` (or `*-capability.jsonl` / `*-regression.jsonl` for non-default types)
 
 ## Architecture
 

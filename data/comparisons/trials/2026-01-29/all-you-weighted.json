@@ -37,25 +37,29 @@
       "avgPassExpK": 0.6197440000000001,
       "medianPassExpK": 1,
       "p25PassExpK": 0.010240000000000006,
-      "p75PassExpK": 1
+      "p75PassExpK": 1,
+      "type": "trial"
     },
     "gemini-you": {
       "avgPassExpK": 0.893696,
       "medianPassExpK": 1,
       "p25PassExpK": 1,
-      "p75PassExpK": 1
+      "p75PassExpK": 1,
+      "type": "trial"
     },
     "droid-you": {
       "avgPassExpK": 1,
       "medianPassExpK": 1,
       "p25PassExpK": 1,
-      "p75PassExpK": 1
+      "p75PassExpK": 1,
+      "type": "trial"
     },
     "codex-you": {
       "avgPassExpK": 0.47145600000000004,
       "medianPassExpK": 0.3276800000000002,
       "p25PassExpK": 0.010240000000000006,
-      "p75PassExpK": 1
+      "p75PassExpK": 1,
+      "type": "trial"
     }
   },
   "flakiness": {

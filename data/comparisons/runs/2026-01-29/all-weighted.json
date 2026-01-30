@@ -280,56 +280,64 @@
       "toolErrorRate": 0,
       "timeouts": 0,
       "timeoutRate": 0,
-      "completionRate": 1
+      "completionRate": 1,
+      "type": "run"
     },
     "claude-code-you": {
       "toolErrors": 0,
       "toolErrorRate": 0,
       "timeouts": 0,
       "timeoutRate": 0,
-      "completionRate": 1
+      "completionRate": 1,
+      "type": "run"
     },
     "gemini-builtin": {
       "toolErrors": 0,
       "toolErrorRate": 0,
       "timeouts": 0,
       "timeoutRate": 0,
-      "completionRate": 1
+      "completionRate": 1,
+      "type": "run"
     },
     "gemini-you": {
       "toolErrors": 0,
       "toolErrorRate": 0,
       "timeouts": 0,
       "timeoutRate": 0,
-      "completionRate": 1
+      "completionRate": 1,
+      "type": "run"
     },
     "droid-builtin": {
       "toolErrors": 0,
       "toolErrorRate": 0,
       "timeouts": 0,
       "timeoutRate": 0,
-      "completionRate": 1
+      "completionRate": 1,
+      "type": "run"
     },
     "droid-you": {
       "toolErrors": 0,
       "toolErrorRate": 0,
       "timeouts": 0,
       "timeoutRate": 0,
-      "completionRate": 1
+      "completionRate": 1,
+      "type": "run"
     },
     "codex-builtin": {
       "toolErrors": 2,
       "toolErrorRate": 0.013245033112582781,
       "timeouts": 0,
       "timeoutRate": 0,
-      "completionRate": 0.9867549668874173
+      "completionRate": 0.9867549668874173,
+      "type": "run"
     },
     "codex-you": {
       "toolErrors": 4,
       "toolErrorRate": 0.026490066225165563,
       "timeouts": 0,
       "timeoutRate": 0,
-      "completionRate": 0.9735099337748344
+      "completionRate": 0.9735099337748344,
+      "type": "run"
     }
   },
   "trajectoryInfo": {

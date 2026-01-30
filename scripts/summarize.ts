@@ -141,7 +141,10 @@ const loadTrialsComparison = async (
     // If a specific filter is requested, try only that
     pathsToTry.push(`${trialsDir}/all-${filter}-${type}.json`);
   } else {
-    // Try in order of preference: builtin-vs-you (most comprehensive), all (fallback), then individual providers
+    // Try files in priority order:
+    // 1. builtin-vs-you: Most comprehensive comparison across all agents and search providers
+    // 2. all: Combined data when builtin-vs-you split doesn't exist
+    // 3. all-builtin, all-you: Provider-specific fallbacks
     pathsToTry.push(
       `${trialsDir}/builtin-vs-you-${type}.json`,
       `${trialsDir}/all-${type}.json`,
@@ -200,13 +203,14 @@ const parseRunLabel = (label: string): { agent: string; provider: string } => {
 const isRegularRunReliability = (
   metrics: ReliabilityMetrics,
 ): metrics is {
+  type: "run";
   toolErrors: number;
   toolErrorRate: number;
   timeouts: number;
   timeoutRate: number;
   completionRate: number;
 } => {
-  return "toolErrors" in metrics;
+  return metrics.type === "run";
 };
 
 const generateSummary = async (options: SummarizeOptions): Promise<string> => {
@@ -490,12 +494,12 @@ const generateSummary = async (options: SummarizeOptions): Promise<string> => {
   }
 
   // Most reliable (if trials data available)
-  if (trialsWeighted?.flakiness && Object.keys(trialsWeighted.flakiness).length > 0) {
+  if (trialsWeighted?.flakiness && quality && Object.keys(trialsWeighted.flakiness).length > 0) {
     const reliabilityRankings = Object.entries(trialsWeighted.flakiness)
       .map(([run, metrics]) => ({
         run,
         flakiness: metrics.avgFlakiness,
-        quality: quality?.[run]?.avgScore ?? 0,
+        quality: quality[run]?.avgScore ?? 0,
       }))
       .filter((r) => r.quality > 0.8) // Only consider high-quality agents
       .sort((a, b) => a.flakiness - b.flakiness);

@@ -430,7 +430,7 @@ const generateSummary = async (options: SummarizeOptions): Promise<string> => {
   }
 
   // MCP Impact Analysis
-  if (quality && performance && Object.keys(quality).length > 0) {
+  if (quality && Object.keys(quality).length > 0) {
     md.push("## MCP Tool Impact Analysis\n\n");
 
     const agents = Array.from(new Set(meta.runs.map((r) => parseRunLabel(r).agent)));
@@ -445,6 +445,7 @@ const generateSummary = async (options: SummarizeOptions): Promise<string> => {
         const mcpRuns = providers.filter((p) => p !== "builtin").map((p) => `${agent}-${p}`);
 
         mcpRuns.forEach((mcpRun) => {
+          if (!performance) return;
           const builtinQuality = quality[builtinRun];
           const mcpQuality = quality[mcpRun];
           const builtinPerf = performance[builtinRun];

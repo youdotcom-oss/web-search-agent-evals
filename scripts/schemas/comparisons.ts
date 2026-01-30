@@ -25,6 +25,12 @@ export const QualityMetricsSchema = z.object({
   passCount: z.number(),
   failCount: z.number(),
   scoreDistribution: z.record(z.string(), z.number()).optional(),
+  confidenceIntervals: z
+    .object({
+      avgScore: z.tuple([z.number(), z.number()]).optional(),
+      passRate: z.tuple([z.number(), z.number()]).optional(),
+    })
+    .optional(),
 });
 
 /**
@@ -36,6 +42,11 @@ export const PerformanceMetricsSchema = z.object({
   latency: LatencyMetricsSchema,
   firstResponse: LatencyMetricsSchema.optional(),
   totalDuration: z.number(),
+  confidenceIntervals: z
+    .object({
+      latencyMean: z.tuple([z.number(), z.number()]).optional(),
+    })
+    .optional(),
 });
 
 /**
@@ -47,7 +58,7 @@ export const PerformanceMetricsSchema = z.object({
  *
  * @public
  */
-export const ReliabilityMetricsSchema = z.discriminatedUnion("type", [
+export const ReliabilityMetricsSchema = z.union([
   z.object({
     type: z.literal("run"),
     toolErrors: z.number(),
@@ -62,6 +73,14 @@ export const ReliabilityMetricsSchema = z.discriminatedUnion("type", [
     medianPassExpK: z.number(),
     p25PassExpK: z.number(),
     p75PassExpK: z.number(),
+  }),
+  // Handle cases where type discriminator is missing (older format)
+  z.object({
+    toolErrors: z.number(),
+    toolErrorRate: z.number(),
+    timeouts: z.number(),
+    timeoutRate: z.number(),
+    completionRate: z.number(),
   }),
 ]);
 

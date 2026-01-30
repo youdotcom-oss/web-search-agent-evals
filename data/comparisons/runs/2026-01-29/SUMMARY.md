@@ -11,6 +11,8 @@
 
 **Fastest:** gemini-you (19.7s median latency)
 
+**Most Reliable:** droid-you (0.0% flakiness)
+
 ---
 
 ## Quality Rankings
@@ -66,6 +68,7 @@
 ### For Production Use
 
 - **Best Quality:** claude-code-builtin (0.93 avg score)
+- **Most Reliable:** droid-you (0.0% flakiness, 0.88 quality)
 - **Fastest:** gemini-you (19.7s P50 latency)
 - **Best Balance:** droid-you (quality + speed + reliability)
 

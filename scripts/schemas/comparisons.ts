@@ -41,15 +41,29 @@ export const PerformanceMetricsSchema = z.object({
 /**
  * Reliability metrics for a single run
  *
+ * @remarks
+ * For regular runs: toolErrors, toolErrorRate, timeouts, timeoutRate, completionRate
+ * For trials: avgPassExpK, medianPassExpK, p25PassExpK, p75PassExpK
+ *
  * @public
  */
-export const ReliabilityMetricsSchema = z.object({
-  toolErrors: z.number(),
-  toolErrorRate: z.number(),
-  timeouts: z.number(),
-  timeoutRate: z.number(),
-  completionRate: z.number(),
-});
+export const ReliabilityMetricsSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("run"),
+    toolErrors: z.number(),
+    toolErrorRate: z.number(),
+    timeouts: z.number(),
+    timeoutRate: z.number(),
+    completionRate: z.number(),
+  }),
+  z.object({
+    type: z.literal("trial"),
+    avgPassExpK: z.number(),
+    medianPassExpK: z.number(),
+    p25PassExpK: z.number(),
+    p75PassExpK: z.number(),
+  }),
+]);
 
 /**
  * Pass@k capability metrics for a single run
@@ -112,13 +126,16 @@ export const ComparisonMetaSchema = z.object({
  *
  * @remarks
  * Contains comprehensive metrics across quality, performance, reliability,
- * capability, and flakiness dimensions for multiple agent runs
+ * capability, and flakiness dimensions for multiple agent runs.
+ *
+ * For regular run comparisons: quality, performance, reliability are present
+ * For trials comparisons: capability, flakiness, reliability (with passExpK metrics) are present
  *
  * @public
  */
 export const WeightedComparisonSchema = z.object({
   meta: ComparisonMetaSchema,
-  quality: z.record(z.string(), QualityMetricsSchema),
+  quality: z.record(z.string(), QualityMetricsSchema).optional(),
   performance: z.record(z.string(), PerformanceMetricsSchema).optional(),
   reliability: z.record(z.string(), ReliabilityMetricsSchema).optional(),
   capability: z.record(z.string(), CapabilityMetricsSchema).optional(),

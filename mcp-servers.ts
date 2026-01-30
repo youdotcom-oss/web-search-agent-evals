@@ -30,6 +30,7 @@ export type McpServer = {
     /** Environment variable containing the API key */
     envVar: string;
   };
+  expectedTools: readonly string[];
 };
 
 /**
@@ -52,6 +53,7 @@ export const MCP_SERVERS = {
       type: "bearer" as const,
       envVar: "YOU_API_KEY",
     },
+    expectedTools: ["you-search", "you-express", "you-contents"],
   },
   // Future: Add more servers here
   // exa: { name: "exa-server", type: "http", url: "...", auth: {...} },

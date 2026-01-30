@@ -7,7 +7,7 @@ import type { McpServerKey } from "/eval/mcp-servers.ts";
  * Docker entrypoint for ACP evaluation containers
  *
  * @remarks
- * Configures MCP servers dynamically based on MCP_TOOL environment variable,
+ * Configures MCP servers dynamically based on SEARCH_PROVIDER environment variable,
  * then executes the agent-eval-harness capture command with derived paths.
  *
  * **Environment variables:**
@@ -116,13 +116,26 @@ bearer_token_env_var = "${server.auth?.envVar}"
 };
 
 /**
+ * Detect if running in trials mode
+ *
+ * @remarks
+ * Checks if 'trials' command is present in Bun.argv to determine execution mode.
+ * Trials mode outputs to dated folders: data/results/trials/YYYY-MM-DD/{agent}/
+ *
+ * @returns True if trials mode detected
+ */
+const isTrialsMode = (): boolean => {
+  return Bun.argv.some(arg => arg.includes('trials'));
+};
+
+/**
  * Build capture command arguments based on environment
  *
  * @remarks
  * Derives:
  * - Prompt file based on DATASET and SEARCH_PROVIDER (e.g., test.jsonl, full-mcp.jsonl)
  * - Schema file (always base schema, no -mcp suffix)
- * - Output file (versioned: test-runs/ or runs/YYYY-MM-DD/)
+ * - Output file (versioned: test-runs/, runs/YYYY-MM-DD/, or trials/YYYY-MM-DD/)
  * - Grader flag (only for non-builtin modes)
  * - Timeout flag (agent-specific: claude-code 90s, codex 180s)
  *
@@ -135,15 +148,30 @@ const buildCaptureCommand = async (): Promise<string[]> => {
 
   // Derive prompt file based on DATASET and search provider mode
   const promptFile = SEARCH_PROVIDER === "builtin"
-    ? `/eval/data/prompts/${DATASET}.jsonl`
-    : `/eval/data/prompts/${DATASET}-${SEARCH_PROVIDER}.jsonl`;
+    ? `/eval/data/prompts/${DATASET}/prompts.jsonl`
+    : `/eval/data/prompts/${DATASET}/prompts-${SEARCH_PROVIDER}.jsonl`;
 
   // Schema file: Always use base schema (no -mcp suffix)
   const schemaFile = `/eval/agent-schemas/${AGENT}.json`;
 
-  // Output file path based on dataset mode
+  // Output file path based on execution mode
   let outputFile: string;
-  if (DATASET === "test") {
+
+  if (isTrialsMode()) {
+    // Trials mode: output to trials/YYYY-MM-DD/{agent}/ (same structure as runs)
+    const runDate = new Date().toISOString().split('T')[0];
+    const outputDir = `/eval/data/results/trials/${runDate}/${AGENT}`;
+    await $`mkdir -p ${outputDir}`.quiet();
+
+    // Extract trial type from environment variable (default/capability/regression)
+    const trialType = process.env.TRIAL_TYPE || 'default';
+    const typeSuffix = trialType === 'default' ? '' : `-${trialType}`;
+
+    outputFile = `${outputDir}/${SEARCH_PROVIDER}${typeSuffix}.jsonl`;
+    console.log(`📊 Trials mode detected`);
+    console.log(`   Trial type: ${trialType}`);
+    console.log(`   Output: ${outputFile}`);
+  } else if (DATASET === "test") {
     // Test results: test-runs directory
     const outputDir = `/eval/data/results/test-runs/${AGENT}`;
     await $`mkdir -p ${outputDir}`.quiet();
@@ -164,15 +192,8 @@ const buildCaptureCommand = async (): Promise<string[]> => {
 
   cmd.push("--cwd", "/workspace");
 
-  // Add timeout if needed (agent-specific)
-  switch (AGENT) {
-    case "claude-code":
-      cmd.push("--timeout", "90000");
-      break;
-    case "codex":
-      cmd.push("--timeout", "180000");
-      break;
-  }
+  // Add timeout (180 seconds for all agents)
+  cmd.push("--timeout", "180000");
 
   cmd.push("-o", outputFile, "--progress");
 

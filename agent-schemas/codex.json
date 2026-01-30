@@ -1,7 +1,15 @@
 {
   "version": 1,
   "name": "codex",
-  "command": ["codex", "exec", "--json", "--skip-git-repo-check", "--dangerously-bypass-approvals-and-sandbox", "-"],
+  "command": [
+    "codex",
+    "--search",
+    "exec",
+    "--json",
+    "--skip-git-repo-check",
+    "--dangerously-bypass-approvals-and-sandbox",
+    "-"
+  ],
   "sessionMode": "iterative",
   "prompt": {
     "stdin": true

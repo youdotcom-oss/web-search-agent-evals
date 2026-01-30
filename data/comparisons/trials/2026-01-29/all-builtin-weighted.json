@@ -1,0 +1,1049 @@
+{
+  "meta": {
+    "generatedAt": "2026-01-29T20:06:33.478Z",
+    "runs": ["claude-code-builtin", "gemini-builtin", "droid-builtin", "codex-builtin"],
+    "promptCount": 30,
+    "trialsPerPrompt": 5,
+    "inputFormat": "trials"
+  },
+  "capability": {
+    "claude-code-builtin": {
+      "avgPassAtK": 0.9392319999999998,
+      "medianPassAtK": 1,
+      "p25PassAtK": 0.99968,
+      "p75PassAtK": 1
+    },
+    "gemini-builtin": {
+      "avgPassAtK": 0.93328,
+      "medianPassAtK": 1,
+      "p25PassAtK": 1,
+      "p75PassAtK": 1
+    },
+    "droid-builtin": {
+      "avgPassAtK": 0.9161813333333334,
+      "medianPassAtK": 1,
+      "p25PassAtK": 0.98976,
+      "p75PassAtK": 1
+    },
+    "codex-builtin": {
+      "avgPassAtK": 0.8555520000000001,
+      "medianPassAtK": 0.99968,
+      "p25PassAtK": 0.92224,
+      "p75PassAtK": 1
+    }
+  },
+  "reliability": {
+    "claude-code-builtin": {
+      "avgPassExpK": 0.668832,
+      "medianPassExpK": 1,
+      "p25PassExpK": 0.3276800000000002,
+      "p75PassExpK": 1
+    },
+    "gemini-builtin": {
+      "avgPassExpK": 0.8212800000000001,
+      "medianPassExpK": 1,
+      "p25PassExpK": 1,
+      "p75PassExpK": 1
+    },
+    "droid-builtin": {
+      "avgPassExpK": 0.6969813333333333,
+      "medianPassExpK": 1,
+      "p25PassExpK": 0.07776,
+      "p75PassExpK": 1
+    },
+    "codex-builtin": {
+      "avgPassExpK": 0.5387520000000001,
+      "medianPassExpK": 0.3276800000000002,
+      "p25PassExpK": 0.010240000000000006,
+      "p75PassExpK": 1
+    }
+  },
+  "flakiness": {
+    "claude-code-builtin": {
+      "avgFlakiness": 0.2703999999999999,
+      "medianFlakiness": 0,
+      "flakyPromptCount": 11,
+      "topFlakyPrompts": [
+        {
+          "id": "websearch-625",
+          "flakiness": 0.9119999999999999
+        },
+        {
+          "id": "websearch-150",
+          "flakiness": 0.9119999999999999
+        },
+        {
+          "id": "websearch-844",
+          "flakiness": 0.9119999999999999
+        },
+        {
+          "id": "websearch-1506",
+          "flakiness": 0.6719999999999998
+        },
+        {
+          "id": "websearch-1960",
+          "flakiness": 0.6719999999999998
+        },
+        {
+          "id": "websearch-1063",
+          "flakiness": 0.6719999999999998
+        },
+        {
+          "id": "websearch-580",
+          "flakiness": 0.6719999999999998
+        },
+        {
+          "id": "websearch-990",
+          "flakiness": 0.6719999999999998
+        },
+        {
+          "id": "websearch-387",
+          "flakiness": 0.6719999999999998
+        },
+        {
+          "id": "websearch-1594",
+          "flakiness": 0.6719999999999998
+        }
+      ]
+    },
+    "gemini-builtin": {
+      "avgFlakiness": 0.11199999999999996,
+      "medianFlakiness": 0,
+      "flakyPromptCount": 5,
+      "topFlakyPrompts": [
+        {
+          "id": "websearch-1506",
+          "flakiness": 0.6719999999999998
+        },
+        {
+          "id": "websearch-446",
+          "flakiness": 0.6719999999999998
+        },
+        {
+          "id": "websearch-300",
+          "flakiness": 0.6719999999999998
+        },
+        {
+          "id": "websearch-1267",
+          "flakiness": 0.6719999999999998
+        },
+        {
+          "id": "websearch-293",
+          "flakiness": 0.6719999999999998
+        }
+      ]
+    },
+    "droid-builtin": {
+      "avgFlakiness": 0.21919999999999995,
+      "medianFlakiness": 0,
+      "flakyPromptCount": 8,
+      "topFlakyPrompts": [
+        {
+          "id": "websearch-1960",
+          "flakiness": 0.9119999999999999
+        },
+        {
+          "id": "websearch-232",
+          "flakiness": 0.9119999999999999
+        },
+        {
+          "id": "websearch-1267",
+          "flakiness": 0.9119999999999999
+        },
+        {
+          "id": "websearch-293",
+          "flakiness": 0.9119999999999999
+        },
+        {
+          "id": "websearch-842",
+          "flakiness": 0.9119999999999999
+        },
+        {
+          "id": "websearch-387",
+          "flakiness": 0.6719999999999998
+        },
+        {
+          "id": "websearch-1859",
+          "flakiness": 0.6719999999999998
+        },
+        {
+          "id": "websearch-1861",
+          "flakiness": 0.6719999999999998
+        }
+      ]
+    },
+    "codex-builtin": {
+      "avgFlakiness": 0.31679999999999997,
+      "medianFlakiness": 0,
+      "flakyPromptCount": 12,
+      "topFlakyPrompts": [
+        {
+          "id": "websearch-625",
+          "flakiness": 0.9119999999999999
+        },
+        {
+          "id": "websearch-232",
+          "flakiness": 0.9119999999999999
+        },
+        {
+          "id": "websearch-387",
+          "flakiness": 0.9119999999999999
+        },
+        {
+          "id": "websearch-1926",
+          "flakiness": 0.9119999999999999
+        },
+        {
+          "id": "websearch-389",
+          "flakiness": 0.9119999999999999
+        },
+        {
+          "id": "websearch-1861",
+          "flakiness": 0.9119999999999999
+        },
+        {
+          "id": "websearch-1506",
+          "flakiness": 0.6719999999999998
+        },
+        {
+          "id": "websearch-1182",
+          "flakiness": 0.6719999999999998
+        },
+        {
+          "id": "websearch-293",
+          "flakiness": 0.6719999999999998
+        },
+        {
+          "id": "websearch-842",
+          "flakiness": 0.6719999999999998
+        }
+      ]
+    }
+  },
+  "headToHead": {
+    "capability": [
+      {
+        "runA": "claude-code-builtin",
+        "runB": "gemini-builtin",
+        "aWins": 1,
+        "bWins": 2,
+        "ties": 27
+      },
+      {
+        "runA": "claude-code-builtin",
+        "runB": "droid-builtin",
+        "aWins": 1,
+        "bWins": 2,
+        "ties": 27
+      },
+      {
+        "runA": "claude-code-builtin",
+        "runB": "codex-builtin",
+        "aWins": 1,
+        "bWins": 0,
+        "ties": 29
+      },
+      {
+        "runA": "gemini-builtin",
+        "runB": "droid-builtin",
+        "aWins": 2,
+        "bWins": 2,
+        "ties": 26
+      },
+      {
+        "runA": "gemini-builtin",
+        "runB": "codex-builtin",
+        "aWins": 2,
+        "bWins": 0,
+        "ties": 28
+      },
+      {
+        "runA": "droid-builtin",
+        "runB": "codex-builtin",
+        "aWins": 2,
+        "bWins": 0,
+        "ties": 28
+      }
+    ],
+    "reliability": [
+      {
+        "runA": "claude-code-builtin",
+        "runB": "gemini-builtin",
+        "aWins": 1,
+        "bWins": 2,
+        "ties": 27
+      },
+      {
+        "runA": "claude-code-builtin",
+        "runB": "droid-builtin",
+        "aWins": 1,
+        "bWins": 2,
+        "ties": 27
+      },
+      {
+        "runA": "claude-code-builtin",
+        "runB": "codex-builtin",
+        "aWins": 1,
+        "bWins": 0,
+        "ties": 29
+      },
+      {
+        "runA": "gemini-builtin",
+        "runB": "droid-builtin",
+        "aWins": 2,
+        "bWins": 2,
+        "ties": 26
+      },
+      {
+        "runA": "gemini-builtin",
+        "runB": "codex-builtin",
+        "aWins": 2,
+        "bWins": 0,
+        "ties": 28
+      },
+      {
+        "runA": "droid-builtin",
+        "runB": "codex-builtin",
+        "aWins": 2,
+        "bWins": 0,
+        "ties": 28
+      }
+    ],
+    "overall": [
+      {
+        "runA": "claude-code-builtin",
+        "runB": "gemini-builtin",
+        "aWins": 18,
+        "bWins": 10,
+        "ties": 2
+      },
+      {
+        "runA": "claude-code-builtin",
+        "runB": "droid-builtin",
+        "aWins": 18,
+        "bWins": 2,
+        "ties": 10
+      },
+      {
+        "runA": "claude-code-builtin",
+        "runB": "codex-builtin",
+        "aWins": 18,
+        "bWins": 0,
+        "ties": 12
+      },
+      {
+        "runA": "gemini-builtin",
+        "runB": "droid-builtin",
+        "aWins": 10,
+        "bWins": 2,
+        "ties": 18
+      },
+      {
+        "runA": "gemini-builtin",
+        "runB": "codex-builtin",
+        "aWins": 10,
+        "bWins": 0,
+        "ties": 20
+      },
+      {
+        "runA": "droid-builtin",
+        "runB": "codex-builtin",
+        "aWins": 2,
+        "bWins": 0,
+        "ties": 28
+      }
+    ]
+  },
+  "perPrompt": [
+    {
+      "id": "websearch-1506",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "claude-code-builtin": 0.6723199999999998,
+        "gemini-builtin": 0.99968,
+        "droid-builtin": 0,
+        "codex-builtin": 0.99968
+      },
+      "passExpK": {
+        "claude-code-builtin": 0.0003200000000000002,
+        "gemini-builtin": 0.3276800000000002,
+        "droid-builtin": 0,
+        "codex-builtin": 0.3276800000000002
+      },
+      "flakiness": {
+        "claude-code-builtin": 0.6719999999999998,
+        "gemini-builtin": 0.6719999999999998,
+        "droid-builtin": 0,
+        "codex-builtin": 0.6719999999999998
+      }
+    },
+    {
+      "id": "websearch-120",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "claude-code-builtin": 1,
+        "gemini-builtin": 1,
+        "droid-builtin": 1,
+        "codex-builtin": 0
+      },
+      "passExpK": {
+        "claude-code-builtin": 1,
+        "gemini-builtin": 1,
+        "droid-builtin": 1,
+        "codex-builtin": 0
+      },
+      "flakiness": {
+        "claude-code-builtin": 0,
+        "gemini-builtin": 0,
+        "droid-builtin": 0,
+        "codex-builtin": 0
+      }
+    },
+    {
+      "id": "websearch-1182",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "claude-code-builtin": 1,
+        "gemini-builtin": 1,
+        "droid-builtin": 1,
+        "codex-builtin": 0.99968
+      },
+      "passExpK": {
+        "claude-code-builtin": 1,
+        "gemini-builtin": 1,
+        "droid-builtin": 1,
+        "codex-builtin": 0.3276800000000002
+      },
+      "flakiness": {
+        "claude-code-builtin": 0,
+        "gemini-builtin": 0,
+        "droid-builtin": 0,
+        "codex-builtin": 0.6719999999999998
+      }
+    },
+    {
+      "id": "websearch-1960",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "claude-code-builtin": 0.99968,
+        "gemini-builtin": 1,
+        "droid-builtin": 0.92224,
+        "codex-builtin": 1
+      },
+      "passExpK": {
+        "claude-code-builtin": 0.3276800000000002,
+        "gemini-builtin": 1,
+        "droid-builtin": 0.010240000000000006,
+        "codex-builtin": 1
+      },
+      "flakiness": {
+        "claude-code-builtin": 0.6719999999999998,
+        "gemini-builtin": 0,
+        "droid-builtin": 0.9119999999999999,
+        "codex-builtin": 0
+      }
+    },
+    {
+      "id": "websearch-1063",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "claude-code-builtin": 0.99968,
+        "gemini-builtin": 1,
+        "droid-builtin": 1,
+        "codex-builtin": 1
+      },
+      "passExpK": {
+        "claude-code-builtin": 0.3276800000000002,
+        "gemini-builtin": 1,
+        "droid-builtin": 1,
+        "codex-builtin": 1
+      },
+      "flakiness": {
+        "claude-code-builtin": 0.6719999999999998,
+        "gemini-builtin": 0,
+        "droid-builtin": 0,
+        "codex-builtin": 0
+      }
+    },
+    {
+      "id": "websearch-625",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "claude-code-builtin": 0.98976,
+        "gemini-builtin": 1,
+        "droid-builtin": 1,
+        "codex-builtin": 0.92224
+      },
+      "passExpK": {
+        "claude-code-builtin": 0.07776,
+        "gemini-builtin": 1,
+        "droid-builtin": 1,
+        "codex-builtin": 0.010240000000000006
+      },
+      "flakiness": {
+        "claude-code-builtin": 0.9119999999999999,
+        "gemini-builtin": 0,
+        "droid-builtin": 0,
+        "codex-builtin": 0.9119999999999999
+      }
+    },
+    {
+      "id": "websearch-232",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "claude-code-builtin": 1,
+        "gemini-builtin": 1,
+        "droid-builtin": 0.98976,
+        "codex-builtin": 0.98976
+      },
+      "passExpK": {
+        "claude-code-builtin": 1,
+        "gemini-builtin": 1,
+        "droid-builtin": 0.07776,
+        "codex-builtin": 0.07776
+      },
+      "flakiness": {
+        "claude-code-builtin": 0,
+        "gemini-builtin": 0,
+        "droid-builtin": 0.9119999999999999,
+        "codex-builtin": 0.9119999999999999
+      }
+    },
+    {
+      "id": "websearch-580",
+      "capabilityWinner": "droid-builtin",
+      "reliabilityWinner": "droid-builtin",
+      "passAtK": {
+        "claude-code-builtin": 0.99968,
+        "gemini-builtin": 0,
+        "droid-builtin": 1,
+        "codex-builtin": 0
+      },
+      "passExpK": {
+        "claude-code-builtin": 0.3276800000000002,
+        "gemini-builtin": 0,
+        "droid-builtin": 1,
+        "codex-builtin": 0
+      },
+      "flakiness": {
+        "claude-code-builtin": 0.6719999999999998,
+        "gemini-builtin": 0,
+        "droid-builtin": 0,
+        "codex-builtin": 0
+      }
+    },
+    {
+      "id": "websearch-171",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "claude-code-builtin": 1,
+        "gemini-builtin": 1,
+        "droid-builtin": 1,
+        "codex-builtin": 1
+      },
+      "passExpK": {
+        "claude-code-builtin": 1,
+        "gemini-builtin": 1,
+        "droid-builtin": 1,
+        "codex-builtin": 1
+      },
+      "flakiness": {
+        "claude-code-builtin": 0,
+        "gemini-builtin": 0,
+        "droid-builtin": 0,
+        "codex-builtin": 0
+      }
+    },
+    {
+      "id": "websearch-446",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "claude-code-builtin": 1,
+        "gemini-builtin": 0.99968,
+        "droid-builtin": 1,
+        "codex-builtin": 1
+      },
+      "passExpK": {
+        "claude-code-builtin": 1,
+        "gemini-builtin": 0.3276800000000002,
+        "droid-builtin": 1,
+        "codex-builtin": 1
+      },
+      "flakiness": {
+        "claude-code-builtin": 0,
+        "gemini-builtin": 0.6719999999999998,
+        "droid-builtin": 0,
+        "codex-builtin": 0
+      }
+    },
+    {
+      "id": "websearch-990",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "claude-code-builtin": 0.99968,
+        "gemini-builtin": 1,
+        "droid-builtin": 1,
+        "codex-builtin": 0
+      },
+      "passExpK": {
+        "claude-code-builtin": 0.3276800000000002,
+        "gemini-builtin": 1,
+        "droid-builtin": 1,
+        "codex-builtin": 0
+      },
+      "flakiness": {
+        "claude-code-builtin": 0.6719999999999998,
+        "gemini-builtin": 0,
+        "droid-builtin": 0,
+        "codex-builtin": 0
+      }
+    },
+    {
+      "id": "websearch-387",
+      "capabilityWinner": "gemini-builtin",
+      "reliabilityWinner": "gemini-builtin",
+      "passAtK": {
+        "claude-code-builtin": 0.99968,
+        "gemini-builtin": 1,
+        "droid-builtin": 0.99968,
+        "codex-builtin": 0.92224
+      },
+      "passExpK": {
+        "claude-code-builtin": 0.3276800000000002,
+        "gemini-builtin": 1,
+        "droid-builtin": 0.3276800000000002,
+        "codex-builtin": 0.010240000000000006
+      },
+      "flakiness": {
+        "claude-code-builtin": 0.6719999999999998,
+        "gemini-builtin": 0,
+        "droid-builtin": 0.6719999999999998,
+        "codex-builtin": 0.9119999999999999
+      }
+    },
+    {
+      "id": "websearch-608",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "claude-code-builtin": 1,
+        "gemini-builtin": 1,
+        "droid-builtin": 1,
+        "codex-builtin": 1
+      },
+      "passExpK": {
+        "claude-code-builtin": 1,
+        "gemini-builtin": 1,
+        "droid-builtin": 1,
+        "codex-builtin": 1
+      },
+      "flakiness": {
+        "claude-code-builtin": 0,
+        "gemini-builtin": 0,
+        "droid-builtin": 0,
+        "codex-builtin": 0
+      }
+    },
+    {
+      "id": "websearch-866",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "claude-code-builtin": 1,
+        "gemini-builtin": 1,
+        "droid-builtin": 1,
+        "codex-builtin": 1
+      },
+      "passExpK": {
+        "claude-code-builtin": 1,
+        "gemini-builtin": 1,
+        "droid-builtin": 1,
+        "codex-builtin": 1
+      },
+      "flakiness": {
+        "claude-code-builtin": 0,
+        "gemini-builtin": 0,
+        "droid-builtin": 0,
+        "codex-builtin": 0
+      }
+    },
+    {
+      "id": "websearch-1594",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "claude-code-builtin": 0.99968,
+        "gemini-builtin": 1,
+        "droid-builtin": 1,
+        "codex-builtin": 1
+      },
+      "passExpK": {
+        "claude-code-builtin": 0.3276800000000002,
+        "gemini-builtin": 1,
+        "droid-builtin": 1,
+        "codex-builtin": 1
+      },
+      "flakiness": {
+        "claude-code-builtin": 0.6719999999999998,
+        "gemini-builtin": 0,
+        "droid-builtin": 0,
+        "codex-builtin": 0
+      }
+    },
+    {
+      "id": "websearch-300",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "claude-code-builtin": 1,
+        "gemini-builtin": 0.99968,
+        "droid-builtin": 1,
+        "codex-builtin": 1
+      },
+      "passExpK": {
+        "claude-code-builtin": 1,
+        "gemini-builtin": 0.3276800000000002,
+        "droid-builtin": 1,
+        "codex-builtin": 1
+      },
+      "flakiness": {
+        "claude-code-builtin": 0,
+        "gemini-builtin": 0.6719999999999998,
+        "droid-builtin": 0,
+        "codex-builtin": 0
+      }
+    },
+    {
+      "id": "websearch-1267",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "claude-code-builtin": 1,
+        "gemini-builtin": 0.99968,
+        "droid-builtin": 0.98976,
+        "codex-builtin": 1
+      },
+      "passExpK": {
+        "claude-code-builtin": 1,
+        "gemini-builtin": 0.3276800000000002,
+        "droid-builtin": 0.07776,
+        "codex-builtin": 1
+      },
+      "flakiness": {
+        "claude-code-builtin": 0,
+        "gemini-builtin": 0.6719999999999998,
+        "droid-builtin": 0.9119999999999999,
+        "codex-builtin": 0
+      }
+    },
+    {
+      "id": "websearch-1926",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "claude-code-builtin": 1,
+        "gemini-builtin": 1,
+        "droid-builtin": 1,
+        "codex-builtin": 0.98976
+      },
+      "passExpK": {
+        "claude-code-builtin": 1,
+        "gemini-builtin": 1,
+        "droid-builtin": 1,
+        "codex-builtin": 0.07776
+      },
+      "flakiness": {
+        "claude-code-builtin": 0,
+        "gemini-builtin": 0,
+        "droid-builtin": 0,
+        "codex-builtin": 0.9119999999999999
+      }
+    },
+    {
+      "id": "websearch-1788",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "claude-code-builtin": 1,
+        "gemini-builtin": 1,
+        "droid-builtin": 1,
+        "codex-builtin": 1
+      },
+      "passExpK": {
+        "claude-code-builtin": 1,
+        "gemini-builtin": 1,
+        "droid-builtin": 1,
+        "codex-builtin": 1
+      },
+      "flakiness": {
+        "claude-code-builtin": 0,
+        "gemini-builtin": 0,
+        "droid-builtin": 0,
+        "codex-builtin": 0
+      }
+    },
+    {
+      "id": "websearch-832",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "claude-code-builtin": 1,
+        "gemini-builtin": 1,
+        "droid-builtin": 1,
+        "codex-builtin": 1
+      },
+      "passExpK": {
+        "claude-code-builtin": 1,
+        "gemini-builtin": 1,
+        "droid-builtin": 1,
+        "codex-builtin": 1
+      },
+      "flakiness": {
+        "claude-code-builtin": 0,
+        "gemini-builtin": 0,
+        "droid-builtin": 0,
+        "codex-builtin": 0
+      }
+    },
+    {
+      "id": "websearch-1859",
+      "capabilityWinner": "droid-builtin",
+      "reliabilityWinner": "droid-builtin",
+      "passAtK": {
+        "claude-code-builtin": 0,
+        "gemini-builtin": 0,
+        "droid-builtin": 0.6723199999999998,
+        "codex-builtin": 0
+      },
+      "passExpK": {
+        "claude-code-builtin": 0,
+        "gemini-builtin": 0,
+        "droid-builtin": 0.0003200000000000002,
+        "codex-builtin": 0
+      },
+      "flakiness": {
+        "claude-code-builtin": 0,
+        "gemini-builtin": 0,
+        "droid-builtin": 0.6719999999999998,
+        "codex-builtin": 0
+      }
+    },
+    {
+      "id": "websearch-293",
+      "capabilityWinner": "claude-code-builtin",
+      "reliabilityWinner": "claude-code-builtin",
+      "passAtK": {
+        "claude-code-builtin": 1,
+        "gemini-builtin": 0.99968,
+        "droid-builtin": 0.98976,
+        "codex-builtin": 0.99968
+      },
+      "passExpK": {
+        "claude-code-builtin": 1,
+        "gemini-builtin": 0.3276800000000002,
+        "droid-builtin": 0.07776,
+        "codex-builtin": 0.3276800000000002
+      },
+      "flakiness": {
+        "claude-code-builtin": 0,
+        "gemini-builtin": 0.6719999999999998,
+        "droid-builtin": 0.9119999999999999,
+        "codex-builtin": 0.6719999999999998
+      }
+    },
+    {
+      "id": "websearch-389",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "claude-code-builtin": 1,
+        "gemini-builtin": 1,
+        "droid-builtin": 1,
+        "codex-builtin": 0.92224
+      },
+      "passExpK": {
+        "claude-code-builtin": 1,
+        "gemini-builtin": 1,
+        "droid-builtin": 1,
+        "codex-builtin": 0.010240000000000006
+      },
+      "flakiness": {
+        "claude-code-builtin": 0,
+        "gemini-builtin": 0,
+        "droid-builtin": 0,
+        "codex-builtin": 0.9119999999999999
+      }
+    },
+    {
+      "id": "websearch-842",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "claude-code-builtin": 1,
+        "gemini-builtin": 1,
+        "droid-builtin": 0.92224,
+        "codex-builtin": 0.99968
+      },
+      "passExpK": {
+        "claude-code-builtin": 1,
+        "gemini-builtin": 1,
+        "droid-builtin": 0.010240000000000006,
+        "codex-builtin": 0.3276800000000002
+      },
+      "flakiness": {
+        "claude-code-builtin": 0,
+        "gemini-builtin": 0,
+        "droid-builtin": 0.9119999999999999,
+        "codex-builtin": 0.6719999999999998
+      }
+    },
+    {
+      "id": "websearch-1861",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "claude-code-builtin": 1,
+        "gemini-builtin": 1,
+        "droid-builtin": 0.99968,
+        "codex-builtin": 0.92224
+      },
+      "passExpK": {
+        "claude-code-builtin": 1,
+        "gemini-builtin": 1,
+        "droid-builtin": 0.3276800000000002,
+        "codex-builtin": 0.010240000000000006
+      },
+      "flakiness": {
+        "claude-code-builtin": 0,
+        "gemini-builtin": 0,
+        "droid-builtin": 0.6719999999999998,
+        "codex-builtin": 0.9119999999999999
+      }
+    },
+    {
+      "id": "websearch-150",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "claude-code-builtin": 0.92224,
+        "gemini-builtin": 1,
+        "droid-builtin": 1,
+        "codex-builtin": 1
+      },
+      "passExpK": {
+        "claude-code-builtin": 0.010240000000000006,
+        "gemini-builtin": 1,
+        "droid-builtin": 1,
+        "codex-builtin": 1
+      },
+      "flakiness": {
+        "claude-code-builtin": 0.9119999999999999,
+        "gemini-builtin": 0,
+        "droid-builtin": 0,
+        "codex-builtin": 0
+      }
+    },
+    {
+      "id": "websearch-1204",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "claude-code-builtin": 1,
+        "gemini-builtin": 1,
+        "droid-builtin": 1,
+        "codex-builtin": 1
+      },
+      "passExpK": {
+        "claude-code-builtin": 1,
+        "gemini-builtin": 1,
+        "droid-builtin": 1,
+        "codex-builtin": 1
+      },
+      "flakiness": {
+        "claude-code-builtin": 0,
+        "gemini-builtin": 0,
+        "droid-builtin": 0,
+        "codex-builtin": 0
+      }
+    },
+    {
+      "id": "websearch-1764",
+      "capabilityWinner": "gemini-builtin",
+      "reliabilityWinner": "gemini-builtin",
+      "passAtK": {
+        "claude-code-builtin": 0.6723199999999998,
+        "gemini-builtin": 1,
+        "droid-builtin": 0,
+        "codex-builtin": 0.99968
+      },
+      "passExpK": {
+        "claude-code-builtin": 0.0003200000000000002,
+        "gemini-builtin": 1,
+        "droid-builtin": 0,
+        "codex-builtin": 0.3276800000000002
+      },
+      "flakiness": {
+        "claude-code-builtin": 0.6719999999999998,
+        "gemini-builtin": 0,
+        "droid-builtin": 0,
+        "codex-builtin": 0.6719999999999998
+      }
+    },
+    {
+      "id": "websearch-844",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "claude-code-builtin": 0.92224,
+        "gemini-builtin": 1,
+        "droid-builtin": 1,
+        "codex-builtin": 1
+      },
+      "passExpK": {
+        "claude-code-builtin": 0.010240000000000006,
+        "gemini-builtin": 1,
+        "droid-builtin": 1,
+        "codex-builtin": 1
+      },
+      "flakiness": {
+        "claude-code-builtin": 0.9119999999999999,
+        "gemini-builtin": 0,
+        "droid-builtin": 0,
+        "codex-builtin": 0
+      }
+    },
+    {
+      "id": "websearch-245",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "claude-code-builtin": 1,
+        "gemini-builtin": 1,
+        "droid-builtin": 1,
+        "codex-builtin": 0.99968
+      },
+      "passExpK": {
+        "claude-code-builtin": 1,
+        "gemini-builtin": 1,
+        "droid-builtin": 1,
+        "codex-builtin": 0.3276800000000002
+      },
+      "flakiness": {
+        "claude-code-builtin": 0,
+        "gemini-builtin": 0,
+        "droid-builtin": 0,
+        "codex-builtin": 0.6719999999999998
+      }
+    }
+  ]
+}

@@ -1,14 +1,69 @@
 #!/usr/bin/env bun
+
+/**
+ * Parallel trials runner for measuring agent reliability
+ *
+ * @remarks
+ * Runs multiple trials per prompt across agent × search provider combinations to measure
+ * pass@k (capability) and pass^k (reliability) metrics.
+ *
+ * ## Execution Model
+ *
+ * Uses Docker containers like run.ts for isolated execution:
+ * - **Agents**: claude-code, gemini, droid, codex (or subset via --agent)
+ * - **Search Providers**: builtin, you (or subset via --search-provider)
+ * - **Trial Types**: default (k=5), capability (k=10), regression (k=3)
+ *
+ * Each combination runs in its own Docker container with isolated environment:
+ * ```bash
+ * docker compose run --rm \
+ *   -e SEARCH_PROVIDER=you \
+ *   claude-code \
+ *   bunx @plaited/agent-eval-harness trials ...
+ * ```
+ *
+ * ## Output Format
+ *
+ * Results written to `data/results/trials/YYYY-MM-DD/{agent}/{provider}.jsonl`:
+ * ```
+ * trials/2026-01-29/claude-code/builtin.jsonl
+ * trials/2026-01-29/gemini/you.jsonl
+ * ```
+ *
+ * Each record contains:
+ * - `id`: Prompt identifier
+ * - `passRate`: Fraction of trials that passed
+ * - `passAtK`: Probability of at least one success in k trials
+ * - `passExpK`: Probability of k consecutive successes
+ * - `trials`: Array of individual trial results
+ *
+ * ## Metrics
+ *
+ * - **pass@k**: Capability metric (can the agent solve this task?)
+ * - **pass^k**: Reliability metric (does it always succeed?)
+ * - **Flakiness**: pass@k - pass^k (high = inconsistent)
+ *
+ * Usage:
+ *   bun scripts/run-trials.ts                              # All agents/providers, k=5
+ *   bun scripts/run-trials.ts --trial-type capability      # All agents, k=10
+ *   bun scripts/run-trials.ts --agent gemini               # Single agent, all providers
+ *   bun scripts/run-trials.ts --search-provider you        # All agents, MCP only
+ *   bun scripts/run-trials.ts -k 7                         # Custom k value
+ *
+ * @public
+ */
+
 import { spawn } from "node:child_process";
+import { MCP_SERVERS, type McpServerKey } from "../mcp-servers.ts";
 
 type Agent = "claude-code" | "gemini" | "droid" | "codex";
-type Mode = "test" | "full";
 type TrialType = "default" | "capability" | "regression";
+type SearchProvider = McpServerKey | "builtin";
 
 type TrialsOptions = {
-  agent: Agent;
-  mode: Mode;
+  agents: Agent[];
   trialType: TrialType;
+  searchProviders: SearchProvider[];
   k?: number;
   dryRun?: boolean;
 };
@@ -24,11 +79,13 @@ const ALL_AGENTS: Agent[] = ["claude-code", "gemini", "droid", "codex"];
  * @public
  */
 const parseArgs = (args: string[]): TrialsOptions => {
-  let agent: Agent = "droid"; // Default to droid
-  let mode: Mode = "test";
+  const agents: Agent[] = [];
+  const searchProviders: SearchProvider[] = [];
   let trialType: TrialType = "default";
   let k: number | undefined;
   let dryRun = false;
+
+  const validProviders = ["builtin", ...Object.keys(MCP_SERVERS)];
 
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--agent" && i + 1 < args.length) {
@@ -36,16 +93,16 @@ const parseArgs = (args: string[]): TrialsOptions => {
       if (!ALL_AGENTS.includes(agentArg as Agent)) {
         throw new Error(`Invalid agent: ${agentArg}. Must be one of: ${ALL_AGENTS.join(", ")}`);
       }
-      agent = agentArg as Agent;
+      agents.push(agentArg as Agent);
       i++;
-    } else if (args[i] === "--mode" && i + 1 < args.length) {
-      const modeArg = args[i + 1];
-      if (modeArg !== "test" && modeArg !== "full") {
-        throw new Error(`Invalid mode: ${modeArg}. Must be "test" or "full"`);
+    } else if (args[i] === "--search-provider" && i + 1 < args.length) {
+      const providerArg = args[i + 1];
+      if (!validProviders.includes(providerArg as string)) {
+        throw new Error(`Invalid search provider: ${providerArg}. Must be one of: ${validProviders.join(", ")}`);
       }
-      mode = modeArg;
+      searchProviders.push(providerArg as SearchProvider);
       i++;
-    } else if (args[i] === "--type" && i + 1 < args.length) {
+    } else if (args[i] === "--trial-type" && i + 1 < args.length) {
       const typeArg = args[i + 1];
       if (typeArg !== "default" && typeArg !== "capability" && typeArg !== "regression") {
         throw new Error(`Invalid trial type: ${typeArg}. Must be "default", "capability", or "regression"`);
@@ -67,7 +124,16 @@ const parseArgs = (args: string[]): TrialsOptions => {
     }
   }
 
-  return { agent, mode, trialType, k, dryRun };
+  // Defaults: all agents, all providers
+  const mcpProviders = Object.keys(MCP_SERVERS) as McpServerKey[];
+
+  return {
+    agents: agents.length > 0 ? agents : ALL_AGENTS,
+    trialType,
+    searchProviders: searchProviders.length > 0 ? searchProviders : ["builtin", ...mcpProviders],
+    k,
+    dryRun,
+  };
 };
 
 /**
@@ -93,83 +159,142 @@ const getKValue = (trialType: TrialType, override?: number): number => {
 };
 
 /**
- * Get output file path for trials results
+ * Get prompt dataset path for trials
  *
- * @param agent - Agent name
- * @param mode - Test mode (test or full)
- * @param trialType - Type of trial
- * @returns Output file path
+ * @param searchProvider - Search provider (builtin or MCP server key)
+ * @returns Prompt dataset path
  *
  * @internal
  */
-const getOutputPath = (agent: Agent, mode: Mode, trialType: TrialType): string => {
-  if (trialType === "capability") {
-    return `data/results/trials/${agent}-capability.jsonl`;
-  }
-  if (trialType === "regression") {
-    return `data/results/trials/${agent}-regression.jsonl`;
-  }
-  return `data/results/trials/${agent}-${mode}.jsonl`;
+const getPromptPath = (searchProvider: SearchProvider): string => {
+  return searchProvider === "builtin"
+    ? "/eval/data/prompts/trials/prompts.jsonl"
+    : `/eval/data/prompts/trials/prompts-${searchProvider}.jsonl`;
 };
 
 /**
- * Run trials for a single agent
+ * Run trials for a single agent-provider combination using Docker
  *
- * @param options - Trials execution options
+ * @param agent - Agent name
+ * @param searchProvider - Search provider
+ * @param trialType - Type of trial
+ * @param k - Number of trials per prompt
+ * @param scenarioId - Scenario number for progress tracking
+ * @param totalScenarios - Total number of scenarios
  * @returns Promise resolving to exit code
  *
  * @internal
  */
-const runTrials = (options: TrialsOptions): Promise<number> => {
+const runTrials = (
+  agent: Agent,
+  searchProvider: SearchProvider,
+  trialType: TrialType,
+  k: number,
+  scenarioId: number,
+  totalScenarios: number,
+): Promise<number> => {
   return new Promise((resolve) => {
-    const k = getKValue(options.trialType, options.k);
-    const dataset = options.mode === "full" ? "data/prompts/full.jsonl" : "data/prompts/test.jsonl";
-    const schema = `agent-schemas/${options.agent}.json`;
-    const outputPath = getOutputPath(options.agent, options.mode, options.trialType);
-    const grader = "./scripts/inline-grader.ts";
+    const label = `[${scenarioId}/${totalScenarios}] ${agent}-${searchProvider}`;
+    const dataset = getPromptPath(searchProvider);
+    const schema = `/eval/agent-schemas/${agent}.json`;
+    const grader = "/eval/scripts/inline-grader.ts";
 
     const startTime = Date.now();
 
     console.log(`\n${"=".repeat(80)}`);
-    console.log(`Running trials: ${options.agent} (k=${k}, mode=${options.mode})`);
+    console.log(`${label} - STARTING (k=${k})`);
     console.log(`${"=".repeat(80)}\n`);
 
-    if (options.dryRun) {
-      console.log("[DRY RUN] Would execute:");
-      console.log(
-        `  bunx @plaited/agent-eval-harness trials ${dataset} --schema ${schema} -k ${k} --grader ${grader} -o ${outputPath} --progress`,
-      );
-      resolve(0);
-      return;
+    // Build output path with trial type suffix
+    const runDate = new Date().toISOString().split("T")[0];
+    const typeSuffix = trialType === "default" ? "" : `-${trialType}`;
+    const outputPath = `/eval/data/results/trials/${runDate}/${agent}/${searchProvider}${typeSuffix}.jsonl`;
+
+    // Build trials command to run inside Docker container with explicit output path
+    const trialsCmd = [
+      "bunx",
+      "@plaited/agent-eval-harness",
+      "trials",
+      dataset,
+      "--schema",
+      schema,
+      "-k",
+      k.toString(),
+      "--grader",
+      grader,
+      "-o",
+      outputPath,
+      "--progress",
+      "--cwd",
+      "/workspace",
+    ];
+
+    // Run via Docker compose with environment variables
+    // Pass trial type as TRIAL_TYPE env var for entrypoint to detect
+    const envVars = ["-e", `SEARCH_PROVIDER=${searchProvider}`];
+    if (trialType !== "default") {
+      envVars.push("-e", `TRIAL_TYPE=${trialType}`);
     }
 
-    const proc = spawn(
-      "bunx",
-      [
-        "@plaited/agent-eval-harness",
-        "trials",
-        dataset,
-        "--schema",
-        schema,
-        "-k",
-        k.toString(),
-        "--grader",
-        grader,
-        "-o",
-        outputPath,
-        "--progress",
-      ],
-      {
-        stdio: "inherit",
-      },
-    );
+    const proc = spawn("docker", ["compose", "run", "--rm", ...envVars, agent, ...trialsCmd], {
+      stdio: "pipe", // Capture output for selective logging
+    });
+
+    let currentPrompt = "";
+    let hasError = false;
+
+    // Show important progress indicators
+    proc.stdout?.on("data", (data) => {
+      const lines = data.toString().split("\n");
+      for (const line of lines) {
+        // Track current prompt
+        const promptMatch = line.match(/\[(\d+)\/(\d+)\]/);
+        if (promptMatch) {
+          currentPrompt = `${promptMatch[1]}/${promptMatch[2]}`;
+        }
+
+        // Show key progress events
+        if (
+          line.includes("Running") ||
+          line.includes("Done!") ||
+          line.includes("TIMEOUT") ||
+          line.includes("ERROR") ||
+          line.match(/✓|✗/) !== null
+        ) {
+          const elapsed = ((Date.now() - startTime) / 1000).toFixed(0);
+          const prefix = currentPrompt ? `[${currentPrompt}] ` : "";
+          console.log(`  ${label} ${prefix}(${elapsed}s): ${line.trim()}`);
+
+          if (line.includes("ERROR") && !line.includes("MCP ERROR")) {
+            hasError = true;
+          }
+        }
+      }
+    });
+
+    proc.stderr?.on("data", (data) => {
+      const lines = data.toString().split("\n");
+      for (const line of lines) {
+        if (line.includes("ERROR") && !line.includes("MCP ERROR")) {
+          // Fatal errors (non-MCP)
+          const elapsed = ((Date.now() - startTime) / 1000).toFixed(0);
+          console.error(`  ${label} (${elapsed}s): ⚠️  FATAL: ${line.trim()}`);
+          hasError = true;
+        } else if (line.includes("MCP ERROR")) {
+          // MCP errors are often warnings (tool may continue)
+          const elapsed = ((Date.now() - startTime) / 1000).toFixed(0);
+          console.warn(`  ${label} (${elapsed}s): ⚠️  WARNING: ${line.trim()}`);
+        }
+      }
+    });
 
     proc.on("close", (code) => {
       const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
       const status = code === 0 ? "✓ COMPLETED" : "✗ FAILED";
+      const errorNote = hasError && code === 0 ? " (had warnings)" : "";
 
       console.log(`\n${"=".repeat(80)}`);
-      console.log(`${options.agent} - ${status} (${elapsed}s, exit code: ${code})`);
+      console.log(`${label} - ${status}${errorNote} (${elapsed}s, exit code: ${code})`);
       console.log(`${"=".repeat(80)}\n`);
 
       resolve(code ?? 1);
@@ -178,7 +303,7 @@ const runTrials = (options: TrialsOptions): Promise<number> => {
     proc.on("error", (err) => {
       const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
       console.error(`\n${"=".repeat(80)}`);
-      console.error(`${options.agent} - ✗ ERROR (${elapsed}s)`);
+      console.error(`${label} - ✗ ERROR (${elapsed}s)`);
       console.error(`  ${err.message}`);
       console.error(`${"=".repeat(80)}\n`);
       resolve(1);
@@ -196,14 +321,134 @@ const main = async () => {
 
   try {
     const options = parseArgs(args);
+    const k = getKValue(options.trialType, options.k);
 
-    console.log(`Agent: ${options.agent}`);
-    console.log(`Mode: ${options.mode}`);
-    console.log(`Trial type: ${options.trialType}`);
-    console.log(`k: ${getKValue(options.trialType, options.k)}`);
+    console.log(`${options.dryRun ? "[DRY RUN] " : ""}Pass@k Trials Configuration`);
+    console.log(`${"=".repeat(80)}`);
+    console.log(`Trial type: ${options.trialType} (k=${k})`);
+    console.log(`Agents: ${options.agents.join(", ")}`);
+    console.log(`Search providers: ${options.searchProviders.join(", ")}`);
+    console.log(`Execution: Docker containers (isolated)`);
+    console.log(`${"=".repeat(80)}\n`);
 
-    const exitCode = await runTrials(options);
-    process.exit(exitCode);
+    // Build execution matrix
+    type RunConfig = { agent: Agent; searchProvider: SearchProvider };
+    const runs: RunConfig[] = [];
+    for (const agent of options.agents) {
+      for (const provider of options.searchProviders) {
+        runs.push({ agent, searchProvider: provider });
+      }
+    }
+
+    console.log(`${options.dryRun ? "[DRY RUN] Would run" : "Running"} ${runs.length} trial scenarios in parallel\n`);
+
+    if (options.dryRun) {
+      console.log("[DRY RUN] Execution plan:");
+      const runDate = new Date().toISOString().split("T")[0];
+      for (let i = 0; i < runs.length; i++) {
+        const run = runs[i];
+        if (!run) continue;
+        const dataset = getPromptPath(run.searchProvider);
+        const typeSuffix = options.trialType === "default" ? "" : `-${options.trialType}`;
+        const outputPath = `/eval/data/results/trials/${runDate}/${run.agent}/${run.searchProvider}${typeSuffix}.jsonl`;
+        console.log(`  [${i + 1}/${runs.length}] ${run.agent}-${run.searchProvider}:`);
+        console.log(`    Dataset: ${dataset}`);
+        console.log(`    Output: ${outputPath}`);
+        console.log(`    Trials per prompt: ${k}`);
+        console.log(
+          `    Docker: docker compose run --rm -e SEARCH_PROVIDER=${run.searchProvider}${options.trialType !== "default" ? ` -e TRIAL_TYPE=${options.trialType}` : ""} ${run.agent} bunx @plaited/agent-eval-harness trials ... -o ${outputPath}\n`,
+        );
+      }
+      console.log("[DRY RUN] No trials were executed.");
+      process.exit(0);
+    }
+
+    // Track completion
+    const completed = new Set<number>();
+    const startTime = Date.now();
+
+    // Status heartbeat every 60 seconds (trials are longer)
+    const statusInterval = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      const inProgress = runs.length - completed.size;
+
+      if (inProgress > 0) {
+        console.log(`\n⏱️  Status update (${elapsed}s elapsed):`);
+        console.log(`   Completed: ${completed.size}/${runs.length}`);
+        console.log(`   In progress: ${inProgress}`);
+
+        const stillRunning = runs
+          .map((run, index) =>
+            completed.has(index + 1) ? null : `[${index + 1}/${runs.length}] ${run.agent}-${run.searchProvider}`,
+          )
+          .filter((x) => x !== null);
+
+        if (stillRunning.length > 0) {
+          console.log(`   Still running: ${stillRunning.join(", ")}`);
+        }
+        console.log("");
+      }
+    }, 60000);
+
+    // Run all scenarios in parallel
+    const results = await Promise.all(
+      runs.map(({ agent, searchProvider }, index) =>
+        runTrials(agent, searchProvider, options.trialType, k, index + 1, runs.length).then((result) => {
+          completed.add(index + 1);
+          return result;
+        }),
+      ),
+    );
+
+    clearInterval(statusInterval);
+
+    // Report results summary
+    console.log(`\n${"=".repeat(80)}`);
+    console.log("FINAL RESULTS SUMMARY");
+    console.log("=".repeat(80));
+
+    const failures: Array<{ label: string; exitCode: number }> = [];
+    const successes: string[] = [];
+
+    for (let i = 0; i < runs.length; i++) {
+      const run = runs[i];
+      const exitCode = results[i];
+
+      if (!run || exitCode === undefined) {
+        continue;
+      }
+
+      const label = `[${i + 1}/${runs.length}] ${run.agent}-${run.searchProvider}`;
+
+      if (exitCode === 0) {
+        successes.push(label);
+        console.log(`✓ ${label}`);
+      } else {
+        failures.push({ label, exitCode });
+        console.log(`✗ ${label} (exit code: ${exitCode})`);
+      }
+    }
+
+    console.log(`\n${"=".repeat(80)}`);
+    console.log(`Success: ${successes.length}/${runs.length}`);
+    console.log(`Failed: ${failures.length}/${runs.length}`);
+    console.log("=".repeat(80));
+
+    const totalTime = ((Date.now() - startTime) / 1000 / 60).toFixed(1);
+    console.log(`\nTotal time: ${totalTime} minutes`);
+
+    if (failures.length > 0) {
+      console.error(`\n⚠️  Failed scenarios (${failures.length}):`);
+      failures.forEach(({ label, exitCode }) => {
+        const errorType = exitCode === 143 || exitCode === 124 ? "TIMEOUT" : "ERROR";
+        console.error(`  - ${label}: ${errorType} (exit code ${exitCode})`);
+      });
+      console.error("\n💡 Tip: Check output above for specific error details (authentication, MCP issues, etc.)");
+      process.exit(1);
+    } else {
+      console.log("\n✅ All trial scenarios completed successfully!");
+      process.exit(0);
+    }
   } catch (error) {
     console.error("Error:", (error as Error).message);
     process.exit(1);

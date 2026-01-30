@@ -15,7 +15,7 @@ This evaluation system runs a matrix comparison: 4 agents × 2 tools = 8 pairing
 
 ```mermaid
 flowchart TD
-    Env[MCP_TOOL & DATASET env vars] --> Entrypoint[docker/entrypoint]
+    Env[SEARCH_PROVIDER & DATASET env vars] --> Entrypoint[docker/entrypoint]
     Entrypoint -->|builtin| SkipMCP[Skip MCP setup]
     Entrypoint -->|you| ConfigMCP[Configure MCP via CLI]
 
@@ -26,6 +26,10 @@ flowchart TD
     Schemas[agent-schemas/*.json] --> Harness
     Harness --> Results[data/results/agent/tool.jsonl]
 ```
+
+## Latest Results
+
+📊 **[View Latest Evaluation Summary](data/comparisons/runs/2026-01-29/SUMMARY.md)** - Comprehensive analysis with quality rankings, performance metrics, and recommendations
 
 ## Quick Start
 
@@ -51,95 +55,96 @@ Required keys:
 - `OPENAI_API_KEY` - Codex agent
 - `YOU_API_KEY` - You.com MCP tool
 
-### 3. Run Evaluations
+### 3. Generate Test Prompts
 
-#### Test Workflow (5 prompts, ~5 minutes)
+Generate test prompts (includes MCP variants automatically):
 
 ```bash
-# Run all agents in parallel (8 scenarios: 4 agents × 2 tools)
-bun run run
-
-# Or run specific agent+tool combinations
-docker compose run --rm -e MCP_TOOL=builtin claude-code
-docker compose run --rm -e MCP_TOOL=you gemini
+bun run sample:test        # 5 prompts for quick testing
+bun run sample:trials      # 30 prompts for pass@k analysis
 ```
 
-#### Full Workflow (151 prompts, ~2 hours)
+### 4. Run Evaluations
+
+#### Test Mode (5 prompts, ~5 minutes)
 
 ```bash
-# Run all agents with full dataset
-bun run run:full
+bun run run              # All agents, test dataset
+bun run run:test         # Explicit test mode
 ```
 
-### 4. Analyze Results
-
-Compare results using the flexible CLI tool:
+#### Full Mode (151 prompts, ~2 hours)
 
 ```bash
-# Default: all agents, test mode, weighted strategy
-bun scripts/compare.ts
-
-# Compare full dataset
-bun scripts/compare.ts --mode full
-
-# Filter by agent or search provider
-bun scripts/compare.ts --agent gemini --agent claude-code
-bun scripts/compare.ts --search-provider builtin
-
-# Use statistical strategy
-bun scripts/compare.ts --strategy statistical
-
-# Combine flags
-bun scripts/compare.ts --mode full --search-provider you --strategy statistical
-
-# Preview configuration
-bun scripts/compare.ts --dry-run
+bun run run:full         # All agents, full dataset
 ```
 
-Or use npm shortcuts for common comparisons:
+#### Custom Runs
 
 ```bash
-# Test data comparisons
-bun run compare:test-weighted       # All agents, both modes
+# Specific agent+tool combinations via Docker
+docker compose run --rm -e SEARCH_PROVIDER=builtin claude-code
+docker compose run --rm -e SEARCH_PROVIDER=you gemini
+```
+
+### 5. Analyze Results
+
+Compare agent performance using npm scripts:
+
+```bash
+# Test mode comparisons
+bun run compare                     # Default: test mode, weighted
+bun run compare:test                # Explicit test mode
 bun run compare:test-statistical    # Statistical analysis
-bun run compare:test-builtin        # Builtin only
-bun run compare:test-you            # MCP only
 
-# Flexible CLI shortcuts
-bun run compare                     # Test mode, all agents, weighted
-bun run compare:full                # Full mode, latest run
-bun run compare:statistical         # Test mode, statistical strategy
+# Full mode comparisons
+bun run compare:full                # Full dataset, weighted
+bun run compare:full-statistical    # Full dataset, statistical
+
+# Advanced: Custom filters
+bun run compare -- --agent gemini --search-provider you
 ```
 
-View results:
+View comparison results:
 
 ```bash
-cat data/comparison-all-weighted-test.json | jq '.meta, .quality'
-cat data/comparison-all-weighted-test.json | jq '.headToHead.pairwise'
+cat data/comparisons/test-runs/all-weighted.json | jq '.quality'
+cat data/comparisons/runs/*/all-weighted.json | jq '.headToHead.pairwise'
 ```
 
 ## Pass@k Analysis
 
-Run multiple trials per prompt to measure agent reliability:
+Run multiple trials per prompt across all agents and search providers to measure reliability:
 
 ```bash
-# Default: Droid agent, test set, k=5
-bun run trials
+# Run all agents × all providers (8 combinations, k=5 each)
+bun run trials                      # Default: all agents/providers, k=5
 
-# Capability exploration (k=10)
-bun run trials:capability
+# Different trial types
+bun run trials:capability           # All agents/providers, k=10 (capability exploration)
+bun run trials:regression           # All agents/providers, k=3 (fast regression checks)
 
-# Regression safety (k=3, faster)
-bun run trials:regression
+# Filter to specific agents or providers
+bun run trials -- --agent gemini                    # Single agent, all providers
+bun run trials -- --search-provider you             # All agents, MCP only
+bun run trials -- --agent claude-code --search-provider builtin
 
-# Custom: specify agent and k value
-bun run trials -- --agent gemini -k 7
-
-# View metrics
-cat data/results/trials/droid-test.jsonl | jq '{id, passRate, passAtK, passExpK}'
+# Custom k value
+bun run trials -- -k 7              # All agents/providers, k=7
 ```
 
-**Metrics:** `passAtK` = capability (can do task?), `passExpK` = reliability (always succeeds?)
+View pass@k metrics:
+
+```bash
+cat data/results/trials/2026-01-29/*/builtin.jsonl | jq '{id, passRate, passAtK, passExpK}'
+cat data/results/trials/*/droid/builtin.jsonl | jq '.passRate'
+```
+
+**Metrics:**
+- `passAtK` - Capability (can it do the task at all?)
+- `passExpK` - Reliability (does it always succeed?)
+
+**Output:** Results written to `data/results/trials/YYYY-MM-DD/{agent}/{provider}.jsonl`
 
 ## Architecture
 
@@ -165,6 +170,7 @@ Single source of truth for MCP server configurations. The TypeScript entrypoint 
 **Available Tools:**
 - `builtin` - Agent's native search (no MCP config)
 - `you` - You.com MCP server (requires `YOU_API_KEY`)
+  - Expected tools: `you-search`, `you-express`, `you-contents`
 
 To add new MCP tools, see `.claude/skills/web-search-agent-evals/SKILL.md`.
 
@@ -176,6 +182,9 @@ To add new MCP tools, see `.claude/skills/web-search-agent-evals/SKILL.md`.
 | `compare.ts` | Flexible comparison tool with mode/agent/strategy flags |
 | `run-trials.ts` | Multi-trial wrapper for pass@k/pass^k analysis |
 | `inline-grader.ts` | Hybrid grader (deterministic + LLM scoring) |
+| `calibrate.ts` | Interactive grader calibration tool |
+| `generate-mcp-prompts.ts` | Generate MCP variant prompts with metadata |
+| `sample.ts` | Sample prompts for test/trials datasets |
 
 See "Analyze Results" in Quick Start for comparison usage examples.
 
@@ -195,26 +204,39 @@ docker/
 ```
 
 The entrypoint script:
-1. Reads `MCP_TOOL` environment variable (`builtin` or `you`)
+1. Reads `SEARCH_PROVIDER` environment variable (`builtin` or `you`)
 2. Reads `DATASET` environment variable (`test` or `full`)
 3. Configures MCP via agent CLI if needed (skips for `builtin`)
 4. Runs `@plaited/agent-eval-harness capture` with appropriate prompts
 
 ## Prompts
 
+Prompts are organized by dataset type, with each dataset in its own directory containing both builtin and MCP variants:
+
 | File | Prompts | Format | Use With |
 |------|---------|--------|----------|
-| `test.jsonl` | 5 | `<web-search>` | `SEARCH_PROVIDER=builtin` |
-| `test-you.jsonl` | 5 | `<web-search mcp-server="ydc-server">` | `SEARCH_PROVIDER=you` |
-| `full.jsonl` | 151 | `<web-search>` | `SEARCH_PROVIDER=builtin` |
-| `full-you.jsonl` | 151 | `<web-search mcp-server="ydc-server">` | `SEARCH_PROVIDER=you` |
+| `full/prompts.jsonl` | 151 | Standard | `SEARCH_PROVIDER=builtin` |
+| `full/prompts-you.jsonl` | 151 | MCP variant | `SEARCH_PROVIDER=you` |
+| `test/prompts.jsonl` | 5 | Standard | `SEARCH_PROVIDER=builtin` |
+| `test/prompts-you.jsonl` | 5 | MCP variant | `SEARCH_PROVIDER=you` |
+| `trials/prompts.jsonl` | 30 | Standard | `SEARCH_PROVIDER=builtin` |
+| `trials/prompts-you.jsonl` | 30 | MCP variant | `SEARCH_PROVIDER=you` |
 
-**Test prompts** are randomly sampled from the full dataset. The prompts in `test.jsonl` and `test-you.jsonl` are identical except for the XML attribute (`mcp-server="ydc-server"`).
+**Test and trials prompts** are randomly sampled from the full dataset. **Builtin prompts** are plain queries. **MCP prompts** add "Use {server-name} and answer\n" prefix and metadata (`mcpServer`, `expectedTools`).
 
-To regenerate test prompts with a new random sample:
+**Metadata structure** (MCP variants only):
+```json
+{
+  "mcpServer": "ydc-server",
+  "expectedTools": ["you-search", "you-express", "you-contents"]
+}
+```
+
+**Regenerate prompts:**
 
 ```bash
-bun run sample:test
+bun run sample:test        # 5 prompts → data/prompts/test/
+bun run sample:trials      # 30 prompts → data/prompts/trials/
 ```
 
 All prompts are designed to trigger web search with time-sensitive queries and recent events.
@@ -239,31 +261,22 @@ data/results/test-runs/
 Dated snapshots for long-term analysis:
 ```
 data/results/
-├── runs/
-│   ├── 2026-01-24/
-│   │   ├── claude-code/
-│   │   │   ├── builtin.jsonl
-│   │   │   └── you.jsonl
-│   │   ├── gemini/
-│   │   ├── droid/
-│   │   └── codex/
-│   └── 2026-02-15/
-├── latest.json           # Pointer to most recent run
-└── MANIFEST.jsonl        # Run metadata
+└── runs/
+    ├── 2026-01-24/
+    │   ├── claude-code/
+    │   │   ├── builtin.jsonl
+    │   │   └── you.jsonl
+    │   ├── gemini/
+    │   ├── droid/
+    │   └── codex/
+    └── 2026-02-15/
 ```
 
-**Versioning:** Each full run is committed with a dated directory. See `MANIFEST.jsonl` for run metadata and commit history.
+**Versioning:** Each full run is committed with a dated directory.
 
-**Usage:**
+**Compare runs:**
 ```bash
-# Compare latest run (default)
-bun scripts/compare.ts --mode full
-
-# Compare specific historical run
-bun scripts/compare.ts --mode full --run-date 2026-01-24
-
-# View run history
-cat data/results/MANIFEST.jsonl | jq .
+bun run compare:full                # Latest full run
 ```
 
 Each result includes full trajectory (messages, tool calls, timing, token usage).
@@ -323,20 +336,15 @@ data/comparisons/runs/            # Full mode comparisons
     └── ...
 ```
 
-### Usage Examples
+### View Comparison Results
 
 ```bash
-# Generate comparison (outputs to versioned directory)
-bun scripts/compare.ts --mode full
+# Quality rankings and performance metrics
+jq '.quality' data/comparisons/runs/*/all-weighted.json
+jq '.performance' data/comparisons/test-runs/all-weighted.json
 
-# View quality rankings
-cat data/comparisons/runs/2026-01-24/all-weighted.json | jq '.quality'
-
-# View performance metrics
-cat data/comparisons/test-runs/all-weighted.json | jq '.performance'
-
-# View head-to-head win rates
-cat data/comparisons/test-runs/all-statistical.json | jq '.headToHead.pairwise'
+# Head-to-head win rates
+jq '.headToHead.pairwise' data/comparisons/test-runs/all-statistical.json
 ```
 
 ## Inline Grader
@@ -345,18 +353,20 @@ The project uses a hybrid grading approach in `scripts/inline-grader.ts` that ev
 
 ### Scoring Breakdown (100 points total)
 
-**Deterministic Scoring (60 points maximum):**
-- **30 pts** - Completion: Has substantial output (>50 characters)
-- **20 pts** - Tool usage: Called at least one tool during execution
-- **10 pts** - Quality bonus: Has content and no execution errors
+**Deterministic Scoring (70 points maximum):**
+- **10 pts** - Basic output: Has substantial content (≥40 characters)
+- **25 pts** - Tool usage: Called correct tool (partial credit for wrong tool if MCP expected)
+- **25 pts** - Clean execution: No errors or timeouts
+- **10 pts** - Sources bonus: Includes URLs or source references
 
-**LLM Scoring (40 points maximum):**
-Uses Gemini Flash 2.0 to evaluate:
-- **0-15 pts** - Accuracy: Is the information factually correct?
-- **0-15 pts** - Relevance: Does it answer the query?
-- **0-10 pts** - Completeness: Are all aspects addressed?
+**LLM Scoring (30 points maximum):**
+Uses Gemini Flash 3.0 to evaluate search result quality:
+- **0-15 pts** - Query match: Does it answer the search query?
+- **0-5 pts** - Source evidence: Are sources/URLs cited?
+- **0-5 pts** - Content substance: Specific info or generic fluff?
+- **0-5 pts** - Format quality: Well-organized structure?
 
-**Pass Threshold:** 70/100 (normalized score ≥ 0.7)
+**Pass Threshold:** 65/100 (normalized score ≥ 0.65)
 
 **Automatic Failures:**
 - Execution timeouts → score 0
@@ -412,13 +422,14 @@ See `.claude/skills/web-search-agent-evals/SKILL.md` for detailed guide.
 
 ### Adding MCP Tools
 
-1. **Add to mcp-servers.ts**
-2. **Update docker/entrypoint** (add case to `configureMcp()`)
-3. **Update .env and .env.example**
-4. **Update scripts/run.ts** (add to `McpTool` type)
-5. **Create MCP prompt set**
+1. **Add to mcp-servers.ts** - Define server configuration with name, URL, auth, and expectedTools
+2. **Update docker/entrypoint** - Add case to `configureMcp()` function for each agent CLI
+3. **Update .env and .env.example** - Add required API keys
+4. **Sample test prompts** - Run `bun run sample:test` to include new MCP variants
 
 See `.claude/skills/web-search-agent-evals/SKILL.md` for detailed guide.
+
+**Note:** All scripts automatically pick up new MCP servers from `mcp-servers.ts`.
 
 ## Troubleshooting
 
@@ -429,7 +440,7 @@ See `.claude/skills/web-search-agent-evals/SKILL.md` for detailed guide.
 cat .env | grep API_KEY
 
 # Test inside container
-docker compose run --rm -e MCP_TOOL=you claude-code bash -c "cat ~/.mcp.json"
+docker compose run --rm -e SEARCH_PROVIDER=you claude-code bash -c "cat ~/.mcp.json"
 ```
 
 ### Agent Schema Issues
@@ -468,7 +479,10 @@ evals/
 │   ├── run.ts              # Automated test runner
 │   ├── compare.ts          # Flexible comparison tool
 │   ├── run-trials.ts       # Pass@k trials wrapper
-│   └── inline-grader.ts    # Hybrid grader
+│   ├── inline-grader.ts    # Hybrid grader
+│   ├── calibrate.ts        # Grader calibration tool
+│   ├── generate-mcp-prompts.ts  # MCP variant generator
+│   └── sample.ts           # Prompt sampler
 │
 ├── docker/                 # Container infrastructure
 │   ├── base.Dockerfile
@@ -495,6 +509,6 @@ See `@AGENTS.md` for development rules and conventions.
 ## Built With
 
 - **[@plaited/agent-eval-harness](https://www.npmjs.com/package/@plaited/agent-eval-harness)** - Trajectory capture framework
-- **[Zod](https://zod.dev)** - TypeScript-first schema validation
+- **[Zod](https://zod.dev)** - TypeScript-first schema validation with runtime type checking (schemas in `scripts/schemas/`)
 - **[Bun](https://bun.sh)** - Fast TypeScript runtime
 - **[Docker](https://www.docker.com)** - Isolated execution

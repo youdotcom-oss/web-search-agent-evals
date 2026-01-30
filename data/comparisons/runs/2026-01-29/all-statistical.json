@@ -1,0 +1,5705 @@
+{
+  "meta": {
+    "generatedAt": "2026-01-29T17:32:34.821Z",
+    "runs": [
+      "claude-code-builtin",
+      "claude-code-you",
+      "gemini-builtin",
+      "gemini-you",
+      "droid-builtin",
+      "droid-you",
+      "codex-builtin",
+      "codex-you"
+    ],
+    "promptCount": 151,
+    "promptsWithAllRuns": 151
+  },
+  "quality": {
+    "claude-code-builtin": {
+      "avgScore": 0.9342384105960261,
+      "passRate": 0.8940397350993378,
+      "passCount": 135,
+      "failCount": 16,
+      "scoreDistribution": {
+        "0.0-0.2": 3,
+        "0.2-0.4": 1,
+        "0.4-0.6": 2,
+        "0.6-0.8": 10,
+        "0.8-1.0": 135
+      }
+    },
+    "claude-code-you": {
+      "avgScore": 0.871523178807949,
+      "passRate": 0.9735099337748344,
+      "passCount": 147,
+      "failCount": 4,
+      "scoreDistribution": {
+        "0.0-0.2": 4,
+        "0.2-0.4": 0,
+        "0.4-0.6": 0,
+        "0.6-0.8": 1,
+        "0.8-1.0": 146
+      }
+    },
+    "gemini-builtin": {
+      "avgScore": 0.8352980132450326,
+      "passRate": 0.9403973509933775,
+      "passCount": 142,
+      "failCount": 9,
+      "scoreDistribution": {
+        "0.0-0.2": 1,
+        "0.2-0.4": 0,
+        "0.4-0.6": 3,
+        "0.6-0.8": 10,
+        "0.8-1.0": 137
+      }
+    },
+    "gemini-you": {
+      "avgScore": 0.8072847682119206,
+      "passRate": 0.9668874172185431,
+      "passCount": 146,
+      "failCount": 5,
+      "scoreDistribution": {
+        "0.0-0.2": 2,
+        "0.2-0.4": 0,
+        "0.4-0.6": 2,
+        "0.6-0.8": 47,
+        "0.8-1.0": 100
+      }
+    },
+    "droid-builtin": {
+      "avgScore": 0.8682781456953634,
+      "passRate": 0.9337748344370861,
+      "passCount": 141,
+      "failCount": 10,
+      "scoreDistribution": {
+        "0.0-0.2": 5,
+        "0.2-0.4": 0,
+        "0.4-0.6": 1,
+        "0.6-0.8": 4,
+        "0.8-1.0": 141
+      }
+    },
+    "droid-you": {
+      "avgScore": 0.8845695364238397,
+      "passRate": 0.9801324503311258,
+      "passCount": 148,
+      "failCount": 3,
+      "scoreDistribution": {
+        "0.0-0.2": 3,
+        "0.2-0.4": 0,
+        "0.4-0.6": 0,
+        "0.6-0.8": 0,
+        "0.8-1.0": 148
+      }
+    },
+    "codex-builtin": {
+      "avgScore": 0.7238410596026487,
+      "passRate": 0.9205298013245033,
+      "passCount": 139,
+      "failCount": 12,
+      "scoreDistribution": {
+        "0.0-0.2": 1,
+        "0.2-0.4": 4,
+        "0.4-0.6": 5,
+        "0.6-0.8": 137,
+        "0.8-1.0": 4
+      }
+    },
+    "codex-you": {
+      "avgScore": 0.8237748344370875,
+      "passRate": 0.9668874172185431,
+      "passCount": 146,
+      "failCount": 5,
+      "scoreDistribution": {
+        "0.0-0.2": 4,
+        "0.2-0.4": 0,
+        "0.4-0.6": 1,
+        "0.6-0.8": 52,
+        "0.8-1.0": 94
+      }
+    }
+  },
+  "performance": {
+    "claude-code-builtin": {
+      "latency": {
+        "p50": 31589,
+        "p90": 62274,
+        "p99": 98533,
+        "mean": 36843.377483443706,
+        "min": 5037,
+        "max": 110252
+      },
+      "firstResponse": {
+        "p50": 31589,
+        "p90": 62274,
+        "p99": 98533,
+        "mean": 36843.39072847682,
+        "min": 5037,
+        "max": 110252
+      },
+      "totalDuration": 5563350
+    },
+    "claude-code-you": {
+      "latency": {
+        "p50": 39491,
+        "p90": 73659,
+        "p99": 102312,
+        "mean": 43515.27814569537,
+        "min": 7317,
+        "max": 114740
+      },
+      "firstResponse": {
+        "p50": 39491,
+        "p90": 73659,
+        "p99": 102312,
+        "mean": 43515.30463576159,
+        "min": 7317,
+        "max": 114741
+      },
+      "totalDuration": 6570807
+    },
+    "gemini-builtin": {
+      "latency": {
+        "p50": 23054,
+        "p90": 40313,
+        "p99": 97778,
+        "mean": 25535.76821192053,
+        "min": 6516,
+        "max": 134678
+      },
+      "firstResponse": {
+        "p50": 23054,
+        "p90": 40313,
+        "p99": 97778,
+        "mean": 25535.774834437085,
+        "min": 6516,
+        "max": 134678
+      },
+      "totalDuration": 3855901
+    },
+    "gemini-you": {
+      "latency": {
+        "p50": 19741,
+        "p90": 37951,
+        "p99": 75514,
+        "mean": 22736.218543046358,
+        "min": 8566,
+        "max": 77183
+      },
+      "firstResponse": {
+        "p50": 19741,
+        "p90": 37951,
+        "p99": 75514,
+        "mean": 22736.23178807947,
+        "min": 8566,
+        "max": 77183
+      },
+      "totalDuration": 3433169
+    },
+    "droid-builtin": {
+      "latency": {
+        "p50": 28699,
+        "p90": 69901,
+        "p99": 92597,
+        "mean": 36744.85430463576,
+        "min": 5740,
+        "max": 105859
+      },
+      "firstResponse": {
+        "p50": 28699,
+        "p90": 69901,
+        "p99": 92597,
+        "mean": 36744.85430463576,
+        "min": 5740,
+        "max": 105859
+      },
+      "totalDuration": 5548473
+    },
+    "droid-you": {
+      "latency": {
+        "p50": 22991,
+        "p90": 48515,
+        "p99": 66278,
+        "mean": 28179.582781456953,
+        "min": 9947,
+        "max": 96464
+      },
+      "firstResponse": {
+        "p50": 22991,
+        "p90": 48515,
+        "p99": 66278,
+        "mean": 28179.60927152318,
+        "min": 9947,
+        "max": 96464
+      },
+      "totalDuration": 4255117
+    },
+    "codex-builtin": {
+      "latency": {
+        "p50": 22018,
+        "p90": 69569,
+        "p99": 180010,
+        "mean": 32991.03973509934,
+        "min": 1772,
+        "max": 180015
+      },
+      "firstResponse": {
+        "p50": 22018,
+        "p90": 69569,
+        "p99": 180010,
+        "mean": 32991.05298013245,
+        "min": 1772,
+        "max": 180015
+      },
+      "totalDuration": 4981647
+    },
+    "codex-you": {
+      "latency": {
+        "p50": 42185,
+        "p90": 93763,
+        "p99": 180013,
+        "mean": 51270.68874172185,
+        "min": 3235,
+        "max": 180018
+      },
+      "firstResponse": {
+        "p50": 42185,
+        "p90": 93763,
+        "p99": 180013,
+        "mean": 51270.708609271525,
+        "min": 3235,
+        "max": 180018
+      },
+      "totalDuration": 7741874
+    }
+  },
+  "reliability": {
+    "claude-code-builtin": {
+      "toolErrors": 0,
+      "toolErrorRate": 0,
+      "timeouts": 0,
+      "timeoutRate": 0,
+      "completionRate": 1
+    },
+    "claude-code-you": {
+      "toolErrors": 0,
+      "toolErrorRate": 0,
+      "timeouts": 0,
+      "timeoutRate": 0,
+      "completionRate": 1
+    },
+    "gemini-builtin": {
+      "toolErrors": 0,
+      "toolErrorRate": 0,
+      "timeouts": 0,
+      "timeoutRate": 0,
+      "completionRate": 1
+    },
+    "gemini-you": {
+      "toolErrors": 0,
+      "toolErrorRate": 0,
+      "timeouts": 0,
+      "timeoutRate": 0,
+      "completionRate": 1
+    },
+    "droid-builtin": {
+      "toolErrors": 0,
+      "toolErrorRate": 0,
+      "timeouts": 0,
+      "timeoutRate": 0,
+      "completionRate": 1
+    },
+    "droid-you": {
+      "toolErrors": 0,
+      "toolErrorRate": 0,
+      "timeouts": 0,
+      "timeoutRate": 0,
+      "completionRate": 1
+    },
+    "codex-builtin": {
+      "toolErrors": 2,
+      "toolErrorRate": 0.013245033112582781,
+      "timeouts": 0,
+      "timeoutRate": 0,
+      "completionRate": 0.9867549668874173
+    },
+    "codex-you": {
+      "toolErrors": 4,
+      "toolErrorRate": 0.026490066225165563,
+      "timeouts": 0,
+      "timeoutRate": 0,
+      "completionRate": 0.9735099337748344
+    }
+  },
+  "trajectoryInfo": {
+    "claude-code-builtin": {
+      "richness": "full",
+      "avgStepCount": 6.211920529801325
+    },
+    "claude-code-you": {
+      "richness": "full",
+      "avgStepCount": 13.66225165562914
+    },
+    "gemini-builtin": {
+      "richness": "full",
+      "avgStepCount": 24.09933774834437
+    },
+    "gemini-you": {
+      "richness": "full",
+      "avgStepCount": 23.172185430463575
+    },
+    "droid-builtin": {
+      "richness": "full",
+      "avgStepCount": 6.6092715231788075
+    },
+    "droid-you": {
+      "richness": "full",
+      "avgStepCount": 6.7947019867549665
+    },
+    "codex-builtin": {
+      "richness": "messages-only",
+      "avgStepCount": 1.2781456953642385
+    },
+    "codex-you": {
+      "richness": "full",
+      "avgStepCount": 5.039735099337748
+    }
+  },
+  "headToHead": {
+    "prompts": [
+      {
+        "id": "websearch-2",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "gemini-builtin": 0.85,
+          "droid-builtin": 0.85,
+          "droid-you": 0.85,
+          "gemini-you": 0.83,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 56255,
+          "claude-code-you": 58928,
+          "gemini-builtin": 38175,
+          "gemini-you": 60409,
+          "droid-builtin": 45472,
+          "droid-you": 32507,
+          "codex-builtin": 80261,
+          "codex-you": 76250
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-7",
+        "winner": "droid-you",
+        "scores": {
+          "droid-you": 1,
+          "droid-builtin": 0.99,
+          "claude-code-builtin": 0.97,
+          "codex-you": 0.9,
+          "claude-code-you": 0.89,
+          "gemini-builtin": 0.87,
+          "gemini-you": 0.77,
+          "codex-builtin": 0.74
+        },
+        "latencies": {
+          "claude-code-builtin": 29264,
+          "claude-code-you": 14784,
+          "gemini-builtin": 16484,
+          "gemini-you": 13001,
+          "droid-builtin": 20517,
+          "droid-you": 17542,
+          "codex-builtin": 14839,
+          "codex-you": 36927
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-26",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 0.99,
+          "claude-code-you": 0.9,
+          "droid-you": 0.89,
+          "droid-builtin": 0.87,
+          "gemini-builtin": 0.86,
+          "gemini-you": 0.84,
+          "codex-you": 0.75,
+          "codex-builtin": 0.72
+        },
+        "latencies": {
+          "claude-code-builtin": 32430,
+          "claude-code-you": 32687,
+          "gemini-builtin": 32035,
+          "gemini-you": 11272,
+          "droid-builtin": 22270,
+          "droid-you": 22204,
+          "codex-builtin": 27843,
+          "codex-you": 20514
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-49",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 0.98,
+          "droid-builtin": 0.95,
+          "codex-you": 0.9,
+          "claude-code-you": 0.89,
+          "droid-you": 0.85,
+          "gemini-builtin": 0.84,
+          "gemini-you": 0.83,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 48462,
+          "claude-code-you": 114740,
+          "gemini-builtin": 43360,
+          "gemini-you": 26995,
+          "droid-builtin": 69875,
+          "droid-you": 35235,
+          "codex-builtin": 63667,
+          "codex-you": 56066
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-50",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "gemini-builtin": 1,
+          "droid-builtin": 1,
+          "droid-you": 1,
+          "gemini-you": 0.98,
+          "claude-code-you": 0.9,
+          "codex-you": 0.8,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 50370,
+          "claude-code-you": 41126,
+          "gemini-builtin": 25888,
+          "gemini-you": 15688,
+          "droid-builtin": 49438,
+          "droid-you": 38271,
+          "codex-builtin": 25778,
+          "codex-you": 32243
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-88",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "claude-code-you": 0.9,
+          "gemini-you": 0.85,
+          "droid-builtin": 0.85,
+          "droid-you": 0.85,
+          "gemini-builtin": 0.84,
+          "codex-you": 0.75,
+          "codex-builtin": 0.74
+        },
+        "latencies": {
+          "claude-code-builtin": 45294,
+          "claude-code-you": 55102,
+          "gemini-builtin": 39948,
+          "gemini-you": 30445,
+          "droid-builtin": 85649,
+          "droid-you": 28656,
+          "codex-builtin": 21022,
+          "codex-you": 59980
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-120",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "codex-you": 0.89,
+          "claude-code-you": 0.88,
+          "droid-you": 0.88,
+          "droid-builtin": 0.84,
+          "gemini-builtin": 0.83,
+          "gemini-you": 0.73,
+          "codex-builtin": 0.48
+        },
+        "latencies": {
+          "claude-code-builtin": 25328,
+          "claude-code-you": 15530,
+          "gemini-builtin": 13998,
+          "gemini-you": 12508,
+          "droid-builtin": 22685,
+          "droid-you": 16276,
+          "codex-builtin": 5343,
+          "codex-you": 48207
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-132",
+        "winner": "droid-you",
+        "scores": {
+          "droid-you": 0.99,
+          "claude-code-builtin": 0.98,
+          "droid-builtin": 0.98,
+          "claude-code-you": 0.88,
+          "codex-you": 0.84,
+          "gemini-builtin": 0.77,
+          "gemini-you": 0.7,
+          "codex-builtin": 0.69
+        },
+        "latencies": {
+          "claude-code-builtin": 25130,
+          "claude-code-you": 8625,
+          "gemini-builtin": 13564,
+          "gemini-you": 15814,
+          "droid-builtin": 32063,
+          "droid-you": 10860,
+          "codex-builtin": 11175,
+          "codex-you": 74704
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-135",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "gemini-you": 0.98,
+          "droid-you": 0.98,
+          "gemini-builtin": 0.97,
+          "droid-builtin": 0.95,
+          "claude-code-you": 0.9,
+          "codex-builtin": 0.75,
+          "codex-you": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 28334,
+          "claude-code-you": 32220,
+          "gemini-builtin": 18634,
+          "gemini-you": 15563,
+          "droid-builtin": 23266,
+          "droid-you": 50092,
+          "codex-builtin": 9624,
+          "codex-you": 11478
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-150",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "claude-code-you": 0.9,
+          "codex-you": 0.89,
+          "droid-you": 0.88,
+          "droid-builtin": 0.85,
+          "gemini-builtin": 0.83,
+          "codex-builtin": 0.75,
+          "gemini-you": 0.74
+        },
+        "latencies": {
+          "claude-code-builtin": 41293,
+          "claude-code-you": 33113,
+          "gemini-builtin": 14333,
+          "gemini-you": 15202,
+          "droid-builtin": 20733,
+          "droid-you": 17559,
+          "codex-builtin": 17457,
+          "codex-you": 28693
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-151",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 0.99,
+          "droid-you": 0.85,
+          "gemini-builtin": 0.84,
+          "gemini-you": 0.83,
+          "codex-you": 0.8,
+          "codex-builtin": 0.75,
+          "claude-code-you": 0,
+          "droid-builtin": 0
+        },
+        "latencies": {
+          "claude-code-builtin": 51704,
+          "claude-code-you": 33277,
+          "gemini-builtin": 28474,
+          "gemini-you": 19993,
+          "droid-builtin": 62316,
+          "droid-you": 19822,
+          "codex-builtin": 18182,
+          "codex-you": 119128
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-171",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "codex-you": 0.9,
+          "claude-code-you": 0.88,
+          "droid-builtin": 0.88,
+          "droid-you": 0.87,
+          "gemini-builtin": 0.86,
+          "gemini-you": 0.84,
+          "codex-builtin": 0.74
+        },
+        "latencies": {
+          "claude-code-builtin": 25668,
+          "claude-code-you": 63303,
+          "gemini-builtin": 26484,
+          "gemini-you": 17420,
+          "droid-builtin": 22497,
+          "droid-you": 15048,
+          "codex-builtin": 9054,
+          "codex-you": 17982
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-210",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "droid-you": 0.99,
+          "droid-builtin": 0.98,
+          "claude-code-you": 0.89,
+          "codex-you": 0.89,
+          "gemini-builtin": 0.86,
+          "gemini-you": 0.72,
+          "codex-builtin": 0.72
+        },
+        "latencies": {
+          "claude-code-builtin": 27861,
+          "claude-code-you": 61749,
+          "gemini-builtin": 24729,
+          "gemini-you": 18139,
+          "droid-builtin": 61662,
+          "droid-you": 54136,
+          "codex-builtin": 22018,
+          "codex-you": 90379
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-212",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "droid-builtin": 0.99,
+          "droid-you": 0.99,
+          "gemini-builtin": 0.94,
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "gemini-you": 0.84,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 42847,
+          "claude-code-you": 32559,
+          "gemini-builtin": 32244,
+          "gemini-you": 22099,
+          "droid-builtin": 32309,
+          "droid-you": 25002,
+          "codex-builtin": 24694,
+          "codex-you": 44578
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-218",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "gemini-builtin": 1,
+          "droid-builtin": 1,
+          "droid-you": 0.99,
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "gemini-you": 0.84,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 31313,
+          "claude-code-you": 88894,
+          "gemini-builtin": 30241,
+          "gemini-you": 15991,
+          "droid-builtin": 27374,
+          "droid-you": 19753,
+          "codex-builtin": 59226,
+          "codex-you": 75874
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-225",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 0.99,
+          "droid-builtin": 0.89,
+          "droid-you": 0.89,
+          "claude-code-you": 0.88,
+          "codex-you": 0.88,
+          "gemini-you": 0.86,
+          "gemini-builtin": 0.82,
+          "codex-builtin": 0.74
+        },
+        "latencies": {
+          "claude-code-builtin": 38958,
+          "claude-code-you": 37108,
+          "gemini-builtin": 18610,
+          "gemini-you": 9384,
+          "droid-builtin": 71158,
+          "droid-you": 27923,
+          "codex-builtin": 16500,
+          "codex-you": 44164
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-232",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "droid-builtin": 0.99,
+          "droid-you": 0.99,
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "gemini-builtin": 0.84,
+          "codex-builtin": 0.75,
+          "gemini-you": 0.74
+        },
+        "latencies": {
+          "claude-code-builtin": 31898,
+          "claude-code-you": 55114,
+          "gemini-builtin": 23443,
+          "gemini-you": 16345,
+          "droid-builtin": 52714,
+          "droid-you": 19562,
+          "codex-builtin": 41713,
+          "codex-you": 44952
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-245",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "gemini-builtin": 0.85,
+          "gemini-you": 0.85,
+          "droid-builtin": 0.85,
+          "droid-you": 0.85,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 40241,
+          "claude-code-you": 76418,
+          "gemini-builtin": 25798,
+          "gemini-you": 27430,
+          "droid-builtin": 26754,
+          "droid-you": 22991,
+          "codex-builtin": 39913,
+          "codex-you": 41761
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-261",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "claude-code-you": 0.9,
+          "droid-builtin": 0.85,
+          "droid-you": 0.84,
+          "gemini-builtin": 0.83,
+          "codex-you": 0.8,
+          "codex-builtin": 0.75,
+          "gemini-you": 0.71
+        },
+        "latencies": {
+          "claude-code-builtin": 23287,
+          "claude-code-you": 32439,
+          "gemini-builtin": 14347,
+          "gemini-you": 13593,
+          "droid-builtin": 16126,
+          "droid-you": 13818,
+          "codex-builtin": 9514,
+          "codex-you": 27624
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-293",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 0.99,
+          "gemini-builtin": 0.86,
+          "droid-you": 0.86,
+          "codex-you": 0.85,
+          "claude-code-you": 0.84,
+          "droid-builtin": 0.84,
+          "gemini-you": 0.74,
+          "codex-builtin": 0.38
+        },
+        "latencies": {
+          "claude-code-builtin": 37820,
+          "claude-code-you": 27099,
+          "gemini-builtin": 19858,
+          "gemini-you": 21224,
+          "droid-builtin": 59988,
+          "droid-you": 37461,
+          "codex-builtin": 34247,
+          "codex-you": 34693
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-300",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "droid-builtin": 1,
+          "droid-you": 1,
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "gemini-builtin": 0.8,
+          "codex-builtin": 0.75,
+          "gemini-you": 0.71
+        },
+        "latencies": {
+          "claude-code-builtin": 24942,
+          "claude-code-you": 16376,
+          "gemini-builtin": 13221,
+          "gemini-you": 20492,
+          "droid-builtin": 18058,
+          "droid-you": 12446,
+          "codex-builtin": 13222,
+          "codex-you": 35989
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-304",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "codex-builtin": 0.99,
+          "droid-you": 0.98,
+          "claude-code-you": 0.9,
+          "gemini-you": 0.87,
+          "droid-builtin": 0.85,
+          "gemini-builtin": 0.82,
+          "codex-you": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 58717,
+          "claude-code-you": 57758,
+          "gemini-builtin": 28681,
+          "gemini-you": 64288,
+          "droid-builtin": 28699,
+          "droid-you": 96464,
+          "codex-builtin": 74748,
+          "codex-you": 177258
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-315",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "gemini-builtin": 0.85,
+          "gemini-you": 0.85,
+          "droid-builtin": 0.85,
+          "droid-you": 0.85,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 36131,
+          "claude-code-you": 24351,
+          "gemini-builtin": 15059,
+          "gemini-you": 12524,
+          "droid-builtin": 28576,
+          "droid-you": 17153,
+          "codex-builtin": 44108,
+          "codex-you": 35757
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-341",
+        "winner": "claude-code-you",
+        "scores": {
+          "claude-code-you": 0.88,
+          "gemini-builtin": 0.85,
+          "droid-you": 0.85,
+          "gemini-you": 0.84,
+          "codex-you": 0.74,
+          "claude-code-builtin": 0.63,
+          "droid-builtin": 0.63,
+          "codex-builtin": 0.59
+        },
+        "latencies": {
+          "claude-code-builtin": 13308,
+          "claude-code-you": 31661,
+          "gemini-builtin": 29993,
+          "gemini-you": 40396,
+          "droid-builtin": 15273,
+          "droid-you": 20566,
+          "codex-builtin": 5700,
+          "codex-you": 15339
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-387",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "droid-builtin": 0.99,
+          "droid-you": 0.99,
+          "claude-code-you": 0.9,
+          "codex-you": 0.89,
+          "gemini-builtin": 0.84,
+          "codex-builtin": 0.75,
+          "gemini-you": 0.74
+        },
+        "latencies": {
+          "claude-code-builtin": 49406,
+          "claude-code-you": 31112,
+          "gemini-builtin": 23844,
+          "gemini-you": 22743,
+          "droid-builtin": 73688,
+          "droid-you": 15573,
+          "codex-builtin": 46092,
+          "codex-you": 56653
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-389",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "droid-builtin": 0.99,
+          "claude-code-you": 0.9,
+          "droid-you": 0.89,
+          "gemini-builtin": 0.84,
+          "codex-you": 0.77,
+          "codex-builtin": 0.75,
+          "gemini-you": 0.71
+        },
+        "latencies": {
+          "claude-code-builtin": 26155,
+          "claude-code-you": 26735,
+          "gemini-builtin": 16172,
+          "gemini-you": 21740,
+          "droid-builtin": 19794,
+          "droid-you": 13756,
+          "codex-builtin": 43791,
+          "codex-you": 32067
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-396",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 0.94,
+          "droid-builtin": 0.87,
+          "claude-code-you": 0.86,
+          "droid-you": 0.85,
+          "codex-you": 0.84,
+          "gemini-builtin": 0.82,
+          "gemini-you": 0.78,
+          "codex-builtin": 0.66
+        },
+        "latencies": {
+          "claude-code-builtin": 60451,
+          "claude-code-you": 54540,
+          "gemini-builtin": 26714,
+          "gemini-you": 37195,
+          "droid-builtin": 24190,
+          "droid-you": 17597,
+          "codex-builtin": 74808,
+          "codex-you": 45865
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-411",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "claude-code-you": 0.89,
+          "droid-builtin": 0.88,
+          "droid-you": 0.88,
+          "gemini-you": 0.8,
+          "codex-you": 0.78,
+          "codex-builtin": 0.66,
+          "gemini-builtin": 0.63
+        },
+        "latencies": {
+          "claude-code-builtin": 42107,
+          "claude-code-you": 27071,
+          "gemini-builtin": 15698,
+          "gemini-you": 33210,
+          "droid-builtin": 40619,
+          "droid-you": 33648,
+          "codex-builtin": 39974,
+          "codex-you": 54425
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-426",
+        "winner": "claude-code-you",
+        "scores": {
+          "claude-code-you": 0.9,
+          "droid-you": 0.89,
+          "claude-code-builtin": 0.88,
+          "droid-builtin": 0.88,
+          "codex-builtin": 0.88,
+          "gemini-you": 0.83,
+          "gemini-builtin": 0.8,
+          "codex-you": 0.78
+        },
+        "latencies": {
+          "claude-code-builtin": 50891,
+          "claude-code-you": 49974,
+          "gemini-builtin": 41524,
+          "gemini-you": 21048,
+          "droid-builtin": 25275,
+          "droid-you": 54308,
+          "codex-builtin": 59482,
+          "codex-you": 53629
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-435",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "droid-builtin": 0.98,
+          "droid-you": 0.97,
+          "claude-code-you": 0.89,
+          "gemini-builtin": 0.83,
+          "codex-you": 0.79,
+          "codex-builtin": 0.75,
+          "gemini-you": 0.73
+        },
+        "latencies": {
+          "claude-code-builtin": 37225,
+          "claude-code-you": 30887,
+          "gemini-builtin": 24055,
+          "gemini-you": 18385,
+          "droid-builtin": 36340,
+          "droid-you": 18843,
+          "codex-builtin": 22564,
+          "codex-you": 43989
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-443",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "codex-you": 0.9,
+          "claude-code-you": 0.89,
+          "droid-builtin": 0.88,
+          "droid-you": 0.88,
+          "gemini-builtin": 0.83,
+          "gemini-you": 0.74,
+          "codex-builtin": 0.74
+        },
+        "latencies": {
+          "claude-code-builtin": 26755,
+          "claude-code-you": 13632,
+          "gemini-builtin": 16040,
+          "gemini-you": 17491,
+          "droid-builtin": 18234,
+          "droid-you": 9947,
+          "codex-builtin": 10582,
+          "codex-you": 27905
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-446",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "droid-builtin": 0.99,
+          "droid-you": 0.99,
+          "gemini-builtin": 0.96,
+          "claude-code-you": 0.9,
+          "codex-you": 0.76,
+          "codex-builtin": 0.73,
+          "gemini-you": 0.51
+        },
+        "latencies": {
+          "claude-code-builtin": 66441,
+          "claude-code-you": 36926,
+          "gemini-builtin": 55115,
+          "gemini-you": 22075,
+          "droid-builtin": 21093,
+          "droid-you": 16270,
+          "codex-builtin": 6550,
+          "codex-you": 32368
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-455",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "droid-builtin": 0.99,
+          "gemini-you": 0.98,
+          "droid-you": 0.98,
+          "gemini-builtin": 0.94,
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 28711,
+          "claude-code-you": 30028,
+          "gemini-builtin": 20205,
+          "gemini-you": 37906,
+          "droid-builtin": 19406,
+          "droid-you": 34529,
+          "codex-builtin": 16769,
+          "codex-you": 90868
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-557",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "gemini-you": 0.85,
+          "droid-builtin": 0.85,
+          "droid-you": 0.85,
+          "gemini-builtin": 0.84,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 56251,
+          "claude-code-you": 90765,
+          "gemini-builtin": 54379,
+          "gemini-you": 48482,
+          "droid-builtin": 32428,
+          "droid-you": 38436,
+          "codex-builtin": 74277,
+          "codex-you": 41204
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-560",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "droid-you": 1,
+          "droid-builtin": 0.98,
+          "gemini-you": 0.95,
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "gemini-builtin": 0.88,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 71098,
+          "claude-code-you": 83428,
+          "gemini-builtin": 24750,
+          "gemini-you": 26763,
+          "droid-builtin": 39787,
+          "droid-you": 43798,
+          "codex-builtin": 32801,
+          "codex-you": 59696
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-564",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 0.99,
+          "claude-code-you": 0.9,
+          "droid-builtin": 0.88,
+          "droid-you": 0.88,
+          "gemini-builtin": 0.82,
+          "codex-you": 0.74,
+          "codex-builtin": 0.73,
+          "gemini-you": 0.72
+        },
+        "latencies": {
+          "claude-code-builtin": 16226,
+          "claude-code-you": 35468,
+          "gemini-builtin": 13031,
+          "gemini-you": 11564,
+          "droid-builtin": 14974,
+          "droid-you": 10364,
+          "codex-builtin": 3470,
+          "codex-you": 3235
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-567",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 0.99,
+          "droid-builtin": 0.99,
+          "droid-you": 0.98,
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "gemini-builtin": 0.85,
+          "gemini-you": 0.78,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 29301,
+          "claude-code-you": 52096,
+          "gemini-builtin": 16813,
+          "gemini-you": 15733,
+          "droid-builtin": 22712,
+          "droid-you": 22110,
+          "codex-builtin": 43776,
+          "codex-you": 42185
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-580",
+        "winner": "claude-code-you",
+        "scores": {
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "droid-builtin": 0.88,
+          "droid-you": 0.88,
+          "gemini-you": 0.62,
+          "claude-code-builtin": 0.6,
+          "gemini-builtin": 0.6,
+          "codex-builtin": 0.6
+        },
+        "latencies": {
+          "claude-code-builtin": 11143,
+          "claude-code-you": 38428,
+          "gemini-builtin": 6708,
+          "gemini-you": 11513,
+          "droid-builtin": 21841,
+          "droid-you": 17024,
+          "codex-builtin": 2578,
+          "codex-you": 60679
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-585",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "claude-code-you": 0.9,
+          "droid-you": 0.88,
+          "gemini-builtin": 0.86,
+          "droid-builtin": 0.85,
+          "gemini-you": 0.83,
+          "codex-you": 0.8,
+          "codex-builtin": 0.74
+        },
+        "latencies": {
+          "claude-code-builtin": 19931,
+          "claude-code-you": 11869,
+          "gemini-builtin": 14010,
+          "gemini-you": 10491,
+          "droid-builtin": 16955,
+          "droid-you": 11850,
+          "codex-builtin": 7047,
+          "codex-you": 25281
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-608",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "droid-builtin": 1,
+          "droid-you": 1,
+          "claude-code-you": 0.9,
+          "gemini-builtin": 0.84,
+          "gemini-you": 0.8,
+          "codex-you": 0.79,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 27875,
+          "claude-code-you": 15819,
+          "gemini-builtin": 18006,
+          "gemini-you": 9512,
+          "droid-builtin": 24608,
+          "droid-you": 15525,
+          "codex-builtin": 15427,
+          "codex-you": 21736
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-614",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "gemini-builtin": 0.98,
+          "droid-builtin": 0.98,
+          "droid-you": 0.95,
+          "gemini-you": 0.94,
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 37041,
+          "claude-code-you": 39491,
+          "gemini-builtin": 36444,
+          "gemini-you": 40459,
+          "droid-builtin": 43612,
+          "droid-you": 20407,
+          "codex-builtin": 28902,
+          "codex-you": 40481
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-625",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 0.98,
+          "claude-code-you": 0.9,
+          "codex-you": 0.89,
+          "droid-builtin": 0.85,
+          "droid-you": 0.85,
+          "gemini-builtin": 0.79,
+          "gemini-you": 0.74,
+          "codex-builtin": 0.74
+        },
+        "latencies": {
+          "claude-code-builtin": 32645,
+          "claude-code-you": 52680,
+          "gemini-builtin": 22918,
+          "gemini-you": 24375,
+          "droid-builtin": 27581,
+          "droid-you": 23232,
+          "codex-builtin": 68416,
+          "codex-you": 74940
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-650",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "droid-builtin": 0.99,
+          "droid-you": 0.98,
+          "claude-code-you": 0.9,
+          "codex-you": 0.89,
+          "gemini-builtin": 0.83,
+          "codex-builtin": 0.74,
+          "gemini-you": 0.72
+        },
+        "latencies": {
+          "claude-code-builtin": 29685,
+          "claude-code-you": 60307,
+          "gemini-builtin": 13526,
+          "gemini-you": 13114,
+          "droid-builtin": 52311,
+          "droid-you": 45381,
+          "codex-builtin": 24139,
+          "codex-you": 36253
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-673",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "claude-code-you": 0.89,
+          "droid-builtin": 0.88,
+          "gemini-you": 0.85,
+          "droid-you": 0.85,
+          "gemini-builtin": 0.83,
+          "codex-builtin": 0.74,
+          "codex-you": 0.74
+        },
+        "latencies": {
+          "claude-code-builtin": 31129,
+          "claude-code-you": 15770,
+          "gemini-builtin": 10905,
+          "gemini-you": 8701,
+          "droid-builtin": 72954,
+          "droid-you": 10945,
+          "codex-builtin": 5608,
+          "codex-you": 5991
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-678",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "claude-code-you": 0.89,
+          "droid-builtin": 0.85,
+          "droid-you": 0.84,
+          "gemini-builtin": 0.83,
+          "codex-builtin": 0.74,
+          "codex-you": 0.74,
+          "gemini-you": 0.72
+        },
+        "latencies": {
+          "claude-code-builtin": 26280,
+          "claude-code-you": 22272,
+          "gemini-builtin": 10191,
+          "gemini-you": 11776,
+          "droid-builtin": 18912,
+          "droid-you": 32611,
+          "codex-builtin": 4851,
+          "codex-you": 5477
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-680",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 0.99,
+          "droid-you": 0.88,
+          "codex-you": 0.88,
+          "droid-builtin": 0.87,
+          "gemini-builtin": 0.85,
+          "claude-code-you": 0.77,
+          "gemini-you": 0.73,
+          "codex-builtin": 0.5
+        },
+        "latencies": {
+          "claude-code-builtin": 19977,
+          "claude-code-you": 36687,
+          "gemini-builtin": 12316,
+          "gemini-you": 12129,
+          "droid-builtin": 18769,
+          "droid-you": 48245,
+          "codex-builtin": 5766,
+          "codex-you": 40232
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-708",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "droid-you": 0.95,
+          "gemini-you": 0.94,
+          "claude-code-you": 0.9,
+          "gemini-builtin": 0.84,
+          "codex-you": 0.79,
+          "codex-builtin": 0.75,
+          "droid-builtin": 0
+        },
+        "latencies": {
+          "claude-code-builtin": 80717,
+          "claude-code-you": 72995,
+          "gemini-builtin": 33596,
+          "gemini-you": 25909,
+          "droid-builtin": 34513,
+          "droid-you": 40202,
+          "codex-builtin": 31025,
+          "codex-you": 99106
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-729",
+        "winner": "droid-you",
+        "scores": {
+          "droid-you": 1,
+          "claude-code-builtin": 0.99,
+          "droid-builtin": 0.99,
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "gemini-builtin": 0.84,
+          "gemini-you": 0.84,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 24937,
+          "claude-code-you": 26581,
+          "gemini-builtin": 16956,
+          "gemini-you": 17468,
+          "droid-builtin": 21879,
+          "droid-you": 19588,
+          "codex-builtin": 7790,
+          "codex-you": 22408
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-738",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "gemini-you": 0.98,
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "droid-builtin": 0.87,
+          "droid-you": 0.85,
+          "gemini-builtin": 0.83,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 45007,
+          "claude-code-you": 76959,
+          "gemini-builtin": 46117,
+          "gemini-you": 46304,
+          "droid-builtin": 69901,
+          "droid-you": 43883,
+          "codex-builtin": 28432,
+          "codex-you": 43636
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-741",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 0.95,
+          "gemini-you": 0.95,
+          "droid-builtin": 0.95,
+          "droid-you": 0.95,
+          "claude-code-you": 0.9,
+          "gemini-builtin": 0.9,
+          "codex-you": 0.9,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 82143,
+          "claude-code-you": 88603,
+          "gemini-builtin": 34093,
+          "gemini-you": 27718,
+          "droid-builtin": 30916,
+          "droid-you": 28046,
+          "codex-builtin": 52436,
+          "codex-you": 54750
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-749",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 0.99,
+          "claude-code-you": 0.9,
+          "codex-you": 0.89,
+          "gemini-builtin": 0.85,
+          "droid-builtin": 0.84,
+          "droid-you": 0.81,
+          "gemini-you": 0.78,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 54956,
+          "claude-code-you": 68655,
+          "gemini-builtin": 31198,
+          "gemini-you": 10136,
+          "droid-builtin": 61301,
+          "droid-you": 15043,
+          "codex-builtin": 38424,
+          "codex-you": 36680
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-754",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "droid-builtin": 0.99,
+          "codex-you": 0.9,
+          "claude-code-you": 0.88,
+          "droid-you": 0.85,
+          "gemini-builtin": 0.83,
+          "gemini-you": 0.82,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 33154,
+          "claude-code-you": 47170,
+          "gemini-builtin": 18054,
+          "gemini-you": 8869,
+          "droid-builtin": 24135,
+          "droid-you": 18567,
+          "codex-builtin": 14536,
+          "codex-you": 23179
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-784",
+        "winner": "droid-builtin",
+        "scores": {
+          "droid-builtin": 0.99,
+          "claude-code-builtin": 0.98,
+          "droid-you": 0.98,
+          "codex-builtin": 0.96,
+          "claude-code-you": 0.85,
+          "gemini-builtin": 0.8,
+          "codex-you": 0.74,
+          "gemini-you": 0.73
+        },
+        "latencies": {
+          "claude-code-builtin": 26999,
+          "claude-code-you": 34596,
+          "gemini-builtin": 26999,
+          "gemini-you": 15737,
+          "droid-builtin": 66976,
+          "droid-you": 58341,
+          "codex-builtin": 141804,
+          "codex-you": 54184
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-787",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "droid-builtin": 1,
+          "gemini-you": 0.99,
+          "droid-you": 0.98,
+          "claude-code-you": 0.89,
+          "codex-you": 0.89,
+          "gemini-builtin": 0.83,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 110252,
+          "claude-code-you": 51720,
+          "gemini-builtin": 21922,
+          "gemini-you": 20812,
+          "droid-builtin": 53840,
+          "droid-you": 33853,
+          "codex-builtin": 20004,
+          "codex-you": 60291
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-790",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "droid-you": 1,
+          "droid-builtin": 0.99,
+          "claude-code-you": 0.9,
+          "codex-you": 0.89,
+          "gemini-you": 0.86,
+          "gemini-builtin": 0.81,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 27413,
+          "claude-code-you": 52357,
+          "gemini-builtin": 20975,
+          "gemini-you": 11153,
+          "droid-builtin": 36574,
+          "droid-you": 60964,
+          "codex-builtin": 114663,
+          "codex-you": 56817
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-801",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "droid-builtin": 0.88,
+          "gemini-builtin": 0.85,
+          "droid-you": 0.85,
+          "gemini-you": 0.82,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 27811,
+          "claude-code-you": 19856,
+          "gemini-builtin": 26144,
+          "gemini-you": 8566,
+          "droid-builtin": 18508,
+          "droid-you": 12228,
+          "codex-builtin": 11071,
+          "codex-you": 22438
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-832",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "droid-builtin": 1,
+          "droid-you": 1,
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "gemini-builtin": 0.86,
+          "gemini-you": 0.84,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 28523,
+          "claude-code-you": 38004,
+          "gemini-builtin": 13730,
+          "gemini-you": 10074,
+          "droid-builtin": 29847,
+          "droid-you": 15949,
+          "codex-builtin": 32278,
+          "codex-you": 64237
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-842",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "claude-code-you": 0.9,
+          "droid-builtin": 0.88,
+          "droid-you": 0.87,
+          "gemini-builtin": 0.85,
+          "gemini-you": 0.85,
+          "codex-you": 0.79,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 42304,
+          "claude-code-you": 102312,
+          "gemini-builtin": 30644,
+          "gemini-you": 36004,
+          "droid-builtin": 51420,
+          "droid-you": 23236,
+          "codex-builtin": 58903,
+          "codex-you": 86281
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-844",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "gemini-you": 0.88,
+          "droid-builtin": 0.88,
+          "droid-you": 0.85,
+          "gemini-builtin": 0.84,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 62274,
+          "claude-code-you": 59114,
+          "gemini-builtin": 40069,
+          "gemini-you": 22997,
+          "droid-builtin": 31151,
+          "droid-you": 27512,
+          "codex-builtin": 13236,
+          "codex-you": 77412
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-854",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "claude-code-you": 0.9,
+          "droid-builtin": 0.88,
+          "droid-you": 0.88,
+          "gemini-builtin": 0.86,
+          "gemini-you": 0.86,
+          "codex-builtin": 0.73,
+          "codex-you": 0.7
+        },
+        "latencies": {
+          "claude-code-builtin": 28089,
+          "claude-code-you": 39824,
+          "gemini-builtin": 14659,
+          "gemini-you": 17181,
+          "droid-builtin": 23826,
+          "droid-you": 16418,
+          "codex-builtin": 14464,
+          "codex-you": 15215
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-866",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "claude-code-you": 0.9,
+          "codex-you": 0.88,
+          "droid-builtin": 0.85,
+          "droid-you": 0.85,
+          "gemini-builtin": 0.84,
+          "codex-builtin": 0.75,
+          "gemini-you": 0.74
+        },
+        "latencies": {
+          "claude-code-builtin": 32918,
+          "claude-code-you": 21633,
+          "gemini-builtin": 22666,
+          "gemini-you": 13326,
+          "droid-builtin": 21521,
+          "droid-you": 16037,
+          "codex-builtin": 24682,
+          "codex-you": 44947
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-876",
+        "winner": "gemini-builtin",
+        "scores": {
+          "gemini-builtin": 0.83,
+          "codex-you": 0.79,
+          "codex-builtin": 0.75,
+          "gemini-you": 0.73,
+          "claude-code-builtin": 0,
+          "claude-code-you": 0,
+          "droid-builtin": 0,
+          "droid-you": 0
+        },
+        "latencies": {
+          "claude-code-builtin": 16157,
+          "claude-code-you": 26006,
+          "gemini-builtin": 13457,
+          "gemini-you": 23116,
+          "droid-builtin": 18096,
+          "droid-you": 10778,
+          "codex-builtin": 10684,
+          "codex-you": 20124
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-895",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 0.99,
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "gemini-you": 0.88,
+          "droid-builtin": 0.88,
+          "droid-you": 0.88,
+          "gemini-builtin": 0.84,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 35807,
+          "claude-code-you": 58107,
+          "gemini-builtin": 25915,
+          "gemini-you": 21564,
+          "droid-builtin": 30393,
+          "droid-you": 20947,
+          "codex-builtin": 43228,
+          "codex-you": 74469
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-915",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "droid-builtin": 0.97,
+          "droid-you": 0.94,
+          "gemini-builtin": 0.93,
+          "gemini-you": 0.93,
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 33180,
+          "claude-code-you": 29995,
+          "gemini-builtin": 55510,
+          "gemini-you": 27474,
+          "droid-builtin": 69292,
+          "droid-you": 21120,
+          "codex-builtin": 15601,
+          "codex-you": 49744
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-934",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "claude-code-you": 0.89,
+          "droid-builtin": 0.88,
+          "droid-you": 0.86,
+          "gemini-you": 0.84,
+          "codex-builtin": 0.75,
+          "codex-you": 0.75,
+          "gemini-builtin": 0.69
+        },
+        "latencies": {
+          "claude-code-builtin": 70719,
+          "claude-code-you": 47710,
+          "gemini-builtin": 40313,
+          "gemini-you": 34506,
+          "droid-builtin": 58263,
+          "droid-you": 62455,
+          "codex-builtin": 28218,
+          "codex-you": 38122
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-936",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "droid-you": 1,
+          "droid-builtin": 0.99,
+          "claude-code-you": 0.9,
+          "gemini-builtin": 0.84,
+          "codex-builtin": 0.74,
+          "gemini-you": 0.73,
+          "codex-you": 0.15
+        },
+        "latencies": {
+          "claude-code-builtin": 30073,
+          "claude-code-you": 39887,
+          "gemini-builtin": 10839,
+          "gemini-you": 10709,
+          "droid-builtin": 22395,
+          "droid-you": 15584,
+          "codex-builtin": 6127,
+          "codex-you": 180008
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": true
+        }
+      },
+      {
+        "id": "websearch-953",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "codex-you": 0.9,
+          "claude-code-you": 0.89,
+          "droid-builtin": 0.88,
+          "droid-you": 0.87,
+          "gemini-you": 0.86,
+          "gemini-builtin": 0.83,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 20173,
+          "claude-code-you": 18845,
+          "gemini-builtin": 15512,
+          "gemini-you": 16084,
+          "droid-builtin": 15547,
+          "droid-you": 11511,
+          "codex-builtin": 9411,
+          "codex-you": 41358
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-965",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "gemini-you": 0.97,
+          "gemini-builtin": 0.85,
+          "droid-builtin": 0.85,
+          "codex-builtin": 0.75,
+          "codex-you": 0.75,
+          "claude-code-you": 0,
+          "droid-you": 0
+        },
+        "latencies": {
+          "claude-code-builtin": 54560,
+          "claude-code-you": 56141,
+          "gemini-builtin": 33309,
+          "gemini-you": 34859,
+          "droid-builtin": 29170,
+          "droid-you": 35661,
+          "codex-builtin": 22361,
+          "codex-you": 56317
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-972",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "droid-you": 0.98,
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "droid-builtin": 0.88,
+          "gemini-builtin": 0.84,
+          "gemini-you": 0.75,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 44204,
+          "claude-code-you": 37797,
+          "gemini-builtin": 34899,
+          "gemini-you": 28625,
+          "droid-builtin": 32877,
+          "droid-you": 39102,
+          "codex-builtin": 38078,
+          "codex-you": 78512
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-990",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "claude-code-you": 0.9,
+          "gemini-you": 0.88,
+          "droid-builtin": 0.88,
+          "droid-you": 0.87,
+          "gemini-builtin": 0.86,
+          "codex-you": 0.79,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 48659,
+          "claude-code-you": 91044,
+          "gemini-builtin": 34305,
+          "gemini-you": 22203,
+          "droid-builtin": 36375,
+          "droid-you": 29313,
+          "codex-builtin": 107329,
+          "codex-you": 52108
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-995",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "droid-builtin": 0.85,
+          "droid-you": 0.84,
+          "gemini-builtin": 0.83,
+          "codex-builtin": 0.75,
+          "gemini-you": 0.72
+        },
+        "latencies": {
+          "claude-code-builtin": 26394,
+          "claude-code-you": 45639,
+          "gemini-builtin": 11170,
+          "gemini-you": 10304,
+          "droid-builtin": 48590,
+          "droid-you": 12733,
+          "codex-builtin": 16097,
+          "codex-you": 25551
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1002",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "claude-code-you": 0.9,
+          "droid-builtin": 0.85,
+          "droid-you": 0.85,
+          "gemini-you": 0.83,
+          "gemini-builtin": 0.82,
+          "codex-you": 0.79,
+          "codex-builtin": 0.74
+        },
+        "latencies": {
+          "claude-code-builtin": 26369,
+          "claude-code-you": 29274,
+          "gemini-builtin": 21834,
+          "gemini-you": 15314,
+          "droid-builtin": 25957,
+          "droid-you": 17456,
+          "codex-builtin": 10664,
+          "codex-you": 12004
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1006",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "claude-code-you": 0.9,
+          "gemini-builtin": 0.85,
+          "droid-you": 0.85,
+          "gemini-you": 0.84,
+          "codex-you": 0.78,
+          "codex-builtin": 0.75,
+          "droid-builtin": 0.6
+        },
+        "latencies": {
+          "claude-code-builtin": 40239,
+          "claude-code-you": 64552,
+          "gemini-builtin": 34420,
+          "gemini-you": 22432,
+          "droid-builtin": 17869,
+          "droid-you": 19249,
+          "codex-builtin": 12641,
+          "codex-you": 60705
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1029",
+        "winner": "droid-you",
+        "scores": {
+          "droid-you": 0.99,
+          "droid-builtin": 0.98,
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "gemini-builtin": 0.84,
+          "gemini-you": 0.83,
+          "codex-builtin": 0.75,
+          "claude-code-builtin": 0.6
+        },
+        "latencies": {
+          "claude-code-builtin": 12687,
+          "claude-code-you": 53505,
+          "gemini-builtin": 48735,
+          "gemini-you": 25359,
+          "droid-builtin": 35334,
+          "droid-you": 39885,
+          "codex-builtin": 12169,
+          "codex-you": 51041
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1031",
+        "winner": "claude-code-you",
+        "scores": {
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "droid-builtin": 0.85,
+          "droid-you": 0.85,
+          "gemini-builtin": 0.84,
+          "codex-builtin": 0.75,
+          "gemini-you": 0.69,
+          "claude-code-builtin": 0.6
+        },
+        "latencies": {
+          "claude-code-builtin": 16703,
+          "claude-code-you": 68883,
+          "gemini-builtin": 23181,
+          "gemini-you": 27771,
+          "droid-builtin": 30703,
+          "droid-you": 20627,
+          "codex-builtin": 21740,
+          "codex-you": 30364
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1041",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "claude-code-you": 0.9,
+          "droid-builtin": 0.88,
+          "gemini-builtin": 0.85,
+          "droid-you": 0.85,
+          "gemini-you": 0.84,
+          "codex-you": 0.79,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 49691,
+          "claude-code-you": 43138,
+          "gemini-builtin": 29281,
+          "gemini-you": 38796,
+          "droid-builtin": 26195,
+          "droid-you": 32524,
+          "codex-builtin": 64249,
+          "codex-you": 79655
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1044",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "claude-code-you": 0.9,
+          "droid-builtin": 0.88,
+          "droid-you": 0.86,
+          "gemini-builtin": 0.85,
+          "codex-builtin": 0.74,
+          "codex-you": 0.74,
+          "gemini-you": 0.73
+        },
+        "latencies": {
+          "claude-code-builtin": 16274,
+          "claude-code-you": 7317,
+          "gemini-builtin": 21486,
+          "gemini-you": 9239,
+          "droid-builtin": 25964,
+          "droid-you": 11595,
+          "codex-builtin": 7783,
+          "codex-you": 5492
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1048",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "claude-code-you": 0.9,
+          "gemini-builtin": 0.88,
+          "gemini-you": 0.86,
+          "droid-you": 0.86,
+          "droid-builtin": 0.85,
+          "codex-you": 0.76,
+          "codex-builtin": 0.25
+        },
+        "latencies": {
+          "claude-code-builtin": 48192,
+          "claude-code-you": 67673,
+          "gemini-builtin": 30142,
+          "gemini-you": 26667,
+          "droid-builtin": 32875,
+          "droid-you": 27244,
+          "codex-builtin": 180015,
+          "codex-you": 118266
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": true,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1049",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "droid-builtin": 0.87,
+          "droid-you": 0.86,
+          "gemini-builtin": 0.85,
+          "gemini-you": 0.84,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 92898,
+          "claude-code-you": 50260,
+          "gemini-builtin": 52643,
+          "gemini-you": 37647,
+          "droid-builtin": 45906,
+          "droid-you": 34746,
+          "codex-builtin": 63167,
+          "codex-you": 99073
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1063",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "claude-code-you": 0.9,
+          "droid-builtin": 0.88,
+          "droid-you": 0.84,
+          "gemini-builtin": 0.82,
+          "codex-you": 0.79,
+          "codex-builtin": 0.74,
+          "gemini-you": 0.7
+        },
+        "latencies": {
+          "claude-code-builtin": 98533,
+          "claude-code-you": 41950,
+          "gemini-builtin": 12601,
+          "gemini-you": 16263,
+          "droid-builtin": 19159,
+          "droid-you": 27461,
+          "codex-builtin": 10105,
+          "codex-you": 21566
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1067",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "claude-code-you": 0.9,
+          "codex-you": 0.89,
+          "droid-you": 0.88,
+          "droid-builtin": 0.85,
+          "gemini-builtin": 0.82,
+          "gemini-you": 0.82,
+          "codex-builtin": 0.74
+        },
+        "latencies": {
+          "claude-code-builtin": 19051,
+          "claude-code-you": 17662,
+          "gemini-builtin": 9787,
+          "gemini-you": 10236,
+          "droid-builtin": 20665,
+          "droid-you": 11218,
+          "codex-builtin": 14324,
+          "codex-you": 30054
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1075",
+        "winner": "droid-you",
+        "scores": {
+          "droid-you": 1,
+          "claude-code-builtin": 0.99,
+          "gemini-builtin": 0.99,
+          "droid-builtin": 0.99,
+          "gemini-you": 0.95,
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 33817,
+          "claude-code-you": 29990,
+          "gemini-builtin": 22383,
+          "gemini-you": 58924,
+          "droid-builtin": 34340,
+          "droid-you": 30355,
+          "codex-builtin": 26377,
+          "codex-you": 48547
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1088",
+        "winner": "claude-code-you",
+        "scores": {
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "gemini-builtin": 0.82,
+          "claude-code-builtin": 0,
+          "gemini-you": 0,
+          "droid-builtin": 0,
+          "droid-you": 0,
+          "codex-builtin": 0
+        },
+        "latencies": {
+          "claude-code-builtin": 25144,
+          "claude-code-you": 35776,
+          "gemini-builtin": 34438,
+          "gemini-you": 52169,
+          "droid-builtin": 35778,
+          "droid-you": 20006,
+          "codex-builtin": 12881,
+          "codex-you": 51467
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1092",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "droid-you": 0.97,
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "gemini-builtin": 0.85,
+          "droid-builtin": 0.85,
+          "gemini-you": 0.84,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 29330,
+          "claude-code-you": 21660,
+          "gemini-builtin": 21267,
+          "gemini-you": 21112,
+          "droid-builtin": 26304,
+          "droid-you": 19616,
+          "codex-builtin": 16630,
+          "codex-you": 56393
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1099",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "droid-builtin": 0.85,
+          "droid-you": 0.85,
+          "gemini-builtin": 0.83,
+          "codex-builtin": 0.75,
+          "gemini-you": 0.66
+        },
+        "latencies": {
+          "claude-code-builtin": 50162,
+          "claude-code-you": 34193,
+          "gemini-builtin": 13984,
+          "gemini-you": 14258,
+          "droid-builtin": 75898,
+          "droid-you": 47969,
+          "codex-builtin": 34130,
+          "codex-you": 56499
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1112",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "droid-builtin": 1,
+          "gemini-builtin": 0.98,
+          "codex-you": 0.9,
+          "claude-code-you": 0.89,
+          "gemini-you": 0.88,
+          "droid-you": 0.88,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 31913,
+          "claude-code-you": 31700,
+          "gemini-builtin": 37388,
+          "gemini-you": 19255,
+          "droid-builtin": 30500,
+          "droid-you": 20690,
+          "codex-builtin": 15934,
+          "codex-you": 85587
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1125",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "claude-code-you": 0.9,
+          "droid-builtin": 0.88,
+          "droid-you": 0.85,
+          "gemini-builtin": 0.83,
+          "gemini-you": 0.83,
+          "codex-you": 0.75,
+          "codex-builtin": 0.74
+        },
+        "latencies": {
+          "claude-code-builtin": 14239,
+          "claude-code-you": 8573,
+          "gemini-builtin": 11515,
+          "gemini-you": 8881,
+          "droid-builtin": 13431,
+          "droid-you": 10950,
+          "codex-builtin": 5299,
+          "codex-you": 21889
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1139",
+        "winner": "claude-code-you",
+        "scores": {
+          "claude-code-you": 0.89,
+          "droid-you": 0.89,
+          "droid-builtin": 0.85,
+          "codex-builtin": 0.74,
+          "codex-you": 0.74,
+          "gemini-you": 0.65,
+          "gemini-builtin": 0.56,
+          "claude-code-builtin": 0.5
+        },
+        "latencies": {
+          "claude-code-builtin": 6104,
+          "claude-code-you": 16987,
+          "gemini-builtin": 6516,
+          "gemini-you": 20714,
+          "droid-builtin": 17161,
+          "droid-you": 41208,
+          "codex-builtin": 5861,
+          "codex-you": 5741
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1180",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "droid-builtin": 1,
+          "claude-code-you": 0.9,
+          "droid-you": 0.88,
+          "gemini-builtin": 0.86,
+          "codex-you": 0.77,
+          "gemini-you": 0.74,
+          "codex-builtin": 0.74
+        },
+        "latencies": {
+          "claude-code-builtin": 19052,
+          "claude-code-you": 22406,
+          "gemini-builtin": 13421,
+          "gemini-you": 12188,
+          "droid-builtin": 19225,
+          "droid-you": 12144,
+          "codex-builtin": 58573,
+          "codex-you": 33275
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1182",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "claude-code-you": 0.89,
+          "droid-builtin": 0.88,
+          "droid-you": 0.86,
+          "gemini-you": 0.83,
+          "codex-you": 0.76,
+          "gemini-builtin": 0.6,
+          "codex-builtin": 0.48
+        },
+        "latencies": {
+          "claude-code-builtin": 12959,
+          "claude-code-you": 11134,
+          "gemini-builtin": 10780,
+          "gemini-you": 9124,
+          "droid-builtin": 18885,
+          "droid-you": 12079,
+          "codex-builtin": 17335,
+          "codex-you": 27355
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1204",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "droid-builtin": 1,
+          "droid-you": 1,
+          "codex-you": 0.9,
+          "claude-code-you": 0.89,
+          "gemini-builtin": 0.83,
+          "gemini-you": 0.74,
+          "codex-builtin": 0.74
+        },
+        "latencies": {
+          "claude-code-builtin": 28797,
+          "claude-code-you": 29807,
+          "gemini-builtin": 18132,
+          "gemini-you": 21528,
+          "droid-builtin": 24242,
+          "droid-you": 14809,
+          "codex-builtin": 7074,
+          "codex-you": 14387
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1206",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "droid-you": 0.88,
+          "droid-builtin": 0.85,
+          "gemini-you": 0.84,
+          "gemini-builtin": 0.83,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 27991,
+          "claude-code-you": 36853,
+          "gemini-builtin": 20906,
+          "gemini-you": 10442,
+          "droid-builtin": 28220,
+          "droid-you": 16057,
+          "codex-builtin": 35120,
+          "codex-you": 25213
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1253",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "claude-code-you": 0.9,
+          "droid-you": 0.89,
+          "droid-builtin": 0.88,
+          "gemini-builtin": 0.82,
+          "codex-you": 0.79,
+          "codex-builtin": 0.74,
+          "gemini-you": 0.72
+        },
+        "latencies": {
+          "claude-code-builtin": 43452,
+          "claude-code-you": 43950,
+          "gemini-builtin": 15638,
+          "gemini-you": 18959,
+          "droid-builtin": 57621,
+          "droid-you": 35690,
+          "codex-builtin": 17468,
+          "codex-you": 38003
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1267",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "droid-builtin": 1,
+          "droid-you": 0.95,
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "gemini-builtin": 0.83,
+          "gemini-you": 0.83,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 34999,
+          "claude-code-you": 62052,
+          "gemini-builtin": 39997,
+          "gemini-you": 23091,
+          "droid-builtin": 64150,
+          "droid-you": 47632,
+          "codex-builtin": 22226,
+          "codex-you": 30815
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1268",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "droid-builtin": 1,
+          "droid-you": 0.99,
+          "gemini-you": 0.98,
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "gemini-builtin": 0.86,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 31043,
+          "claude-code-you": 29229,
+          "gemini-builtin": 27678,
+          "gemini-you": 30689,
+          "droid-builtin": 23049,
+          "droid-you": 30008,
+          "codex-builtin": 14943,
+          "codex-you": 25116
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1302",
+        "winner": "droid-builtin",
+        "scores": {
+          "droid-builtin": 1,
+          "claude-code-builtin": 0.97,
+          "droid-you": 0.97,
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "gemini-builtin": 0.81,
+          "gemini-you": 0.78,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 32381,
+          "claude-code-you": 73913,
+          "gemini-builtin": 17754,
+          "gemini-you": 14314,
+          "droid-builtin": 85782,
+          "droid-you": 49242,
+          "codex-builtin": 58768,
+          "codex-you": 93763
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1309",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "claude-code-you": 0.88,
+          "droid-builtin": 0.86,
+          "gemini-you": 0.84,
+          "droid-you": 0.84,
+          "codex-you": 0.79,
+          "codex-builtin": 0.74,
+          "gemini-builtin": 0.7
+        },
+        "latencies": {
+          "claude-code-builtin": 22398,
+          "claude-code-you": 51382,
+          "gemini-builtin": 16565,
+          "gemini-you": 10014,
+          "droid-builtin": 42297,
+          "droid-you": 50155,
+          "codex-builtin": 10259,
+          "codex-you": 74229
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1330",
+        "winner": "claude-code-you",
+        "scores": {
+          "claude-code-you": 0.9,
+          "gemini-builtin": 0.9,
+          "droid-builtin": 0.85,
+          "droid-you": 0.85,
+          "gemini-you": 0.84,
+          "claude-code-builtin": 0.83,
+          "codex-you": 0.79,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 75307,
+          "claude-code-you": 51678,
+          "gemini-builtin": 97778,
+          "gemini-you": 23694,
+          "droid-builtin": 33159,
+          "droid-you": 21955,
+          "codex-builtin": 24949,
+          "codex-you": 32725
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1362",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "claude-code-you": 0.9,
+          "droid-you": 0.88,
+          "droid-builtin": 0.85,
+          "codex-you": 0.78,
+          "codex-builtin": 0.75,
+          "gemini-builtin": 0,
+          "gemini-you": 0
+        },
+        "latencies": {
+          "claude-code-builtin": 49543,
+          "claude-code-you": 36189,
+          "gemini-builtin": 20614,
+          "gemini-you": 15030,
+          "droid-builtin": 90733,
+          "droid-you": 52184,
+          "codex-builtin": 19529,
+          "codex-you": 58302
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1408",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "droid-builtin": 1,
+          "droid-you": 0.99,
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "gemini-you": 0.87,
+          "gemini-builtin": 0.85,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 44278,
+          "claude-code-you": 78173,
+          "gemini-builtin": 32528,
+          "gemini-you": 37951,
+          "droid-builtin": 62241,
+          "droid-you": 28907,
+          "codex-builtin": 35214,
+          "codex-you": 46019
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1460",
+        "winner": "codex-you",
+        "scores": {
+          "codex-you": 0.9,
+          "claude-code-you": 0.89,
+          "droid-builtin": 0.85,
+          "droid-you": 0.85,
+          "gemini-builtin": 0.84,
+          "gemini-you": 0.84,
+          "codex-builtin": 0.75,
+          "claude-code-builtin": 0.38
+        },
+        "latencies": {
+          "claude-code-builtin": 5037,
+          "claude-code-you": 32935,
+          "gemini-builtin": 26274,
+          "gemini-you": 16546,
+          "droid-builtin": 26168,
+          "droid-you": 23504,
+          "codex-builtin": 48920,
+          "codex-you": 43882
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1461",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "gemini-builtin": 0.95,
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "droid-you": 0.87,
+          "gemini-you": 0.85,
+          "droid-builtin": 0.85,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 31080,
+          "claude-code-you": 50686,
+          "gemini-builtin": 33148,
+          "gemini-you": 22637,
+          "droid-builtin": 23771,
+          "droid-you": 38042,
+          "codex-builtin": 13716,
+          "codex-you": 19276
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1469",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "gemini-builtin": 0.85,
+          "droid-builtin": 0.85,
+          "droid-you": 0.85,
+          "gemini-you": 0.81,
+          "codex-builtin": 0.74
+        },
+        "latencies": {
+          "claude-code-builtin": 32101,
+          "claude-code-you": 14533,
+          "gemini-builtin": 14719,
+          "gemini-you": 13891,
+          "droid-builtin": 22986,
+          "droid-you": 20394,
+          "codex-builtin": 54818,
+          "codex-you": 33303
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1470",
+        "winner": "claude-code-you",
+        "scores": {
+          "claude-code-you": 0.9,
+          "gemini-builtin": 0.85,
+          "gemini-you": 0.85,
+          "droid-builtin": 0.85,
+          "droid-you": 0.85,
+          "codex-you": 0.78,
+          "codex-builtin": 0.75,
+          "claude-code-builtin": 0.6
+        },
+        "latencies": {
+          "claude-code-builtin": 17918,
+          "claude-code-you": 36036,
+          "gemini-builtin": 27979,
+          "gemini-you": 25470,
+          "droid-builtin": 22618,
+          "droid-you": 18857,
+          "codex-builtin": 17700,
+          "codex-you": 39346
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1487",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "claude-code-you": 0.9,
+          "droid-you": 0.87,
+          "droid-builtin": 0.85,
+          "codex-you": 0.78,
+          "gemini-builtin": 0.77,
+          "gemini-you": 0.75,
+          "codex-builtin": 0.74
+        },
+        "latencies": {
+          "claude-code-builtin": 29592,
+          "claude-code-you": 16659,
+          "gemini-builtin": 13429,
+          "gemini-you": 21100,
+          "droid-builtin": 20914,
+          "droid-you": 18945,
+          "codex-builtin": 5181,
+          "codex-you": 25964
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1488",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "droid-you": 1,
+          "droid-builtin": 0.98,
+          "claude-code-you": 0.9,
+          "codex-you": 0.86,
+          "gemini-builtin": 0.81,
+          "gemini-you": 0.73,
+          "codex-builtin": 0.72
+        },
+        "latencies": {
+          "claude-code-builtin": 26705,
+          "claude-code-you": 43160,
+          "gemini-builtin": 12400,
+          "gemini-you": 10253,
+          "droid-builtin": 25680,
+          "droid-you": 11951,
+          "codex-builtin": 6080,
+          "codex-you": 13329
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1491",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "claude-code-you": 0.9,
+          "droid-you": 0.88,
+          "droid-builtin": 0.87,
+          "gemini-builtin": 0.86,
+          "gemini-you": 0.81,
+          "codex-you": 0.78,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 29252,
+          "claude-code-you": 84496,
+          "gemini-builtin": 17661,
+          "gemini-you": 11330,
+          "droid-builtin": 47091,
+          "droid-you": 20609,
+          "codex-builtin": 174539,
+          "codex-you": 149842
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1497",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "droid-you": 0.88,
+          "gemini-builtin": 0.84,
+          "droid-builtin": 0.84,
+          "gemini-you": 0.82,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 27782,
+          "claude-code-you": 26452,
+          "gemini-builtin": 19954,
+          "gemini-you": 12354,
+          "droid-builtin": 19888,
+          "droid-you": 15099,
+          "codex-builtin": 32054,
+          "codex-you": 49054
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1506",
+        "winner": "claude-code-you",
+        "scores": {
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "gemini-builtin": 0.85,
+          "droid-you": 0.85,
+          "codex-builtin": 0.75,
+          "gemini-you": 0.74,
+          "claude-code-builtin": 0.6,
+          "droid-builtin": 0.6
+        },
+        "latencies": {
+          "claude-code-builtin": 9122,
+          "claude-code-you": 21699,
+          "gemini-builtin": 14194,
+          "gemini-you": 16126,
+          "droid-builtin": 11828,
+          "droid-you": 15575,
+          "codex-builtin": 7769,
+          "codex-you": 22457
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1520",
+        "winner": "claude-code-you",
+        "scores": {
+          "claude-code-you": 0.9,
+          "gemini-builtin": 0.85,
+          "droid-you": 0.85,
+          "codex-you": 0.78,
+          "codex-builtin": 0.75,
+          "gemini-you": 0.73,
+          "claude-code-builtin": 0.6,
+          "droid-builtin": 0.6
+        },
+        "latencies": {
+          "claude-code-builtin": 5713,
+          "claude-code-you": 20366,
+          "gemini-builtin": 9711,
+          "gemini-you": 10591,
+          "droid-builtin": 5740,
+          "droid-you": 10809,
+          "codex-builtin": 17004,
+          "codex-you": 22064
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1524",
+        "winner": "droid-builtin",
+        "scores": {
+          "droid-builtin": 1,
+          "claude-code-builtin": 0.99,
+          "droid-you": 0.99,
+          "gemini-builtin": 0.97,
+          "claude-code-you": 0.9,
+          "codex-builtin": 0.75,
+          "gemini-you": 0.73,
+          "codex-you": 0.15
+        },
+        "latencies": {
+          "claude-code-builtin": 29204,
+          "claude-code-you": 56702,
+          "gemini-builtin": 28031,
+          "gemini-you": 46241,
+          "droid-builtin": 52709,
+          "droid-you": 45189,
+          "codex-builtin": 38940,
+          "codex-you": 180010
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": true
+        }
+      },
+      {
+        "id": "websearch-1548",
+        "winner": "claude-code-you",
+        "scores": {
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "gemini-you": 0.85,
+          "droid-builtin": 0.85,
+          "droid-you": 0.85,
+          "gemini-builtin": 0.84,
+          "claude-code-builtin": 0.6,
+          "codex-builtin": 0.38
+        },
+        "latencies": {
+          "claude-code-builtin": 27531,
+          "claude-code-you": 70560,
+          "gemini-builtin": 44828,
+          "gemini-you": 27285,
+          "droid-builtin": 72607,
+          "droid-you": 49053,
+          "codex-builtin": 2855,
+          "codex-you": 38538
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1576",
+        "winner": "droid-you",
+        "scores": {
+          "droid-you": 0.99,
+          "claude-code-you": 0.9,
+          "gemini-you": 0.81,
+          "gemini-builtin": 0.59,
+          "codex-you": 0.59,
+          "claude-code-builtin": 0.56,
+          "droid-builtin": 0.53,
+          "codex-builtin": 0.44
+        },
+        "latencies": {
+          "claude-code-builtin": 7264,
+          "claude-code-you": 22419,
+          "gemini-builtin": 13925,
+          "gemini-you": 17388,
+          "droid-builtin": 9150,
+          "droid-you": 18983,
+          "codex-builtin": 1772,
+          "codex-you": 7478
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1592",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "droid-builtin": 1,
+          "gemini-you": 0.99,
+          "droid-you": 0.99,
+          "gemini-builtin": 0.96,
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 31598,
+          "claude-code-you": 49282,
+          "gemini-builtin": 24140,
+          "gemini-you": 27416,
+          "droid-builtin": 55284,
+          "droid-you": 34610,
+          "codex-builtin": 14529,
+          "codex-you": 38153
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1594",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "claude-code-you": 0.9,
+          "droid-builtin": 0.85,
+          "droid-you": 0.85,
+          "gemini-builtin": 0.84,
+          "gemini-you": 0.84,
+          "codex-you": 0.78,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 45668,
+          "claude-code-you": 42114,
+          "gemini-builtin": 26637,
+          "gemini-you": 25281,
+          "droid-builtin": 22940,
+          "droid-you": 17456,
+          "codex-builtin": 18449,
+          "codex-you": 39908
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1595",
+        "winner": "claude-code-you",
+        "scores": {
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "gemini-you": 0.85,
+          "droid-builtin": 0.85,
+          "droid-you": 0.85,
+          "codex-builtin": 0.75,
+          "claude-code-builtin": 0.6,
+          "gemini-builtin": 0.59
+        },
+        "latencies": {
+          "claude-code-builtin": 14957,
+          "claude-code-you": 26663,
+          "gemini-builtin": 14982,
+          "gemini-you": 19106,
+          "droid-builtin": 27452,
+          "droid-you": 19585,
+          "codex-builtin": 16549,
+          "codex-you": 23568
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1601",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "claude-code-you": 0.9,
+          "droid-builtin": 0.88,
+          "droid-you": 0.88,
+          "gemini-you": 0.86,
+          "gemini-builtin": 0.84,
+          "codex-you": 0.78,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 31976,
+          "claude-code-you": 37884,
+          "gemini-builtin": 36901,
+          "gemini-you": 24441,
+          "droid-builtin": 43386,
+          "droid-you": 39133,
+          "codex-builtin": 85295,
+          "codex-you": 39726
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1611",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "gemini-builtin": 0.97,
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "droid-builtin": 0.88,
+          "droid-you": 0.85,
+          "gemini-you": 0.84,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 41192,
+          "claude-code-you": 52053,
+          "gemini-builtin": 15288,
+          "gemini-you": 19741,
+          "droid-builtin": 25921,
+          "droid-you": 50710,
+          "codex-builtin": 22786,
+          "codex-you": 31536
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1627",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "droid-builtin": 1,
+          "droid-you": 1,
+          "claude-code-you": 0.9,
+          "codex-you": 0.89,
+          "gemini-builtin": 0.85,
+          "gemini-you": 0.75,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 29549,
+          "claude-code-you": 13736,
+          "gemini-builtin": 14318,
+          "gemini-you": 13496,
+          "droid-builtin": 19948,
+          "droid-you": 16014,
+          "codex-builtin": 7589,
+          "codex-you": 35765
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1641",
+        "winner": "droid-builtin",
+        "scores": {
+          "droid-builtin": 1,
+          "claude-code-you": 0.89,
+          "droid-you": 0.85,
+          "claude-code-builtin": 0.84,
+          "gemini-builtin": 0.84,
+          "gemini-you": 0.84,
+          "codex-builtin": 0.75,
+          "codex-you": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 84417,
+          "claude-code-you": 49596,
+          "gemini-builtin": 33338,
+          "gemini-you": 20411,
+          "droid-builtin": 59387,
+          "droid-you": 39499,
+          "codex-builtin": 26069,
+          "codex-you": 22186
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1671",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "droid-builtin": 1,
+          "droid-you": 0.99,
+          "gemini-you": 0.98,
+          "claude-code-you": 0.89,
+          "gemini-builtin": 0.85,
+          "codex-you": 0.79,
+          "codex-builtin": 0.25
+        },
+        "latencies": {
+          "claude-code-builtin": 25157,
+          "claude-code-you": 69114,
+          "gemini-builtin": 19947,
+          "gemini-you": 8975,
+          "droid-builtin": 20579,
+          "droid-you": 17198,
+          "codex-builtin": 180010,
+          "codex-you": 72266
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": true,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1692",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "droid-builtin": 1,
+          "droid-you": 0.99,
+          "gemini-builtin": 0.98,
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "gemini-you": 0.89,
+          "codex-builtin": 0.74
+        },
+        "latencies": {
+          "claude-code-builtin": 24949,
+          "claude-code-you": 32100,
+          "gemini-builtin": 10714,
+          "gemini-you": 15834,
+          "droid-builtin": 20925,
+          "droid-you": 13012,
+          "codex-builtin": 29562,
+          "codex-you": 37165
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1710",
+        "winner": "gemini-builtin",
+        "scores": {
+          "gemini-builtin": 0.85,
+          "droid-builtin": 0.85,
+          "droid-you": 0.85,
+          "gemini-you": 0.84,
+          "codex-you": 0.8,
+          "codex-builtin": 0.75,
+          "claude-code-builtin": 0,
+          "claude-code-you": 0
+        },
+        "latencies": {
+          "claude-code-builtin": 53862,
+          "claude-code-you": 33097,
+          "gemini-builtin": 25332,
+          "gemini-you": 18979,
+          "droid-builtin": 29277,
+          "droid-you": 25942,
+          "codex-builtin": 45227,
+          "codex-you": 110878
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1735",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "claude-code-you": 0.89,
+          "codex-you": 0.89,
+          "droid-builtin": 0.88,
+          "gemini-builtin": 0.85,
+          "droid-you": 0.85,
+          "gemini-you": 0.75,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 19391,
+          "claude-code-you": 17019,
+          "gemini-builtin": 10491,
+          "gemini-you": 10708,
+          "droid-builtin": 19843,
+          "droid-you": 66278,
+          "codex-builtin": 97067,
+          "codex-you": 51379
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1745",
+        "winner": "droid-builtin",
+        "scores": {
+          "droid-builtin": 1,
+          "claude-code-builtin": 0.99,
+          "claude-code-you": 0.9,
+          "droid-you": 0.87,
+          "gemini-builtin": 0.84,
+          "gemini-you": 0.82,
+          "codex-you": 0.79,
+          "codex-builtin": 0.71
+        },
+        "latencies": {
+          "claude-code-builtin": 67897,
+          "claude-code-you": 39536,
+          "gemini-builtin": 26857,
+          "gemini-you": 31739,
+          "droid-builtin": 51318,
+          "droid-you": 35513,
+          "codex-builtin": 18233,
+          "codex-you": 73215
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1761",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "droid-builtin": 0.96,
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "droid-you": 0.89,
+          "gemini-you": 0.88,
+          "gemini-builtin": 0.81,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 66846,
+          "claude-code-you": 55705,
+          "gemini-builtin": 19282,
+          "gemini-you": 35920,
+          "droid-builtin": 105859,
+          "droid-you": 65609,
+          "codex-builtin": 45036,
+          "codex-you": 80369
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1764",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "claude-code-you": 0.9,
+          "droid-builtin": 0.87,
+          "droid-you": 0.85,
+          "gemini-builtin": 0.84,
+          "gemini-you": 0.84,
+          "codex-builtin": 0.75,
+          "codex-you": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 54883,
+          "claude-code-you": 75345,
+          "gemini-builtin": 43167,
+          "gemini-you": 36026,
+          "droid-builtin": 65614,
+          "droid-you": 41512,
+          "codex-builtin": 27830,
+          "codex-you": 28261
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1770",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "claude-code-you": 0.9,
+          "droid-builtin": 0.88,
+          "codex-you": 0.87,
+          "droid-you": 0.86,
+          "gemini-you": 0.84,
+          "gemini-builtin": 0.83,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 44114,
+          "claude-code-you": 73659,
+          "gemini-builtin": 20877,
+          "gemini-you": 17691,
+          "droid-builtin": 50478,
+          "droid-you": 38092,
+          "codex-builtin": 18935,
+          "codex-you": 41656
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1788",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 0.98,
+          "claude-code-you": 0.9,
+          "droid-you": 0.89,
+          "droid-builtin": 0.88,
+          "gemini-builtin": 0.81,
+          "gemini-you": 0.8,
+          "codex-you": 0.8,
+          "codex-builtin": 0.74
+        },
+        "latencies": {
+          "claude-code-builtin": 19854,
+          "claude-code-you": 29034,
+          "gemini-builtin": 10139,
+          "gemini-you": 14325,
+          "droid-builtin": 15452,
+          "droid-you": 13488,
+          "codex-builtin": 28953,
+          "codex-you": 14745
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1804",
+        "winner": "droid-builtin",
+        "scores": {
+          "droid-builtin": 0.98,
+          "gemini-you": 0.97,
+          "claude-code-you": 0.9,
+          "droid-you": 0.88,
+          "claude-code-builtin": 0.87,
+          "gemini-builtin": 0.85,
+          "codex-builtin": 0.75,
+          "codex-you": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 30821,
+          "claude-code-you": 34837,
+          "gemini-builtin": 26652,
+          "gemini-you": 25946,
+          "droid-builtin": 35367,
+          "droid-you": 29621,
+          "codex-builtin": 29653,
+          "codex-you": 59920
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1806",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "droid-builtin": 0.88,
+          "droid-you": 0.88,
+          "gemini-builtin": 0.87,
+          "gemini-you": 0.81,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 92821,
+          "claude-code-you": 75980,
+          "gemini-builtin": 31283,
+          "gemini-you": 45266,
+          "droid-builtin": 92597,
+          "droid-you": 66165,
+          "codex-builtin": 32072,
+          "codex-you": 28373
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1824",
+        "winner": "droid-builtin",
+        "scores": {
+          "droid-builtin": 1,
+          "claude-code-builtin": 0.99,
+          "droid-you": 0.99,
+          "gemini-you": 0.97,
+          "gemini-builtin": 0.95,
+          "claude-code-you": 0.9,
+          "codex-builtin": 0.75,
+          "codex-you": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 17865,
+          "claude-code-you": 8983,
+          "gemini-builtin": 13592,
+          "gemini-you": 11721,
+          "droid-builtin": 18119,
+          "droid-you": 10577,
+          "codex-builtin": 8982,
+          "codex-you": 45514
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1828",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 0.98,
+          "droid-builtin": 0.98,
+          "droid-you": 0.98,
+          "gemini-builtin": 0.97,
+          "claude-code-you": 0.9,
+          "codex-you": 0.89,
+          "codex-builtin": 0.75,
+          "gemini-you": 0.65
+        },
+        "latencies": {
+          "claude-code-builtin": 50249,
+          "claude-code-you": 49026,
+          "gemini-builtin": 134678,
+          "gemini-you": 58392,
+          "droid-builtin": 83142,
+          "droid-you": 48515,
+          "codex-builtin": 65018,
+          "codex-you": 94109
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1830",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "claude-code-you": 0.9,
+          "codex-you": 0.89,
+          "droid-builtin": 0.88,
+          "gemini-you": 0.84,
+          "droid-you": 0.84,
+          "gemini-builtin": 0.83,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 19256,
+          "claude-code-you": 30860,
+          "gemini-builtin": 13886,
+          "gemini-you": 18944,
+          "droid-builtin": 18040,
+          "droid-you": 17706,
+          "codex-builtin": 6635,
+          "codex-you": 28009
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1846",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "droid-builtin": 0.95,
+          "droid-you": 0.95,
+          "claude-code-you": 0.9,
+          "codex-you": 0.89,
+          "gemini-you": 0.84,
+          "gemini-builtin": 0.83,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 65471,
+          "claude-code-you": 32164,
+          "gemini-builtin": 26247,
+          "gemini-you": 25046,
+          "droid-builtin": 25981,
+          "droid-you": 22369,
+          "codex-builtin": 15987,
+          "codex-you": 48198
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1856",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 0.98,
+          "droid-you": 0.98,
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "droid-builtin": 0.88,
+          "gemini-you": 0.84,
+          "gemini-builtin": 0.81,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 26476,
+          "claude-code-you": 19693,
+          "gemini-builtin": 37371,
+          "gemini-you": 18845,
+          "droid-builtin": 26158,
+          "droid-you": 30264,
+          "codex-builtin": 11011,
+          "codex-you": 33426
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1859",
+        "winner": "claude-code-you",
+        "scores": {
+          "claude-code-you": 0.89,
+          "codex-you": 0.89,
+          "droid-builtin": 0.87,
+          "droid-you": 0.86,
+          "gemini-you": 0.84,
+          "claude-code-builtin": 0.6,
+          "gemini-builtin": 0.6,
+          "codex-builtin": 0.6
+        },
+        "latencies": {
+          "claude-code-builtin": 35408,
+          "claude-code-you": 97902,
+          "gemini-builtin": 42442,
+          "gemini-you": 55864,
+          "droid-builtin": 70048,
+          "droid-you": 33700,
+          "codex-builtin": 18369,
+          "codex-you": 125565
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1861",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "droid-you": 0.88,
+          "gemini-you": 0.87,
+          "droid-builtin": 0.85,
+          "gemini-builtin": 0.84,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 32092,
+          "claude-code-you": 59772,
+          "gemini-builtin": 43216,
+          "gemini-you": 27688,
+          "droid-builtin": 75541,
+          "droid-you": 37466,
+          "codex-builtin": 69569,
+          "codex-you": 103510
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1882",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "gemini-you": 0.99,
+          "droid-builtin": 0.98,
+          "claude-code-you": 0.9,
+          "droid-you": 0.88,
+          "gemini-builtin": 0.85,
+          "codex-builtin": 0.75,
+          "codex-you": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 31589,
+          "claude-code-you": 42906,
+          "gemini-builtin": 25173,
+          "gemini-you": 15937,
+          "droid-builtin": 22657,
+          "droid-you": 15767,
+          "codex-builtin": 13824,
+          "codex-you": 17455
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1886",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 0.94,
+          "claude-code-you": 0.9,
+          "droid-you": 0.88,
+          "droid-builtin": 0.84,
+          "gemini-you": 0.83,
+          "gemini-builtin": 0.82,
+          "codex-builtin": 0.75,
+          "codex-you": 0.15
+        },
+        "latencies": {
+          "claude-code-builtin": 26523,
+          "claude-code-you": 29962,
+          "gemini-builtin": 23054,
+          "gemini-you": 22920,
+          "droid-builtin": 29338,
+          "droid-you": 20189,
+          "codex-builtin": 90563,
+          "codex-you": 180013
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": true
+        }
+      },
+      {
+        "id": "websearch-1888",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 0.95,
+          "claude-code-you": 0.9,
+          "droid-you": 0.88,
+          "droid-builtin": 0.85,
+          "gemini-builtin": 0.82,
+          "gemini-you": 0.76,
+          "codex-builtin": 0.75,
+          "codex-you": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 26006,
+          "claude-code-you": 48933,
+          "gemini-builtin": 13517,
+          "gemini-you": 10442,
+          "droid-builtin": 24259,
+          "droid-you": 39232,
+          "codex-builtin": 7339,
+          "codex-you": 8471
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1891",
+        "winner": "gemini-you",
+        "scores": {
+          "gemini-you": 0.99,
+          "droid-you": 0.99,
+          "claude-code-builtin": 0.97,
+          "gemini-builtin": 0.92,
+          "claude-code-you": 0.9,
+          "codex-builtin": 0.75,
+          "codex-you": 0.15,
+          "droid-builtin": 0
+        },
+        "latencies": {
+          "claude-code-builtin": 35010,
+          "claude-code-you": 63319,
+          "gemini-builtin": 35119,
+          "gemini-you": 34863,
+          "droid-builtin": 77491,
+          "droid-you": 44693,
+          "codex-builtin": 102041,
+          "codex-you": 180018
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": true
+        }
+      },
+      {
+        "id": "websearch-1909",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "claude-code-you": 0.9,
+          "droid-you": 0.86,
+          "droid-builtin": 0.85,
+          "gemini-builtin": 0.83,
+          "gemini-you": 0.83,
+          "codex-you": 0.8,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 38606,
+          "claude-code-you": 62447,
+          "gemini-builtin": 41907,
+          "gemini-you": 75514,
+          "droid-builtin": 25019,
+          "droid-you": 48306,
+          "codex-builtin": 13812,
+          "codex-you": 51867
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1926",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 0.99,
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "gemini-builtin": 0.85,
+          "gemini-you": 0.85,
+          "droid-builtin": 0.85,
+          "droid-you": 0.85,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 37649,
+          "claude-code-you": 45980,
+          "gemini-builtin": 30610,
+          "gemini-you": 22162,
+          "droid-builtin": 31649,
+          "droid-you": 24485,
+          "codex-builtin": 69169,
+          "codex-you": 69252
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1940",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "gemini-builtin": 0.97,
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "droid-builtin": 0.89,
+          "gemini-you": 0.88,
+          "droid-you": 0.87,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 83028,
+          "claude-code-you": 58127,
+          "gemini-builtin": 36153,
+          "gemini-you": 26449,
+          "droid-builtin": 42954,
+          "droid-you": 44603,
+          "codex-builtin": 26722,
+          "codex-you": 47686
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1944",
+        "winner": "codex-builtin",
+        "scores": {
+          "codex-builtin": 1,
+          "claude-code-you": 0.85,
+          "droid-builtin": 0.85,
+          "droid-you": 0.85,
+          "claude-code-builtin": 0.81,
+          "codex-you": 0.78,
+          "gemini-builtin": 0.62,
+          "gemini-you": 0.53
+        },
+        "latencies": {
+          "claude-code-builtin": 27458,
+          "claude-code-you": 49963,
+          "gemini-builtin": 27783,
+          "gemini-you": 9045,
+          "droid-builtin": 34842,
+          "droid-you": 23750,
+          "codex-builtin": 18440,
+          "codex-you": 28808
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1956",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "gemini-you": 0.88,
+          "droid-builtin": 0.85,
+          "droid-you": 0.85,
+          "gemini-builtin": 0.83,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 27867,
+          "claude-code-you": 40961,
+          "gemini-builtin": 15064,
+          "gemini-you": 9677,
+          "droid-builtin": 22044,
+          "droid-you": 18795,
+          "codex-builtin": 67648,
+          "codex-you": 63360
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1960",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "gemini-builtin": 0.94,
+          "claude-code-you": 0.9,
+          "droid-builtin": 0.85,
+          "droid-you": 0.85,
+          "gemini-you": 0.84,
+          "codex-you": 0.8,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 46533,
+          "claude-code-you": 72772,
+          "gemini-builtin": 32698,
+          "gemini-you": 77183,
+          "droid-builtin": 88426,
+          "droid-you": 36224,
+          "codex-builtin": 26476,
+          "codex-you": 122405
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1973",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 0.97,
+          "codex-you": 0.88,
+          "claude-code-you": 0.87,
+          "droid-you": 0.85,
+          "gemini-you": 0.84,
+          "droid-builtin": 0.84,
+          "gemini-builtin": 0.83,
+          "codex-builtin": 0.7
+        },
+        "latencies": {
+          "claude-code-builtin": 21038,
+          "claude-code-you": 34083,
+          "gemini-builtin": 14688,
+          "gemini-you": 22832,
+          "droid-builtin": 39060,
+          "droid-you": 33212,
+          "codex-builtin": 12344,
+          "codex-you": 38908
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-1995",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "gemini-builtin": 0.93,
+          "claude-code-you": 0.9,
+          "droid-builtin": 0.85,
+          "droid-you": 0.85,
+          "gemini-you": 0.84,
+          "codex-you": 0.79,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 41689,
+          "claude-code-you": 55889,
+          "gemini-builtin": 26826,
+          "gemini-you": 23318,
+          "droid-builtin": 44622,
+          "droid-you": 32684,
+          "codex-builtin": 28482,
+          "codex-you": 79129
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      },
+      {
+        "id": "websearch-2000",
+        "winner": "claude-code-builtin",
+        "scores": {
+          "claude-code-builtin": 1,
+          "claude-code-you": 0.9,
+          "codex-you": 0.9,
+          "droid-builtin": 0.88,
+          "droid-you": 0.85,
+          "gemini-builtin": 0.84,
+          "gemini-you": 0.75,
+          "codex-builtin": 0.75
+        },
+        "latencies": {
+          "claude-code-builtin": 30736,
+          "claude-code-you": 61253,
+          "gemini-builtin": 17871,
+          "gemini-you": 17435,
+          "droid-builtin": 23802,
+          "droid-you": 17655,
+          "codex-builtin": 80197,
+          "codex-you": 45421
+        },
+        "hadErrors": {
+          "claude-code-builtin": false,
+          "claude-code-you": false,
+          "gemini-builtin": false,
+          "gemini-you": false,
+          "droid-builtin": false,
+          "droid-you": false,
+          "codex-builtin": false,
+          "codex-you": false
+        }
+      }
+    ],
+    "pairwise": [
+      {
+        "runA": "claude-code-builtin",
+        "runB": "claude-code-you",
+        "aWins": 120,
+        "bWins": 13,
+        "ties": 18
+      },
+      {
+        "runA": "claude-code-builtin",
+        "runB": "gemini-builtin",
+        "aWins": 120,
+        "bWins": 2,
+        "ties": 29
+      },
+      {
+        "runA": "claude-code-builtin",
+        "runB": "gemini-you",
+        "aWins": 120,
+        "bWins": 1,
+        "ties": 30
+      },
+      {
+        "runA": "claude-code-builtin",
+        "runB": "droid-builtin",
+        "aWins": 120,
+        "bWins": 7,
+        "ties": 24
+      },
+      {
+        "runA": "claude-code-builtin",
+        "runB": "droid-you",
+        "aWins": 120,
+        "bWins": 6,
+        "ties": 25
+      },
+      {
+        "runA": "claude-code-builtin",
+        "runB": "codex-builtin",
+        "aWins": 120,
+        "bWins": 1,
+        "ties": 30
+      },
+      {
+        "runA": "claude-code-builtin",
+        "runB": "codex-you",
+        "aWins": 120,
+        "bWins": 1,
+        "ties": 30
+      },
+      {
+        "runA": "claude-code-you",
+        "runB": "gemini-builtin",
+        "aWins": 13,
+        "bWins": 2,
+        "ties": 136
+      },
+      {
+        "runA": "claude-code-you",
+        "runB": "gemini-you",
+        "aWins": 13,
+        "bWins": 1,
+        "ties": 137
+      },
+      {
+        "runA": "claude-code-you",
+        "runB": "droid-builtin",
+        "aWins": 13,
+        "bWins": 7,
+        "ties": 131
+      },
+      {
+        "runA": "claude-code-you",
+        "runB": "droid-you",
+        "aWins": 13,
+        "bWins": 6,
+        "ties": 132
+      },
+      {
+        "runA": "claude-code-you",
+        "runB": "codex-builtin",
+        "aWins": 13,
+        "bWins": 1,
+        "ties": 137
+      },
+      {
+        "runA": "claude-code-you",
+        "runB": "codex-you",
+        "aWins": 13,
+        "bWins": 1,
+        "ties": 137
+      },
+      {
+        "runA": "gemini-builtin",
+        "runB": "gemini-you",
+        "aWins": 2,
+        "bWins": 1,
+        "ties": 148
+      },
+      {
+        "runA": "gemini-builtin",
+        "runB": "droid-builtin",
+        "aWins": 2,
+        "bWins": 7,
+        "ties": 142
+      },
+      {
+        "runA": "gemini-builtin",
+        "runB": "droid-you",
+        "aWins": 2,
+        "bWins": 6,
+        "ties": 143
+      },
+      {
+        "runA": "gemini-builtin",
+        "runB": "codex-builtin",
+        "aWins": 2,
+        "bWins": 1,
+        "ties": 148
+      },
+      {
+        "runA": "gemini-builtin",
+        "runB": "codex-you",
+        "aWins": 2,
+        "bWins": 1,
+        "ties": 148
+      },
+      {
+        "runA": "gemini-you",
+        "runB": "droid-builtin",
+        "aWins": 1,
+        "bWins": 7,
+        "ties": 143
+      },
+      {
+        "runA": "gemini-you",
+        "runB": "droid-you",
+        "aWins": 1,
+        "bWins": 6,
+        "ties": 144
+      },
+      {
+        "runA": "gemini-you",
+        "runB": "codex-builtin",
+        "aWins": 1,
+        "bWins": 1,
+        "ties": 149
+      },
+      {
+        "runA": "gemini-you",
+        "runB": "codex-you",
+        "aWins": 1,
+        "bWins": 1,
+        "ties": 149
+      },
+      {
+        "runA": "droid-builtin",
+        "runB": "droid-you",
+        "aWins": 7,
+        "bWins": 6,
+        "ties": 138
+      },
+      {
+        "runA": "droid-builtin",
+        "runB": "codex-builtin",
+        "aWins": 7,
+        "bWins": 1,
+        "ties": 143
+      },
+      {
+        "runA": "droid-builtin",
+        "runB": "codex-you",
+        "aWins": 7,
+        "bWins": 1,
+        "ties": 143
+      },
+      {
+        "runA": "droid-you",
+        "runB": "codex-builtin",
+        "aWins": 6,
+        "bWins": 1,
+        "ties": 144
+      },
+      {
+        "runA": "droid-you",
+        "runB": "codex-you",
+        "aWins": 6,
+        "bWins": 1,
+        "ties": 144
+      },
+      {
+        "runA": "codex-builtin",
+        "runB": "codex-you",
+        "aWins": 1,
+        "bWins": 1,
+        "ties": 149
+      }
+    ]
+  }
+}

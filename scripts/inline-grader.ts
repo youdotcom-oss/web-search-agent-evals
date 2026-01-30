@@ -1,5 +1,5 @@
 import type { Grader } from "@plaited/agent-eval-harness/schemas";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 
 /**
  * Hybrid inline grader: Deterministic scoring + LLM quality judgment
@@ -9,16 +9,34 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
  * - Agent schemas extract tool names from CLI output
  * - Grader checks if expected MCP server tools were called
  * - Supports all agents: Claude Code, Codex, DROID, GEMINI
- * - Detection patterns documented in `detectMcpFromTrajectory()` function below
+ * - Detection patterns implemented in `assessToolUsage()` function
  *
  * **Hybrid Scoring:**
- * - **Deterministic (60 pts):** Completion (30), tool usage (20), quality bonus (10)
- * - **LLM (40 pts):** Accuracy, relevance, completeness via Gemini Flash 2.0
- * - **Pass threshold:** 70/100 (0.7 normalized score)
+ * - **Deterministic (60 base, 70 max):** Basic output (10), tool usage (25), no errors (25), sources bonus (10)
+ * - **LLM (30 pts):** Query match, source evidence, content substance, format quality via Gemini Flash 3.0
+ * - **Pass threshold:** 65/100 (0.65 normalized score)
+ *
+ * **Deterministic Breakdown:**
+ * - 10 pts: Basic output (>= 40 chars)
+ * - 25 pts: Correct tool usage
+ * - 25 pts: No execution errors
+ * - 10 pts: Sources bonus (URLs/references)
+ *
+ * **Tool Usage (25 pts):**
+ * - If MCP expected: 25 pts for correct tool, 15 pts for wrong tool, 0 for no tool
+ * - If builtin (no MCP): 25 pts for any tool, 0 for no tool
+ *
+ * **Pass Threshold Logic:**
+ * - Baseline (no sources): 10 + 25 + 25 = 60 pts
+ * - With sources: 60 + 10 = 70 pts deterministic + up to 30 LLM = 100 max
+ * - Pass requires 65/100, so agents need sources OR LLM boost to pass
+ * - Structure/formatting judged by LLM (Format Quality dimension)
  *
  * **Execution Errors:** Timeout or tool failures result in immediate fail (score 0)
  *
- * **Fallback:** Works without GEMINI_API_KEY (deterministic-only mode, max score 60/100)
+ * **Fallback:** Works without GEMINI_API_KEY (deterministic-only mode, max 70/100)
+ *
+ * **Latency Tracking:** Records grader execution time separately from agent time
  *
  * **Calibration Required:** The LLM judge may hallucinate facts. Always:
  * - Review sampled failures manually before trusting scores
@@ -28,111 +46,6 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
  *
  * @public
  */
-
-/**
- * Detect MCP tool usage from agent trajectory
- *
- * @remarks
- * Detects Model Context Protocol (MCP) tool usage by checking if tools from the expected
- * MCP server were called during execution. Uses metadata-driven detection to support any
- * MCP server and tool combination.
- *
- * ## Metadata-Driven Detection
- *
- * The function requires prompt metadata specifying:
- * - `mcp_server`: The MCP server name (e.g., "ydc-server")
- * - `expected_tools`: List of acceptable MCP tools (e.g., ["you-search", "you-express"])
- *
- * ## Detection Patterns by Agent
- *
- * ### Claude Code
- * **Pattern**: Tool names with `mcp__<server>__<tool>` format
- * - **Example**: `mcp__ydc-server__you-search`
- * - **Detection**: Extract server from tool name, verify it matches expected server
- *
- * ### Codex
- * **Pattern**: Explicit `mcpServer` field in trajectory steps
- * - **Example**: `{mcpServer: "ydc-server", toolName: "you-search"}`
- * - **Detection**: Check if `mcpServer` matches expected server
- *
- * ### DROID
- * **Pattern**: Tool names with `<server>___<tool>` format (triple underscore)
- * - **Example**: `ydc-server___you-search`
- * - **Detection**: Extract server from tool name, verify it matches expected server
- *
- * ### GEMINI
- * **Pattern**: Tool names match expected tools list
- * - **Example**: `you-search` or `you-search-<timestamp>-<id>`
- * - **Detection**: Check if tool name (base or timestamped) is in expected_tools list
- *
- * ## Benefits
- *
- * 1. **Future-proof**: Add any MCP server by updating prompt metadata
- * 2. **No hardcoding**: No agent-specific tool name patterns
- * 3. **Explicit**: Clear intent in prompt files
- * 4. **Testable**: Easy to verify detection against expected tools
- *
- * @param trajectory - Agent execution trajectory with tool calls and messages
- * @param metadata - Prompt metadata containing `mcp_server` and `expected_tools`
- * @returns `true` if any expected MCP tool was used, `false` otherwise
- *
- * @public
- */
-const detectMcpFromTrajectory = (
-  trajectory?: Array<{
-    type: string;
-    toolName?: string;
-    mcpServer?: string;
-    name?: string;
-    title?: string;
-    content?: string;
-  }>,
-  metadata?: {
-    mcp_server?: string;
-    expected_tools?: string[];
-  },
-): boolean => {
-  // No MCP expected if metadata doesn't specify server
-  if (!trajectory || !metadata?.mcp_server) return false;
-
-  const expectedServer = metadata.mcp_server;
-  const expectedTools = metadata.expected_tools || [];
-
-  return trajectory.some((step) => {
-    if (step.type !== "tool_call") return false;
-
-    // Get tool identifier from various possible field names
-    const toolIdentifier = step.name || step.toolName || step.title || "";
-
-    // Claude Code: extract server from mcp__<server>__<tool>
-    if (toolIdentifier.startsWith("mcp__")) {
-      const parts = toolIdentifier.split("__");
-      return parts[1] === expectedServer;
-    }
-
-    // Codex: check mcpServer field directly
-    if (step.mcpServer) {
-      return step.mcpServer === expectedServer;
-    }
-
-    // DROID: extract server from <server>___<tool>
-    // Exclude false positives like Claude's tool IDs (toolu_)
-    if (toolIdentifier.includes("___") && !toolIdentifier.startsWith("toolu_")) {
-      const server = toolIdentifier.split("___")[0];
-      return server === expectedServer;
-    }
-
-    // GEMINI: check if tool name matches any expected tool
-    // Handle both base names and timestamped variants (you-search-123...)
-    for (const expectedTool of expectedTools) {
-      if (toolIdentifier === expectedTool || toolIdentifier.startsWith(`${expectedTool}-`)) {
-        return true;
-      }
-    }
-
-    return false;
-  });
-};
 
 /**
  * Check for errors or timeouts in execution
@@ -155,18 +68,130 @@ const hasExecutionErrors = (
 };
 
 /**
- * Hybrid quality assessment: deterministic (60%) + LLM (40%)
+ * Assess basic output presence
+ *
+ * @returns 10 points if output exists (>= 40 chars), 0 if empty
+ */
+const assessBasicOutput = (output: string): number => {
+  return output.length >= 40 ? 10 : 0;
+};
+
+/**
+ * Assess source evidence (bonus points)
+ *
+ * @returns 10 points if output has URLs/sources, 0 otherwise
+ */
+const assessSources = (output: string): number => {
+  const hasSources = /https?:\/\/|source:|reference:/i.test(output);
+  return hasSources ? 10 : 0;
+};
+
+/**
+ * Assess correct tool usage with sophisticated MCP detection
  *
  * @remarks
- * Deterministic scoring (60 pts):
- * - 30 pts: Completion (has substantial output >50 chars)
- * - 20 pts: Tool usage (any tool calls in trajectory)
- * - 10 pts: Quality bonus (has content and no errors)
+ * Evaluates tool selection correctness and detects MCP tool usage across all agent types
+ * using agent-specific naming patterns.
  *
- * LLM scoring (40 pts):
- * - Accuracy: Is the information correct?
- * - Relevance: Does it answer the query?
- * - Completeness: Are all aspects covered?
+ * ## Detection Patterns by Agent
+ *
+ * - **Claude Code**: `mcp__<server>__<tool>` format (e.g., `mcp__ydc-server__you-search`)
+ * - **Codex**: Explicit `mcpServer` field in trajectory step
+ * - **DROID**: `<server>___<tool>` format with triple underscore (e.g., `ydc-server___you-search`)
+ * - **GEMINI**: Tool name matches expected tools, including timestamped variants (e.g., `you-search-123`)
+ *
+ * ## Scoring Logic
+ *
+ * - **If MCP expected** (metadata.mcpServer and metadata.expectedTools exist):
+ *   - 25 pts: Correct MCP tool used (matches expected server/tools)
+ *   - 15 pts: Any tool used (wrong choice)
+ *   - 0 pts: No tools
+ * - **If NO MCP expected** (builtin):
+ *   - 25 pts: Any tool used (full credit for builtin)
+ *   - 0 pts: No tools
+ *
+ * @param trajectory - Agent execution trajectory with tool calls
+ * @param metadata - Prompt metadata containing `mcpServer` and `expectedTools`
+ * @returns Score from 0-25 points based on tool correctness
+ *
+ * @internal
+ */
+const assessToolUsage = (
+  trajectory?: Array<{
+    type: string;
+    name?: string;
+    toolName?: string;
+    title?: string;
+    mcpServer?: string;
+  }>,
+  metadata?: { expectedTools?: readonly string[]; mcpServer?: string },
+): number => {
+  const toolCalls = trajectory?.filter((s) => s.type === "tool_call") ?? [];
+
+  // No tools used at all
+  if (toolCalls.length === 0) return 0;
+
+  const expectedMcpServer = metadata?.mcpServer;
+  const expectedTools = metadata?.expectedTools;
+
+  // Case 1: MCP expected - validate correct tool using sophisticated detection
+  if (expectedMcpServer && expectedTools?.length) {
+    const usedCorrectTool = toolCalls.some((call) => {
+      const toolIdentifier = call.name || call.toolName || call.title || "";
+
+      // Claude Code: extract server from mcp__<server>__<tool>
+      if (toolIdentifier.startsWith("mcp__")) {
+        const parts = toolIdentifier.split("__");
+        return parts[1] === expectedMcpServer;
+      }
+
+      // Codex: check mcpServer field directly
+      if (call.mcpServer) {
+        return call.mcpServer === expectedMcpServer;
+      }
+
+      // DROID: extract server from <server>___<tool>
+      // Exclude false positives like Claude's tool IDs (toolu_)
+      if (toolIdentifier.includes("___") && !toolIdentifier.startsWith("toolu_")) {
+        const server = toolIdentifier.split("___")[0];
+        return server === expectedMcpServer;
+      }
+
+      // GEMINI: check if tool name matches any expected tool
+      // Handle both base names and timestamped variants (you-search-123...)
+      if (expectedTools.some((tool) => toolIdentifier === tool || toolIdentifier.startsWith(`${tool}-`))) {
+        return true;
+      }
+
+      return false;
+    });
+
+    return usedCorrectTool ? 25 : 15; // Full credit for correct, partial for wrong
+  }
+
+  // Case 2: Builtin (no MCP) - any tool usage gets full credit
+  return 25;
+};
+
+/**
+ * Hybrid quality assessment: deterministic (65-70%) + LLM (30%)
+ *
+ * @remarks
+ * Deterministic scoring (60 base pts, 70 max with sources bonus):
+ * - 10 pts: Basic output (>= 40 chars)
+ * - 25 pts: Correct tool usage
+ * - 25 pts: No execution errors
+ * - 10 pts: Sources bonus (URLs/references)
+ *
+ * LLM scoring (30 pts max):
+ * - Query match, source evidence, content substance, format quality
+ * - Uses Gemini Flash 3.0 for web search result evaluation
+ *
+ * Pass threshold: 0.65 (65/100)
+ * - Baseline without sources = 60 pts (10 + 25 + 25)
+ * - With sources = 70 pts deterministic + up to 30 LLM = 100 max
+ * - Agents need sources OR LLM quality boost to reach 65/100 pass threshold
+ * - Structure/formatting judged by LLM, not deterministic
  *
  * Falls back to deterministic-only if GEMINI_API_KEY not available.
  */
@@ -175,6 +200,7 @@ const assessQuality = async ({
   output,
   hint,
   trajectory,
+  metadata,
 }: {
   input: string;
   output: string;
@@ -182,71 +208,93 @@ const assessQuality = async ({
   trajectory?: Array<{
     type: string;
     name?: string;
+    toolName?: string;
+    title?: string;
     status?: string;
     content?: string;
   }>;
+  metadata?: {
+    mcpServer?: string;
+    expectedTools?: readonly string[];
+  };
 }): Promise<{
   deterministicScore: number;
   llmScore: number;
   reasoning: string;
+  graderLatency: number;
+  llmLatency: number;
+  mcpToolCalled: boolean;
 }> => {
-  // Phase 1: Deterministic scoring (60 pts max)
+  const startTime = performance.now();
+
+  // Phase 1: Deterministic scoring (60 base, 70 max)
   let deterministicScore = 0;
 
-  // 30 pts: Completion (has substantial output)
-  const hasContent = output.length > 50;
-  if (hasContent) {
-    deterministicScore += 30;
-  }
+  // 10 pts: Basic output
+  const basicOutput = assessBasicOutput(output);
+  deterministicScore += basicOutput;
 
-  // 20 pts: Tool usage (any tool calls in trajectory)
-  const usedTools = trajectory?.some((step) => step.type === "tool_call") ?? false;
-  if (usedTools) {
-    deterministicScore += 20;
-  }
+  // 25 pts: Correct tool usage
+  const toolScore = assessToolUsage(trajectory, metadata);
+  deterministicScore += toolScore;
 
-  // 10 pts: Quality bonus (has content and no execution errors)
+  // 25 pts: No execution errors
   const { hasErrors } = hasExecutionErrors(output, trajectory);
-  if (hasContent && !hasErrors) {
-    deterministicScore += 10;
-  }
+  const cleanScore = !hasErrors && output.length >= 40 ? 25 : 0;
+  deterministicScore += cleanScore;
 
-  // Phase 2: LLM quality judgment (40 pts max)
+  // 10 pts: Sources bonus
+  const sourcesBonus = assessSources(output);
+  deterministicScore += sourcesBonus;
+
+  // Phase 2: LLM quality judgment (30 pts max)
   let llmScore = 0;
   let llmReasoning = "";
+  let llmLatency = 0;
 
   const apiKey = process.env.GEMINI_API_KEY;
   if (apiKey) {
+    const llmStart = performance.now();
     try {
-      const genai = new GoogleGenerativeAI(apiKey);
-      const model = genai.getGenerativeModel({
-        model: "gemini-2.0-flash-exp",
-      });
+      const ai = new GoogleGenAI({ apiKey });
 
-      const prompt = `Evaluate this agent output for the query: "${input}"
-${hint ? `\nExpected content: ${hint}` : ""}
+      const contents = `Role: Search Quality Evaluator. Grade this web search result without verifying facts.
 
-Output:
+Query: "${input}"
+${hint ? `Target: ${hint}` : ""}
+
+Result:
 ${output || "(no output)"}
 
-Rate the output on a scale of 0-40 based on:
-- Accuracy: Is the information correct? (0-15 pts)
-- Relevance: Does it answer the query? (0-15 pts)
-- Completeness: Are all aspects addressed? (0-10 pts)
+Score 0-30 across 4 dimensions:
 
-**IMPORTANT:** If you cannot confidently judge accuracy (e.g., you don't have access to current facts), return a score of 0 and explain why in the reasoning. Do not hallucinate facts or make up information.
+**Query Match (0-15)**: Does it answer the search query?
+Scoring: Full answer = 15, Partial = 10, Tangential = 5, Off-topic = 0
 
-Return ONLY valid JSON with this structure:
+**Source Evidence (0-5)**: Are sources/URLs cited?
+Scoring: Multiple URLs = 5, Vague sources = 3, None = 0
+
+**Content Substance (0-5)**: Specific info or generic fluff?
+Scoring: Dense/specific = 5, Mixed = 3, Fluff = 0
+
+**Format Quality (0-5)**: Is it well-organized?
+Scoring: Clear structure = 5, Basic = 3, Poor = 0
+
+Note: Judge search quality indicators only, not factual correctness.
+
+JSON:
 {
-  "score": 35,
-  "reasoning": "Brief explanation"
+  "score": 24,
+  "reasoning": "Match: 14/15, Evidence: 4/5, Substance: 3/5, Format: 3/5"
 }`;
 
-      const response = await model.generateContent(prompt);
-      const text = response.response.text();
-
+      const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents,
+      });
+      const { text } = response;
       // Extract JSON from response (handle markdown code blocks)
-      const jsonMatch = text.match(/\{[\s\S]*?\}/);
+      const jsonMatch = text?.match(/\{[\s\S]*?\}/);
       if (jsonMatch) {
         const llmResult = JSON.parse(jsonMatch[0]) as {
           score: number;
@@ -254,24 +302,32 @@ Return ONLY valid JSON with this structure:
         };
 
         if (typeof llmResult.score === "number") {
-          llmScore = Math.min(40, Math.max(0, llmResult.score));
+          llmScore = Math.min(30, Math.max(0, llmResult.score));
           llmReasoning = llmResult.reasoning || "";
         }
       }
     } catch (_: unknown) {
-      // Fallback: LLM scoring failed, use deterministic only
       llmReasoning = "LLM grading failed";
     }
+    llmLatency = performance.now() - llmStart;
   } else {
     llmReasoning = "No GEMINI_API_KEY (deterministic-only mode)";
   }
 
-  const reasoning = `Deterministic: ${deterministicScore}/60 (content=${hasContent}, tools=${usedTools}). LLM: ${llmScore}/40. ${llmReasoning}`;
+  const totalLatency = performance.now() - startTime;
+
+  const reasoning = `Deterministic: ${deterministicScore}/70 (basic=${basicOutput}, tools=${toolScore}, clean=${cleanScore}, sources=${sourcesBonus}). LLM: ${llmScore}/30. ${llmReasoning}`;
+
+  // Derive MCP tool usage from score: true only if MCP expected and got full 25 points
+  const mcpToolCalled = !!(metadata?.mcpServer && metadata?.expectedTools?.length && toolScore === 25);
 
   return {
     deterministicScore,
     llmScore,
     reasoning,
+    graderLatency: totalLatency,
+    llmLatency,
+    mcpToolCalled,
   };
 };
 
@@ -280,28 +336,63 @@ Return ONLY valid JSON with this structure:
  *
  * @remarks
  * **MCP Detection:** Uses metadata from prompts to verify expected MCP tool usage:
- * - Prompt metadata specifies `mcp_server` and `expected_tools`
+ * - Prompt metadata specifies `mcpServer` and `expectedTools`
  * - Agent schemas extract tool names from CLI output
  * - Grader checks if any expected tool was actually called
  * - Works across all agent types (Claude Code, Codex, DROID, GEMINI)
  *
  * **Hybrid Scoring:**
- * - Deterministic: 60 pts (completion, tool usage, quality bonus)
- * - LLM: 40 pts (accuracy, relevance, completeness)
+ * - Deterministic: 70 pts (output quality, correct tool usage, no errors)
+ * - LLM: 30 pts (query match, source evidence, content substance, format quality)
  * - Pass threshold: 70/100
  *
  * **Execution errors:** Timeout or tool failures → immediate fail (score 0)
  *
- * **Fallback:** Works without GEMINI_API_KEY (deterministic-only, max 60 pts)
+ * **Fallback:** Works without GEMINI_API_KEY (deterministic-only, max 70 pts)
+ *
+ * **Latency Tracking:** Records grader execution time (graderLatency, llmLatency)
  *
  * @param input - The prompt (string or multi-turn array)
  * @param output - Agent's final output
  * @param hint - Expected content for grading context
  * @param trajectory - Full execution trace with tool calls
+ * @param metadata - Prompt metadata with MCP server info
  *
  * @returns Grading result with pass/fail, normalized score (0-1), reasoning, and metadata
  */
-export const grade: Grader = async ({ input, output, hint, trajectory, metadata }) => {
+/**
+ * Custom grader result with additional metadata
+ *
+ * @internal
+ */
+type CustomGraderResult = {
+  pass: boolean;
+  score: number;
+  reasoning: string;
+  metadata: {
+    expectedMcp: boolean;
+    mcpToolCalled: boolean;
+    deterministicScore?: number;
+    llmScore?: number;
+    hasErrors: boolean;
+    hasTimeout: boolean;
+    graderLatency?: number;
+    llmLatency?: number;
+  };
+};
+
+/**
+ * Grade function that returns custom result with metadata
+ *
+ * @internal
+ */
+export const grade = async ({
+  input,
+  output,
+  hint,
+  trajectory,
+  metadata,
+}: Parameters<Grader>[0]): Promise<CustomGraderResult> => {
   // Normalize input to string
   const inputStr = Array.isArray(input) ? input.join(" ") : input;
 
@@ -316,31 +407,30 @@ export const grade: Grader = async ({ input, output, hint, trajectory, metadata 
       reasoning: hasTimeout ? "Execution timed out" : "Tool execution failed with errors",
       metadata: {
         mcpToolCalled: false,
-        expectedMcp: !!metadata?.mcp_server,
+        expectedMcp: !!metadata?.mcpServer,
         hasErrors,
         hasTimeout,
       },
     };
   }
 
-  // Detect MCP usage from trajectory using metadata
-  const mcpToolCalled = detectMcpFromTrajectory(trajectory, metadata);
-
   // Determine if MCP was expected from metadata
-  const expectedMcp = !!metadata?.mcp_server;
+  const expectedMcp = !!metadata?.mcpServer;
 
-  // Hybrid quality assessment (deterministic 60% + LLM 40%)
+  // Hybrid quality assessment (deterministic 70% + LLM 30%)
+  // Also detects MCP tool usage from scoring (25 pts = correct MCP tool used)
   const quality = await assessQuality({
     input: inputStr,
     output,
     hint,
     trajectory,
+    metadata,
   });
 
-  // Combine scores
+  // Combine scores (70 deterministic + 30 LLM = 100 total)
   const totalScore = quality.deterministicScore + quality.llmScore;
   const normalizedScore = totalScore / 100;
-  const pass = normalizedScore >= 0.7; // 70% threshold
+  const pass = normalizedScore >= 0.65; // 65% threshold (baseline without sources)
 
   return {
     pass,
@@ -348,11 +438,13 @@ export const grade: Grader = async ({ input, output, hint, trajectory, metadata 
     reasoning: quality.reasoning,
     metadata: {
       expectedMcp,
-      mcpToolCalled,
+      mcpToolCalled: quality.mcpToolCalled,
       deterministicScore: quality.deterministicScore,
       llmScore: quality.llmScore,
       hasErrors: false,
       hasTimeout: false,
+      graderLatency: quality.graderLatency,
+      llmLatency: quality.llmLatency,
     },
   };
 };

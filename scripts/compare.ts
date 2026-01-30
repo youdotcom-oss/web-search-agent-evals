@@ -1,9 +1,76 @@
 #!/usr/bin/env bun
+
+/**
+ * Statistical comparison tool for agent evaluation results
+ *
+ * @remarks
+ * Compares agent performance across different runs using statistical analysis or weighted scoring.
+ * Generates comparison reports and visualizations to identify performance differences.
+ *
+ * ## Comparison Strategies
+ *
+ * - **weighted**: Score-based comparison using deterministic and LLM scores
+ *   - Analyzes score distributions and pass rates
+ *   - Generates statistical summaries (mean, median, std dev)
+ *   - Useful for overall performance assessment
+ *
+ * - **statistical**: Hypothesis testing for statistical significance
+ *   - Uses statistical tests (t-test, Mann-Whitney U) to compare distributions
+ *   - Provides p-values and confidence intervals
+ *   - Useful for determining if differences are statistically significant
+ *
+ * ## Run Labeling Format
+ *
+ * Runs are labeled using the pattern:
+ * ```
+ * [agent]-[search-provider]
+ * ```
+ *
+ * Examples:
+ * - `claude-code-builtin` - Claude Code with builtin search
+ * - `gemini-you` - Gemini with You.com MCP server
+ * - `droid-builtin` - DROID with builtin search
+ *
+ * ## Output Paths
+ *
+ * Results are written to:
+ * ```
+ * data/comparisons/[mode]/comparison-[timestamp].json
+ * ```
+ *
+ * For dated runs:
+ * ```
+ * data/comparisons/runs/[date]/comparison-[timestamp].json
+ * ```
+ *
+ * For fixture-based comparisons:
+ * ```
+ * [fixture-dir]/comparison-[timestamp].json
+ * ```
+ *
+ * ## Result Path Convention
+ *
+ * - **Test mode**: `data/results/test-runs/[agent]/[provider].jsonl`
+ * - **Full mode**: `data/results/runs/[date]/[agent]/[provider].jsonl`
+ * - **Fixtures**: `[fixture-dir]/results/runs/[date]/[agent]/[provider].jsonl`
+ *
+ * Usage:
+ *   bun scripts/compare.ts --mode test                              # Compare test results
+ *   bun scripts/compare.ts --mode full --strategy statistical       # Statistical comparison
+ *   bun scripts/compare.ts --agent claude-code --search-provider you  # Specific combo
+ *   bun scripts/compare.ts --run-date 2026-01-15                    # Compare dated run
+ *   bun scripts/compare.ts --fixture-dir ./test-fixtures            # Compare fixtures
+ *   bun scripts/compare.ts --dry-run                                # Show what would run
+ *
+ * @public
+ */
+
 import { spawn } from "node:child_process";
+import { MCP_SERVERS, type McpServerKey } from "../mcp-servers.ts";
 
 type Mode = "test" | "full";
 type Agent = "claude-code" | "gemini" | "droid" | "codex";
-type SearchProvider = "builtin" | "you";
+type SearchProvider = McpServerKey | "builtin";
 type Strategy = "weighted" | "statistical";
 
 type CompareOptions = {
@@ -28,6 +95,8 @@ const parseArgs = (args: string[]): CompareOptions => {
   let runDate: string | undefined;
   let fixtureDir: string | undefined;
 
+  const validProviders = ["builtin", ...Object.keys(MCP_SERVERS)];
+
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--agent" && i + 1 < args.length) {
       const agent = args[i + 1];
@@ -45,10 +114,10 @@ const parseArgs = (args: string[]): CompareOptions => {
       i++;
     } else if ((args[i] === "--search-provider" || args[i] === "--mcp") && i + 1 < args.length) {
       const tool = args[i + 1];
-      if (tool !== "builtin" && tool !== "you") {
-        throw new Error(`Invalid search provider: ${tool}. Must be "builtin" or "you"`);
+      if (!validProviders.includes(tool as string)) {
+        throw new Error(`Invalid search provider: ${tool}. Must be one of: ${validProviders.join(", ")}`);
       }
-      searchProvider = tool;
+      searchProvider = tool as SearchProvider;
       i++;
     } else if (args[i] === "--strategy" && i + 1 < args.length) {
       const s = args[i + 1];
@@ -81,12 +150,19 @@ const parseArgs = (args: string[]): CompareOptions => {
 
 const getLatestRunPath = async (fixtureDir?: string): Promise<string> => {
   const dataDir = fixtureDir || "data";
-  const latestFile = Bun.file(`${dataDir}/results/latest.json`);
-  if (await latestFile.exists()) {
-    const latest = await latestFile.json();
-    return latest.path;
+  const runsDir = `${dataDir}/results/runs`;
+
+  // Scan runs directory for dated folders
+  const entries = await Array.fromAsync(new Bun.Glob("*").scan({ cwd: runsDir, onlyFiles: false }));
+  const datedDirs = entries.filter((entry) => /^\d{4}-\d{2}-\d{2}$/.test(entry));
+
+  if (datedDirs.length === 0) {
+    throw new Error(`No dated runs found in ${runsDir}`);
   }
-  throw new Error("No latest run found. Run finalize-run first.");
+
+  // Sort by date (YYYY-MM-DD format sorts lexicographically) and take the latest
+  const latestDate = datedDirs.sort().reverse()[0];
+  return `runs/${latestDate}`;
 };
 
 const buildResultPath = async ({
@@ -147,7 +223,8 @@ const runComparison = async (options: CompareOptions): Promise<void> => {
   const { agents, mode, searchProvider, strategy, runDate, fixtureDir } = options;
 
   // Build scenario matrix
-  const searchProviders: SearchProvider[] = searchProvider ? [searchProvider] : ["builtin", "you"];
+  const mcpProviders = Object.keys(MCP_SERVERS) as McpServerKey[];
+  const searchProviders: SearchProvider[] = searchProvider ? [searchProvider] : ["builtin", ...mcpProviders];
   const runs: Array<{ agent: Agent; searchProvider: SearchProvider }> = [];
 
   for (const agent of agents) {
@@ -213,7 +290,10 @@ const main = async () => {
       console.log(`\nOutput: ${await buildOutputPath(options)}\n`);
 
       // Build scenario matrix for preview
-      const searchProviders: SearchProvider[] = options.searchProvider ? [options.searchProvider] : ["builtin", "you"];
+      const mcpProviders = Object.keys(MCP_SERVERS) as McpServerKey[];
+      const searchProviders: SearchProvider[] = options.searchProvider
+        ? [options.searchProvider]
+        : ["builtin", ...mcpProviders];
       const runs: Array<{ agent: Agent; searchProvider: SearchProvider }> = [];
 
       for (const agent of options.agents) {

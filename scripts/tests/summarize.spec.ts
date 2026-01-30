@@ -171,7 +171,7 @@ describe("summarize.ts", () => {
       expect(content).toContain("gemini-you");
     });
 
-    test("omits performance rankings when data is missing", async () => {
+    test("includes performance rankings when data is available", async () => {
       const outputPath = "/tmp/test-perf-summary.md";
       await runScript(SCRIPT_PATH, [
         "--mode",
@@ -186,13 +186,14 @@ describe("summarize.ts", () => {
 
       const content = await Bun.file(outputPath).text();
 
-      // Performance section should not be present when data is missing
-      expect(content).not.toContain("## Performance Rankings");
-      expect(content).not.toContain("P50");
-      expect(content).not.toContain("P90");
+      // Performance section should be present when data is available
+      expect(content).toContain("## Performance Rankings");
+      expect(content).toContain("P50");
+      expect(content).toContain("P90");
+      expect(content).toContain("**Fastest:**");
     });
 
-    test("omits reliability metrics when data is missing", async () => {
+    test("includes reliability metrics when data is available", async () => {
       const outputPath = "/tmp/test-reliability-summary.md";
       await runScript(SCRIPT_PATH, [
         "--mode",
@@ -207,9 +208,10 @@ describe("summarize.ts", () => {
 
       const content = await Bun.file(outputPath).text();
 
-      // Reliability section should not be present when data is missing
-      expect(content).not.toContain("## Reliability Metrics");
-      expect(content).not.toContain("Tool Error Rate");
+      // Reliability section should be present when data is available
+      expect(content).toContain("## Reliability Metrics");
+      expect(content).toContain("Tool Error Rate");
+      expect(content).toContain("Completion Rate");
     });
 
     test("includes MCP impact analysis", async () => {
@@ -248,10 +250,39 @@ describe("summarize.ts", () => {
 
       expect(content).toContain("## Recommendations");
       expect(content).toContain("### For Production Use");
-      expect(content).toContain("### For Cost-Conscious Use");
-      expect(content).toContain("### To Avoid");
+      expect(content).toContain("### Lowest Quality in this Evaluation");
       expect(content).toContain("**Best Quality:**");
       // Note: "**Fastest:**" requires performance data, omitted with fixture
+    });
+
+    test("includes confidence intervals in MCP impact analysis when available", async () => {
+      const outputPath = "/tmp/test-confidence-intervals-summary.md";
+      await runScript(SCRIPT_PATH, [
+        "--mode",
+        "full",
+        "--run-date",
+        "2026-01-24",
+        "--fixture-dir",
+        FIXTURE_DIR,
+        "--output",
+        outputPath,
+      ]);
+
+      const content = await Bun.file(outputPath).text();
+
+      // Should have MCP Tool Impact Analysis section
+      expect(content).toContain("## MCP Tool Impact Analysis");
+
+      // Should contain confidence intervals in the format: "± X.X%"
+      expect(content).toMatch(/±\s+\d+\.\d+%/);
+
+      // Should show all three metrics with CIs
+      expect(content).toContain("Quality (builtin → MCP)");
+      expect(content).toContain("Speed (builtin → MCP)");
+      expect(content).toContain("Reliability (builtin → MCP)");
+
+      // Verify the format includes arrows and percentages
+      expect(content).toMatch(/[↑↓→]\s+\d+\.\d+%\s+±\s+\d+\.\d+%/);
     });
   });
 

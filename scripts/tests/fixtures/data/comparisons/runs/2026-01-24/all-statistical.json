@@ -1,16 +1,7 @@
 {
   "meta": {
     "generatedAt": "2026-01-24T00:00:00.000Z",
-    "runs": [
-      "claude-code-builtin",
-      "claude-code-you",
-      "gemini-builtin",
-      "gemini-you",
-      "droid-builtin",
-      "droid-you",
-      "codex-builtin",
-      "codex-you"
-    ],
+    "runs": ["claude-code-builtin", "claude-code-you"],
     "promptCount": 2,
     "promptsWithAllRuns": 2
   },
@@ -19,49 +10,21 @@
       "avgScore": 0.95,
       "passRate": 1.0,
       "passCount": 2,
-      "failCount": 0
+      "failCount": 0,
+      "confidenceIntervals": {
+        "avgScore": [0.92, 0.98],
+        "passRate": [0.95, 1.0]
+      }
     },
     "claude-code-you": {
-      "avgScore": 0.935,
+      "avgScore": 0.88,
       "passRate": 1.0,
       "passCount": 2,
-      "failCount": 0
-    },
-    "gemini-builtin": {
-      "avgScore": 0.91,
-      "passRate": 1.0,
-      "passCount": 2,
-      "failCount": 0
-    },
-    "gemini-you": {
-      "avgScore": 0.885,
-      "passRate": 1.0,
-      "passCount": 2,
-      "failCount": 0
-    },
-    "droid-builtin": {
-      "avgScore": 0.925,
-      "passRate": 1.0,
-      "passCount": 2,
-      "failCount": 0
-    },
-    "droid-you": {
-      "avgScore": 0.9,
-      "passRate": 1.0,
-      "passCount": 2,
-      "failCount": 0
-    },
-    "codex-builtin": {
-      "avgScore": 0.845,
-      "passRate": 1.0,
-      "passCount": 2,
-      "failCount": 0
-    },
-    "codex-you": {
-      "avgScore": 0.825,
-      "passRate": 1.0,
-      "passCount": 2,
-      "failCount": 0
+      "failCount": 0,
+      "confidenceIntervals": {
+        "avgScore": [0.84, 0.92],
+        "passRate": [0.95, 1.0]
+      }
     }
   },
   "performance": {
@@ -74,7 +37,10 @@
         "min": 25000,
         "max": 55000
       },
-      "totalDuration": 64000
+      "totalDuration": 64000,
+      "confidenceIntervals": {
+        "latencyMean": [29000, 35000]
+      }
     },
     "claude-code-you": {
       "latency": {
@@ -85,7 +51,10 @@
         "min": 35000,
         "max": 65000
       },
-      "totalDuration": 84000
+      "totalDuration": 84000,
+      "confidenceIntervals": {
+        "latencyMean": [38000, 46000]
+      }
     }
   },
   "reliability": {

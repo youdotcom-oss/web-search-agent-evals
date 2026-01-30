@@ -58,10 +58,10 @@
 
 | Agent | Quality (builtin → MCP) | Speed (builtin → MCP) | Reliability (builtin → MCP) |
 |-------|------------------------|----------------------|----------------------------|
-| claude-code (you) | ↓ 6.7% | ↓ 25.0% | ↑ 7.9pp |
-| gemini (you) | ↓ 3.4% | ↑ 14.4% | ↑ 2.6pp |
-| droid (you) | ↑ 1.9% | ↑ 19.9% | ↑ 4.6pp |
-| codex (you) | ↑ 13.8% | ↓ 91.6% | ↑ 4.6pp |
+| claude-code (you) | ↓ 6.7% ± 2.3% | ↓ 25.0% ± 9.6% | ↑ 7.9pp ± 2.3pp |
+| gemini (you) | ↓ 3.4% ± 2.5% | ↑ 14.4% ± 8.3% | ↑ 2.6pp ± 3.0pp |
+| droid (you) | ↑ 1.9% ± 2.4% | ↑ 19.9% ± 6.3% | ↑ 4.6pp ± 2.3pp |
+| codex (you) | ↑ 13.8% ± 2.8% | ↓ 91.6% ± 17.2% | ↑ 4.6pp ± 3.0pp |
 
 ## Recommendations
 
@@ -70,13 +70,9 @@
 - **Best Quality:** claude-code-builtin (0.93 avg score)
 - **Most Reliable:** droid-you (0.0% flakiness, 0.88 quality)
 - **Fastest:** gemini-you (19.7s P50 latency)
-- **Best Balance:** droid-you (quality + speed + reliability)
+- **Best Balance:** droid-you (weighted: 50% quality + 30% speed + 20% reliability)
 
-### For Cost-Conscious Use
-
-- **Recommended:** gemini-you (0.81 quality, 19.7s latency)
-
-### To Avoid
+### Lowest Quality in this Evaluation
 
 - **Lowest Quality:** codex-builtin (0.72 avg score)
 

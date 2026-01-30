@@ -25,6 +25,12 @@ export const QualityMetricsSchema = z.object({
   passCount: z.number(),
   failCount: z.number(),
   scoreDistribution: z.record(z.string(), z.number()).optional(),
+  confidenceIntervals: z
+    .object({
+      avgScore: z.tuple([z.number(), z.number()]).optional(),
+      passRate: z.tuple([z.number(), z.number()]).optional(),
+    })
+    .optional(),
 });
 
 /**
@@ -36,6 +42,11 @@ export const PerformanceMetricsSchema = z.object({
   latency: LatencyMetricsSchema,
   firstResponse: LatencyMetricsSchema.optional(),
   totalDuration: z.number(),
+  confidenceIntervals: z
+    .object({
+      latencyMean: z.tuple([z.number(), z.number()]).optional(),
+    })
+    .optional(),
 });
 
 /**

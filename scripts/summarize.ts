@@ -222,6 +222,9 @@ const generateSummary = async (options: SummarizeOptions): Promise<string> => {
     throw new Error("Could not load weighted comparison");
   }
 
+  // Load statistical comparison for confidence intervals
+  const statistical = await loadComparison(mode, runDate, "statistical", fixtureDir);
+
   // Try to load trials data if available
   let trialsWeighted: WeightedComparison | null = null;
   if (mode === "full") {
@@ -365,7 +368,9 @@ const generateSummary = async (options: SummarizeOptions): Promise<string> => {
         md.push(
           `| ${run} | ${regularMetrics.toolErrors} | ${formatPercent(
             regularMetrics.toolErrorRate,
-          )} | ${regularMetrics.timeouts} | ${formatPercent(regularMetrics.timeoutRate)} | ${formatPercent(regularMetrics.completionRate)} |\n`,
+          )} | ${regularMetrics.timeouts} | ${formatPercent(
+            regularMetrics.timeoutRate,
+          )} | ${formatPercent(regularMetrics.completionRate)} |\n`,
         );
       });
 
@@ -466,14 +471,47 @@ const generateSummary = async (options: SummarizeOptions): Promise<string> => {
           const speedArrow = speedDiff < 0 ? "↑" : speedDiff > 0 ? "↓" : "→";
           const reliabilityArrow = reliabilityDiff > 0 ? "↑" : reliabilityDiff < 0 ? "↓" : "→";
 
+          // Calculate confidence interval margins if available from statistical comparison
+          let qualityMargin = "";
+          let speedMargin = "";
+          let reliabilityMargin = "";
+
+          if (statistical?.quality && statistical?.performance) {
+            const statMcpQuality = statistical.quality[mcpRun];
+            const statBuiltinQuality = statistical.quality[builtinRun];
+            const statMcpPerf = statistical.performance[mcpRun];
+            const statBuiltinPerf = statistical.performance[builtinRun];
+
+            if (statMcpQuality?.confidenceIntervals?.avgScore && statBuiltinQuality) {
+              const [lower, upper] = statMcpQuality.confidenceIntervals.avgScore;
+              const margin = ((upper - lower) / 2 / statBuiltinQuality.avgScore) * 100;
+              qualityMargin = ` ± ${formatNumber(margin, 1)}%`;
+            }
+
+            if (statMcpPerf?.confidenceIntervals?.latencyMean && statBuiltinPerf) {
+              const [lower, upper] = statMcpPerf.confidenceIntervals.latencyMean;
+              const margin = ((upper - lower) / 2 / statBuiltinPerf.latency.mean) * 100;
+              speedMargin = ` ± ${formatNumber(margin, 1)}%`;
+            }
+
+            if (statMcpQuality?.confidenceIntervals?.passRate) {
+              const [lower, upper] = statMcpQuality.confidenceIntervals.passRate;
+              const margin = ((upper - lower) / 2) * 100;
+              reliabilityMargin = ` ± ${formatNumber(margin, 1)}pp`;
+            }
+          }
+
           md.push(
             `| ${agent} (${mcpProvider}) | ${qualityArrow} ${formatNumber(
               Math.abs(qualityDiff),
               1,
-            )}% | ${speedArrow} ${formatNumber(Math.abs(speedDiff), 1)}% | ${reliabilityArrow} ${formatNumber(
+            )}%${qualityMargin} | ${speedArrow} ${formatNumber(
+              Math.abs(speedDiff),
+              1,
+            )}%${speedMargin} | ${reliabilityArrow} ${formatNumber(
               Math.abs(reliabilityDiff),
               1,
-            )}pp |\n`,
+            )}pp${reliabilityMargin} |\n`,
           );
         });
       });
@@ -541,40 +579,10 @@ const generateSummary = async (options: SummarizeOptions): Promise<string> => {
 
   const topBalance = balanceScores[0];
   if (topBalance) {
-    md.push(`- **Best Balance:** ${topBalance.run} (quality + speed + reliability)\n\n`);
+    md.push(`- **Best Balance:** ${topBalance.run} (weighted: 50% quality + 30% speed + 20% reliability)\n\n`);
   }
 
-  md.push("### For Cost-Conscious Use\n\n");
-
-  // Find agents with good quality/speed trade-off
-  const costEffective = qualityRankings
-    .filter((entry) => {
-      if (!performance) return false;
-      const perf = performance[entry.run];
-      return entry.avgScore > 0.8 && perf !== undefined;
-    })
-    .map((entry) => {
-      if (!performance) return null;
-      const perf = performance[entry.run];
-      if (!perf) return null;
-      return {
-        run: entry.run,
-        quality: entry.avgScore,
-        speed: perf.latency.p50,
-      };
-    })
-    .filter((entry): entry is { run: string; quality: number; speed: number } => entry !== null)
-    .sort((a, b) => a.speed - b.speed);
-
-  if (costEffective.length > 0 && costEffective[0]) {
-    md.push(
-      `- **Recommended:** ${costEffective[0].run} (${formatNumber(
-        costEffective[0].quality,
-      )} quality, ${formatMs(costEffective[0].speed)} latency)\n\n`,
-    );
-  }
-
-  md.push("### To Avoid\n\n");
+  md.push("### Lowest Quality in this Evaluation\n\n");
 
   // Find worst performers
   const worstQuality = qualityRankings[qualityRankings.length - 1];

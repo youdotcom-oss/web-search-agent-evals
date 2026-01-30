@@ -6,7 +6,7 @@
       "dependencies": {
         "@anthropic-ai/sdk": "^0.71.2",
         "@google/genai": "^1.38.0",
-        "@plaited/agent-eval-harness": "^0.8.0",
+        "@plaited/agent-eval-harness": "^0.9.0",
         "zod": "^4.3.5",
       },
       "devDependencies": {
@@ -106,7 +106,7 @@
 
     "@pkgjs/parseargs": ["@pkgjs/parseargs@0.11.0", "", {}, "sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg=="],
 
-    "@plaited/agent-eval-harness": ["@plaited/agent-eval-harness@0.8.0", "", { "dependencies": { "@plaited/development-skills": "0.6.5", "zod": "^4.3.6" }, "bin": { "agent-eval-harness": "bin/cli.ts" } }, "sha512-4tDdHNoO6CDMzkrzmf1sSt8PT2ctRXEq2VXzmuKLcVy8Bk0g2h0pbOOqQ+q73uH7016IRjoJ4lAJH3EUNMVA6g=="],
+    "@plaited/agent-eval-harness": ["@plaited/agent-eval-harness@0.9.0", "", { "dependencies": { "@plaited/development-skills": "0.6.5", "zod": "^4.3.6" }, "bin": { "agent-eval-harness": "bin/cli.ts" } }, "sha512-bt7Yuk1cqZwLdfSi3TAAXGO3f0NXd3fPlxRqs0d1DzI9x86yQvtkkMyjqd/IQLUGRJTDhfnr5qD6iG2FJteuMQ=="],
 
     "@plaited/development-skills": ["@plaited/development-skills@0.6.5", "", { "peerDependencies": { "typescript-language-server": "^5.1.3" }, "bin": { "development-skills": "bin/cli.ts" } }, "sha512-VGXdAikAleV85ObPFt4Cv4oqnrJD3sV84Ea0X/NzFf/JY6SrE6FG+paOYqff4Lx2vizaUsmCfp7vMaCmqqAIQg=="],
 

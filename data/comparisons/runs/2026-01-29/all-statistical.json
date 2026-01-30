@@ -1,6 +1,6 @@
 {
   "meta": {
-    "generatedAt": "2026-01-29T17:32:34.821Z",
+    "generatedAt": "2026-01-30T15:59:17.742Z",
     "runs": [
       "claude-code-builtin",
       "claude-code-you",
@@ -26,6 +26,10 @@
         "0.4-0.6": 2,
         "0.6-0.8": 10,
         "0.8-1.0": 135
+      },
+      "confidenceIntervals": {
+        "avgScore": [0.9038410596026486, 0.9601986754966886],
+        "passRate": [0.8410596026490066, 0.9403973509933775]
       }
     },
     "claude-code-you": {
@@ -39,6 +43,10 @@
         "0.4-0.6": 0,
         "0.6-0.8": 1,
         "0.8-1.0": 146
+      },
+      "confidenceIntervals": {
+        "avgScore": [0.8473509933774853, 0.8903311258278166],
+        "passRate": [0.9470198675496688, 0.9933774834437086]
       }
     },
     "gemini-builtin": {
@@ -52,6 +60,10 @@
         "0.4-0.6": 3,
         "0.6-0.8": 10,
         "0.8-1.0": 137
+      },
+      "confidenceIntervals": {
+        "avgScore": [0.8178145695364232, 0.8501324503311255],
+        "passRate": [0.9006622516556292, 0.9735099337748344]
       }
     },
     "gemini-you": {
@@ -65,6 +77,10 @@
         "0.4-0.6": 2,
         "0.6-0.8": 47,
         "0.8-1.0": 100
+      },
+      "confidenceIntervals": {
+        "avgScore": [0.7859602649006625, 0.8273509933774837],
+        "passRate": [0.9337748344370861, 0.9933774834437086]
       }
     },
     "droid-builtin": {
@@ -78,6 +94,10 @@
         "0.4-0.6": 1,
         "0.6-0.8": 4,
         "0.8-1.0": 141
+      },
+      "confidenceIntervals": {
+        "avgScore": [0.8401986754966878, 0.8952317880794693],
+        "passRate": [0.8874172185430463, 0.9668874172185431]
       }
     },
     "droid-you": {
@@ -91,6 +111,10 @@
         "0.4-0.6": 0,
         "0.6-0.8": 0,
         "0.8-1.0": 148
+      },
+      "confidenceIntervals": {
+        "avgScore": [0.862450331125827, 0.9049668874172174],
+        "passRate": [0.9536423841059603, 1]
       }
     },
     "codex-builtin": {
@@ -104,6 +128,10 @@
         "0.4-0.6": 5,
         "0.6-0.8": 137,
         "0.8-1.0": 4
+      },
+      "confidenceIntervals": {
+        "avgScore": [0.7054966887417216, 0.7399337748344368],
+        "passRate": [0.8741721854304636, 0.9602649006622517]
       }
     },
     "codex-you": {
@@ -117,6 +145,10 @@
         "0.4-0.6": 1,
         "0.6-0.8": 52,
         "0.8-1.0": 94
+      },
+      "confidenceIntervals": {
+        "avgScore": [0.8018543046357629, 0.8424503311258295],
+        "passRate": [0.9337748344370861, 0.9933774834437086]
       }
     }
   },
@@ -138,7 +170,10 @@
         "min": 5037,
         "max": 110252
       },
-      "totalDuration": 5563350
+      "totalDuration": 5563350,
+      "confidenceIntervals": {
+        "latencyMean": [33886.64238410596, 39914.55629139073]
+      }
     },
     "claude-code-you": {
       "latency": {
@@ -157,7 +192,10 @@
         "min": 7317,
         "max": 114741
       },
-      "totalDuration": 6570807
+      "totalDuration": 6570807,
+      "confidenceIntervals": {
+        "latencyMean": [39708.15231788079, 46805.350993377484]
+      }
     },
     "gemini-builtin": {
       "latency": {
@@ -176,7 +214,10 @@
         "min": 6516,
         "max": 134678
       },
-      "totalDuration": 3855901
+      "totalDuration": 3855901,
+      "confidenceIntervals": {
+        "latencyMean": [23184.847682119205, 27969.688741721853]
+      }
     },
     "gemini-you": {
       "latency": {
@@ -195,7 +236,10 @@
         "min": 8566,
         "max": 77183
       },
-      "totalDuration": 3433169
+      "totalDuration": 3433169,
+      "confidenceIntervals": {
+        "latencyMean": [20779.880794701985, 25009.172185430463]
+      }
     },
     "droid-builtin": {
       "latency": {
@@ -214,7 +258,10 @@
         "min": 5740,
         "max": 105859
       },
-      "totalDuration": 5548473
+      "totalDuration": 5548473,
+      "confidenceIntervals": {
+        "latencyMean": [33619.82781456954, 39986.82781456954]
+      }
     },
     "droid-you": {
       "latency": {
@@ -233,7 +280,10 @@
         "min": 9947,
         "max": 96464
       },
-      "totalDuration": 4255117
+      "totalDuration": 4255117,
+      "confidenceIntervals": {
+        "latencyMean": [25837.96688741722, 30482.51655629139]
+      }
     },
     "codex-builtin": {
       "latency": {
@@ -252,7 +302,10 @@
         "min": 1772,
         "max": 180015
       },
-      "totalDuration": 4981647
+      "totalDuration": 4981647,
+      "confidenceIntervals": {
+        "latencyMean": [28153.543046357616, 38866.2119205298]
+      }
     },
     "codex-you": {
       "latency": {
@@ -271,7 +324,10 @@
         "min": 3235,
         "max": 180018
       },
-      "totalDuration": 7741874
+      "totalDuration": 7741874,
+      "confidenceIntervals": {
+        "latencyMean": [45650.97350993378, 57027.93377483444]
+      }
     }
   },
   "reliability": {

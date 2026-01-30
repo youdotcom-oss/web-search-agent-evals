@@ -90,6 +90,7 @@
   },
   "reliability": {
     "claude-code-builtin": {
+      "type": "run",
       "toolErrors": 0,
       "toolErrorRate": 0,
       "timeouts": 0,
@@ -97,6 +98,7 @@
       "completionRate": 1
     },
     "claude-code-you": {
+      "type": "run",
       "toolErrors": 0,
       "toolErrorRate": 0,
       "timeouts": 0,

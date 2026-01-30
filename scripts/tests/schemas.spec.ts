@@ -141,21 +141,23 @@ describe("Comparison Schemas", () => {
       expect(result.success).toBe(true);
     });
 
-    test("validates run reliability metrics WITHOUT type discriminator (backward compatible)", () => {
+    test("rejects run reliability metrics without type discriminator", () => {
       const data = {
         toolErrors: 0,
         toolErrorRate: 0,
         timeouts: 0,
         timeoutRate: 0,
         completionRate: 1,
+        // Missing required 'type' field
       };
 
       const result = ReliabilityMetricsSchema.safeParse(data);
-      expect(result.success).toBe(true);
+      expect(result.success).toBe(false);
     });
 
     test("rejects incomplete reliability metrics", () => {
       const data = {
+        type: "run" as const,
         toolErrors: 0,
         // Missing other required fields
       };
@@ -203,6 +205,7 @@ describe("Comparison Schemas", () => {
         },
         reliability: {
           "agent-a": {
+            type: "run",
             toolErrors: 0,
             toolErrorRate: 0,
             timeouts: 0,

@@ -58,7 +58,7 @@ export const PerformanceMetricsSchema = z.object({
  *
  * @public
  */
-export const ReliabilityMetricsSchema = z.union([
+export const ReliabilityMetricsSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("run"),
     toolErrors: z.number(),
@@ -73,14 +73,6 @@ export const ReliabilityMetricsSchema = z.union([
     medianPassExpK: z.number(),
     p25PassExpK: z.number(),
     p75PassExpK: z.number(),
-  }),
-  // Handle cases where type discriminator is missing (older format)
-  z.object({
-    toolErrors: z.number(),
-    toolErrorRate: z.number(),
-    timeouts: z.number(),
-    timeoutRate: z.number(),
-    completionRate: z.number(),
   }),
 ]);
 

@@ -48,7 +48,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",
     "@google/genai": "^1.38.0",
-    "@plaited/agent-eval-harness": "^0.8.1",
+    "@plaited/agent-eval-harness": "^0.9.0",
     "zod": "^4.3.5"
   },
   "devDependencies": {

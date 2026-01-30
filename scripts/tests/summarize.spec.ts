@@ -193,7 +193,7 @@ describe("summarize.ts", () => {
       expect(content).toContain("**Fastest:**");
     });
 
-    test("omits reliability metrics when data is missing", async () => {
+    test("includes reliability metrics when data is available", async () => {
       const outputPath = "/tmp/test-reliability-summary.md";
       await runScript(SCRIPT_PATH, [
         "--mode",
@@ -208,9 +208,10 @@ describe("summarize.ts", () => {
 
       const content = await Bun.file(outputPath).text();
 
-      // Reliability section should not be present when data is missing
-      expect(content).not.toContain("## Reliability Metrics");
-      expect(content).not.toContain("Tool Error Rate");
+      // Reliability section should be present when data is available
+      expect(content).toContain("## Reliability Metrics");
+      expect(content).toContain("Tool Error Rate");
+      expect(content).toContain("Completion Rate");
     });
 
     test("includes MCP impact analysis", async () => {

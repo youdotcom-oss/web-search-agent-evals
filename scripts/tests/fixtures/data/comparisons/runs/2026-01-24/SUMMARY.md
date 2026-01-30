@@ -33,6 +33,13 @@
 | 1 | claude-code-builtin | 30.0s | 45.0s | 50.0s | 32.0s | 64.0s |
 | 2 | claude-code-you | 40.0s | 55.0s | 60.0s | 42.0s | 84.0s |
 
+## Reliability Metrics
+
+| Agent + Search | Tool Errors | Tool Error Rate | Timeouts | Timeout Rate | Completion Rate |
+|----------------|-------------|-----------------|----------|--------------|----------------|
+| claude-code-builtin | 0 | 0.0% | 0 | 0.0% | 100.0% |
+| claude-code-you | 0 | 0.0% | 0 | 0.0% | 100.0% |
+
 ## MCP Tool Impact Analysis
 
 | Agent | Quality (builtin → MCP) | Speed (builtin → MCP) | Reliability (builtin → MCP) |
@@ -45,6 +52,8 @@
 
 - **Best Quality:** claude-code-builtin (0.95 avg score)
 - **Fastest:** claude-code-builtin (30.0s P50 latency)
+- **Best Balance:** claude-code-builtin (weighted: 50% quality + 30% speed + 20% reliability)
+
 ### Lowest Quality in this Evaluation
 
 - **Lowest Quality:** codex-you (0.82 avg score)

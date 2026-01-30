@@ -1,6 +1,6 @@
 {
   "meta": {
-    "generatedAt": "2026-01-29T20:06:33.555Z",
+    "generatedAt": "2026-01-30T00:15:41.054Z",
     "runs": ["claude-code-you", "gemini-you", "droid-you", "codex-you"],
     "promptCount": 30,
     "trialsPerPrompt": 5,

@@ -17,7 +17,7 @@
  */
 
 import { join } from "node:path";
-import type { WeightedComparison } from "./schemas/comparisons.ts";
+import type { ReliabilityMetrics, WeightedComparison } from "./schemas/comparisons.ts";
 import { WeightedComparisonSchema } from "./schemas/comparisons.ts";
 import { loadJsonFile } from "./schemas/common.ts";
 import type { Mode } from "./schemas/configs.ts";
@@ -197,6 +197,18 @@ const parseRunLabel = (label: string): { agent: string; provider: string } => {
   throw new Error(`Invalid run label format: ${label}`);
 };
 
+const isRegularRunReliability = (
+  metrics: ReliabilityMetrics,
+): metrics is {
+  toolErrors: number;
+  toolErrorRate: number;
+  timeouts: number;
+  timeoutRate: number;
+  completionRate: number;
+} => {
+  return "toolErrors" in metrics;
+};
+
 const generateSummary = async (options: SummarizeOptions): Promise<string> => {
   const { mode, runDate, fixtureDir } = options;
 
@@ -325,21 +337,36 @@ const generateSummary = async (options: SummarizeOptions): Promise<string> => {
     md.push("\n");
   }
 
-  // Reliability (only if data available)
+  // Reliability (only if data available and in regular run format)
   if (reliability && Object.keys(reliability).length > 0) {
-    md.push("## Reliability Metrics\n\n");
-    md.push("| Agent + Search | Tool Errors | Tool Error Rate | Timeouts | Timeout Rate | Completion Rate |\n");
-    md.push("|----------------|-------------|-----------------|----------|--------------|----------------|\n");
+    // Filter to only show regular run reliability metrics (not trials passExpK metrics)
+    const regularRunReliability = Object.entries(reliability).filter(([_run, metrics]) =>
+      isRegularRunReliability(metrics),
+    );
 
-    Object.entries(reliability).forEach(([run, metrics]) => {
-      md.push(
-        `| ${run} | ${metrics.toolErrors} | ${formatPercent(
-          metrics.toolErrorRate,
-        )} | ${metrics.timeouts} | ${formatPercent(metrics.timeoutRate)} | ${formatPercent(metrics.completionRate)} |\n`,
-      );
-    });
+    if (regularRunReliability.length > 0) {
+      md.push("## Reliability Metrics\n\n");
+      md.push("| Agent + Search | Tool Errors | Tool Error Rate | Timeouts | Timeout Rate | Completion Rate |\n");
+      md.push("|----------------|-------------|-----------------|----------|--------------|----------------|\n");
 
-    md.push("\n");
+      regularRunReliability.forEach(([run, metrics]) => {
+        // Type assertion safe because we filtered with isRegularRunReliability above
+        const regularMetrics = metrics as {
+          toolErrors: number;
+          toolErrorRate: number;
+          timeouts: number;
+          timeoutRate: number;
+          completionRate: number;
+        };
+        md.push(
+          `| ${run} | ${regularMetrics.toolErrors} | ${formatPercent(
+            regularMetrics.toolErrorRate,
+          )} | ${regularMetrics.timeouts} | ${formatPercent(regularMetrics.timeoutRate)} | ${formatPercent(regularMetrics.completionRate)} |\n`,
+        );
+      });
+
+      md.push("\n");
+    }
   }
 
   // Trials-specific sections
@@ -467,7 +494,7 @@ const generateSummary = async (options: SummarizeOptions): Promise<string> => {
       .map(([run, metrics]) => ({
         run,
         flakiness: metrics.avgFlakiness,
-        quality: quality[run]?.avgScore ?? 0,
+        quality: quality?.[run]?.avgScore ?? 0,
       }))
       .filter((r) => r.quality > 0.8) // Only consider high-quality agents
       .sort((a, b) => a.flakiness - b.flakiness);
@@ -496,7 +523,7 @@ const generateSummary = async (options: SummarizeOptions): Promise<string> => {
       if (!performance || !reliability) return null;
       const perf = performance[entry.run];
       const rel = reliability[entry.run];
-      if (!perf || !rel) return null;
+      if (!perf || !rel || !isRegularRunReliability(rel)) return null;
       const latency = perf.latency.p50;
       const reliabilityScore = rel.completionRate;
       const normalizedQuality = entry.avgScore;

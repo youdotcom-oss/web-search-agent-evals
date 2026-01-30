@@ -131,22 +131,40 @@ const loadTrialsComparison = async (
   fixtureDir?: string,
 ): Promise<WeightedComparison | null> => {
   const date = runDate ?? (await findLatestRunDate(fixtureDir));
-  const filterSuffix = filter ? `-${filter}` : "";
   const baseDir = fixtureDir ?? "data";
-  const path = `${baseDir}/comparisons/trials/${date}/all${filterSuffix}-${type}.json`;
+  const trialsDir = `${baseDir}/comparisons/trials/${date}`;
 
-  const file = Bun.file(path);
-  if (!(await file.exists())) {
-    console.warn(`Warning: ${path} not found`);
-    return null;
+  // Build list of paths to try in order of preference
+  const pathsToTry: string[] = [];
+
+  if (filter) {
+    // If a specific filter is requested, try only that
+    pathsToTry.push(`${trialsDir}/all-${filter}-${type}.json`);
+  } else {
+    // Try in order of preference: builtin-vs-you (most comprehensive), all (fallback), then individual providers
+    pathsToTry.push(
+      `${trialsDir}/builtin-vs-you-${type}.json`,
+      `${trialsDir}/all-${type}.json`,
+      `${trialsDir}/all-builtin-${type}.json`,
+      `${trialsDir}/all-you-${type}.json`,
+    );
   }
 
-  const { data, errors } = await loadJsonFile(WeightedComparisonSchema, path);
-  if (errors.length > 0) {
-    console.warn(`Warning: Validation error in ${path}\n${errors.join("\n")}`);
-    return null;
+  // Try each path until we find one that exists
+  for (const path of pathsToTry) {
+    const file = Bun.file(path);
+    if (await file.exists()) {
+      const { data, errors } = await loadJsonFile(WeightedComparisonSchema, path);
+      if (errors.length > 0) {
+        console.warn(`Warning: Validation error in ${path}\n${errors.join("\n")}`);
+        continue;
+      }
+      return data;
+    }
   }
-  return data;
+
+  console.warn(`Warning: No trials comparison found in ${trialsDir} for type ${type}`);
+  return null;
 };
 
 const formatNumber = (n: number, decimals = 2): string => {
@@ -217,13 +235,15 @@ const generateSummary = async (options: SummarizeOptions): Promise<string> => {
   // Executive Summary
   md.push("## Executive Summary\n\n");
 
-  const qualityRankings = Object.entries(quality)
-    .map(([run, metrics]) => ({
-      run,
-      avgScore: metrics.avgScore,
-      passRate: metrics.passRate,
-    }))
-    .sort((a, b) => b.avgScore - a.avgScore);
+  const qualityRankings = quality
+    ? Object.entries(quality)
+        .map(([run, metrics]) => ({
+          run,
+          avgScore: metrics.avgScore,
+          passRate: metrics.passRate,
+        }))
+        .sort((a, b) => b.avgScore - a.avgScore)
+    : [];
 
   const latencyRankings = performance
     ? Object.entries(performance)
@@ -267,22 +287,24 @@ const generateSummary = async (options: SummarizeOptions): Promise<string> => {
 
   md.push("---\n\n");
 
-  // Quality Rankings
-  md.push("## Quality Rankings\n\n");
-  md.push("| Rank | Agent + Search | Avg Score | Pass Rate | Pass Count | Fail Count |\n");
-  md.push("|------|----------------|-----------|-----------|------------|------------|\n");
+  // Quality Rankings (only if quality data available)
+  if (quality && Object.keys(quality).length > 0) {
+    md.push("## Quality Rankings\n\n");
+    md.push("| Rank | Agent + Search | Avg Score | Pass Rate | Pass Count | Fail Count |\n");
+    md.push("|------|----------------|-----------|-----------|------------|------------|\n");
 
-  qualityRankings.forEach((entry, idx) => {
-    const metrics = quality[entry.run];
-    if (!metrics) return;
-    md.push(
-      `| ${idx + 1} | ${entry.run} | ${formatNumber(
-        entry.avgScore,
-      )} | ${formatPercent(entry.passRate)} | ${metrics.passCount} | ${metrics.failCount} |\n`,
-    );
-  });
+    qualityRankings.forEach((entry, idx) => {
+      const metrics = quality[entry.run];
+      if (!metrics) return;
+      md.push(
+        `| ${idx + 1} | ${entry.run} | ${formatNumber(
+          entry.avgScore,
+        )} | ${formatPercent(entry.passRate)} | ${metrics.passCount} | ${metrics.failCount} |\n`,
+      );
+    });
 
-  md.push("\n");
+    md.push("\n");
+  }
 
   // Performance Rankings (only if data available)
   if (performance && Object.keys(performance).length > 0) {
@@ -381,50 +403,51 @@ const generateSummary = async (options: SummarizeOptions): Promise<string> => {
   }
 
   // MCP Impact Analysis
-  md.push("## MCP Tool Impact Analysis\n\n");
+  if (quality && performance && Object.keys(quality).length > 0) {
+    md.push("## MCP Tool Impact Analysis\n\n");
 
-  const agents = Array.from(new Set(meta.runs.map((r) => parseRunLabel(r).agent)));
-  const providers = Array.from(new Set(meta.runs.map((r) => parseRunLabel(r).provider)));
+    const agents = Array.from(new Set(meta.runs.map((r) => parseRunLabel(r).agent)));
+    const providers = Array.from(new Set(meta.runs.map((r) => parseRunLabel(r).provider)));
 
-  if (providers.includes("builtin") && providers.length > 1) {
-    md.push("| Agent | Quality (builtin → MCP) | Speed (builtin → MCP) | Reliability (builtin → MCP) |\n");
-    md.push("|-------|------------------------|----------------------|----------------------------|\n");
+    if (providers.includes("builtin") && providers.length > 1) {
+      md.push("| Agent | Quality (builtin → MCP) | Speed (builtin → MCP) | Reliability (builtin → MCP) |\n");
+      md.push("|-------|------------------------|----------------------|----------------------------|\n");
 
-    agents.forEach((agent) => {
-      const builtinRun = `${agent}-builtin`;
-      const mcpRuns = providers.filter((p) => p !== "builtin").map((p) => `${agent}-${p}`);
+      agents.forEach((agent) => {
+        const builtinRun = `${agent}-builtin`;
+        const mcpRuns = providers.filter((p) => p !== "builtin").map((p) => `${agent}-${p}`);
 
-      mcpRuns.forEach((mcpRun) => {
-        if (!performance) return;
-        const builtinQuality = quality[builtinRun];
-        const mcpQuality = quality[mcpRun];
-        const builtinPerf = performance[builtinRun];
-        const mcpPerf = performance[mcpRun];
+        mcpRuns.forEach((mcpRun) => {
+          const builtinQuality = quality[builtinRun];
+          const mcpQuality = quality[mcpRun];
+          const builtinPerf = performance[builtinRun];
+          const mcpPerf = performance[mcpRun];
 
-        if (!builtinQuality || !mcpQuality || !builtinPerf || !mcpPerf) return;
+          if (!builtinQuality || !mcpQuality || !builtinPerf || !mcpPerf) return;
 
-        const qualityDiff = ((mcpQuality.avgScore - builtinQuality.avgScore) / builtinQuality.avgScore) * 100;
-        const speedDiff = ((mcpPerf.latency.p50 - builtinPerf.latency.p50) / builtinPerf.latency.p50) * 100;
-        const reliabilityDiff = (mcpQuality.passRate - builtinQuality.passRate) * 100;
+          const qualityDiff = ((mcpQuality.avgScore - builtinQuality.avgScore) / builtinQuality.avgScore) * 100;
+          const speedDiff = ((mcpPerf.latency.p50 - builtinPerf.latency.p50) / builtinPerf.latency.p50) * 100;
+          const reliabilityDiff = (mcpQuality.passRate - builtinQuality.passRate) * 100;
 
-        const mcpProvider = parseRunLabel(mcpRun).provider;
-        const qualityArrow = qualityDiff > 0 ? "↑" : qualityDiff < 0 ? "↓" : "→";
-        const speedArrow = speedDiff < 0 ? "↑" : speedDiff > 0 ? "↓" : "→";
-        const reliabilityArrow = reliabilityDiff > 0 ? "↑" : reliabilityDiff < 0 ? "↓" : "→";
+          const mcpProvider = parseRunLabel(mcpRun).provider;
+          const qualityArrow = qualityDiff > 0 ? "↑" : qualityDiff < 0 ? "↓" : "→";
+          const speedArrow = speedDiff < 0 ? "↑" : speedDiff > 0 ? "↓" : "→";
+          const reliabilityArrow = reliabilityDiff > 0 ? "↑" : reliabilityDiff < 0 ? "↓" : "→";
 
-        md.push(
-          `| ${agent} (${mcpProvider}) | ${qualityArrow} ${formatNumber(
-            Math.abs(qualityDiff),
-            1,
-          )}% | ${speedArrow} ${formatNumber(Math.abs(speedDiff), 1)}% | ${reliabilityArrow} ${formatNumber(
-            Math.abs(reliabilityDiff),
-            1,
-          )}pp |\n`,
-        );
+          md.push(
+            `| ${agent} (${mcpProvider}) | ${qualityArrow} ${formatNumber(
+              Math.abs(qualityDiff),
+              1,
+            )}% | ${speedArrow} ${formatNumber(Math.abs(speedDiff), 1)}% | ${reliabilityArrow} ${formatNumber(
+              Math.abs(reliabilityDiff),
+              1,
+            )}pp |\n`,
+          );
+        });
       });
-    });
 
-    md.push("\n");
+      md.push("\n");
+    }
   }
 
   // Recommendations

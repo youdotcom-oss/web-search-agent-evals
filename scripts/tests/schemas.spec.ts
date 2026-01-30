@@ -32,12 +32,9 @@ describe("Comparison Schemas", () => {
         },
       };
 
-      const result = QualityMetricsSchema.safeParse(data);
-      expect(result.success).toBe(true);
-      if (result.success) {
-        expect(result.data.confidenceIntervals?.avgScore).toEqual([0.8, 0.9]);
-        expect(result.data.confidenceIntervals?.passRate).toEqual([0.75, 0.85]);
-      }
+      const parsed = QualityMetricsSchema.parse(data);
+      expect(parsed.confidenceIntervals?.avgScore).toEqual([0.8, 0.9]);
+      expect(parsed.confidenceIntervals?.passRate).toEqual([0.75, 0.85]);
     });
 
     test("validates quality metrics with partial confidence intervals", () => {
@@ -105,11 +102,8 @@ describe("Comparison Schemas", () => {
         },
       };
 
-      const result = PerformanceMetricsSchema.safeParse(data);
-      expect(result.success).toBe(true);
-      if (result.success) {
-        expect(result.data.confidenceIntervals?.latencyMean).toEqual([1100, 1300]);
-      }
+      const parsed = PerformanceMetricsSchema.parse(data);
+      expect(parsed.confidenceIntervals?.latencyMean).toEqual([1100, 1300]);
     });
   });
 

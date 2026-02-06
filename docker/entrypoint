@@ -13,7 +13,7 @@ import type { McpServerKey } from "/eval/mcp-servers.ts";
  * **Environment variables:**
  * - `AGENT` - Agent name (claude-code, gemini, droid, codex)
  * - `SEARCH_PROVIDER` - Search provider to use (builtin, you, exa, etc.) or "builtin" for no MCP
- * - `YOU_API_KEY` - API key for You.com MCP server
+ * - `YDC_API_KEY` - API key for You.com MCP server
  * - `OPENAI_API_KEY` - API key for Codex agent
  *
  * **Execution:**

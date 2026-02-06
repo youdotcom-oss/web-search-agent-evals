@@ -367,7 +367,7 @@ Uses You.com deep-search for context-aware hints:
 
 ```bash
 # Set API key
-export YOU_API_KEY=ydc-sk-...
+export YDC_API_KEY=ydc-sk-...
 
 # Generate hints
 bun scripts/generate-hints.ts prompts.jsonl -o prompts-with-hints.jsonl
@@ -708,10 +708,10 @@ bun scripts/generate-hints.ts prompts.jsonl -o prompts-with-hints.jsonl --resume
 bunx @youdotcom-oss/api@latest --help
 
 # Set API key
-export YOU_API_KEY=ydc-sk-...
+export YDC_API_KEY=ydc-sk-...
 
 # Or use .env file
-echo "YOU_API_KEY=ydc-sk-..." >> .env
+echo "YDC_API_KEY=ydc-sk-..." >> .env
 ```
 
 ## Troubleshooting

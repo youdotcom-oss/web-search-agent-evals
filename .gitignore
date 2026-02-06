@@ -38,6 +38,9 @@ report.*.json
 data/results/**/*-debug.jsonl
 data/results/**/*-temp.jsonl
 
+# Calibration reports - ephemeral working files regenerated on demand
+data/calibration/
+
 # backup files
 *.bak
 

@@ -51,9 +51,9 @@ export const MCP_SERVERS = {
     url: "https://api.you.com/mcp",
     auth: {
       type: "bearer" as const,
-      envVar: "YOU_API_KEY",
+      envVar: "YDC_API_KEY",
     },
-    expectedTools: ["you-search", "you-express", "you-contents"],
+    expectedTools: ["you-search", "you-contents"],
   },
   // Future: Add more servers here
   // exa: { name: "exa-server", type: "http", url: "...", auth: {...} },

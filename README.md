@@ -53,7 +53,7 @@ Required keys:
 - `GEMINI_API_KEY` - Gemini agent + inline grader LLM scoring
 - `FACTORY_API_KEY` - Droid agent
 - `OPENAI_API_KEY` - Codex agent
-- `YOU_API_KEY` - You.com MCP tool
+- `YDC_API_KEY` - You.com MCP tool
 
 ### 3. Generate Test Prompts
 
@@ -169,7 +169,7 @@ Single source of truth for MCP server configurations. The TypeScript entrypoint 
 
 **Available Tools:**
 - `builtin` - Agent's native search (no MCP config)
-- `you` - You.com MCP server (requires `YOU_API_KEY`)
+- `you` - You.com MCP server (requires `YDC_API_KEY`)
   - Expected tools: `you-search`, `you-express`, `you-contents`
 
 To add new MCP tools, see `.claude/skills/web-search-agent-evals/SKILL.md`.

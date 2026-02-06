@@ -55,6 +55,7 @@
 
 import { spawn } from "node:child_process";
 import { MCP_SERVERS, type McpServerKey } from "../mcp-servers.ts";
+import { playCompletionSound } from "./utils.ts";
 
 type Agent = "claude-code" | "gemini" | "droid" | "codex";
 type TrialType = "default" | "capability" | "regression";
@@ -444,9 +445,11 @@ const main = async () => {
         console.error(`  - ${label}: ${errorType} (exit code ${exitCode})`);
       });
       console.error("\n💡 Tip: Check output above for specific error details (authentication, MCP issues, etc.)");
+      await playCompletionSound(false);
       process.exit(1);
     } else {
       console.log("\n✅ All trial scenarios completed successfully!");
+      await playCompletionSound(true);
       process.exit(0);
     }
   } catch (error) {

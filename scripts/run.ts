@@ -57,6 +57,7 @@ import { spawn } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { MCP_SERVERS, type McpServerKey } from "../mcp-servers.ts";
+import { playCompletionSound } from "./utils.ts";
 
 type Agent = "claude-code" | "gemini" | "droid" | "codex";
 type Mode = "test" | "full";
@@ -359,9 +360,11 @@ const main = async () => {
         console.error(`  - ${label}: ${errorType} (exit code ${exitCode})`);
       });
       console.error("\n💡 Tip: Check output above for specific error details (tool errors, MCP issues, etc.)");
+      await playCompletionSound(false);
       process.exit(1);
     } else {
       console.log("\n✅ All scenarios completed successfully!");
+      await playCompletionSound(true);
       process.exit(0);
     }
   } catch (error) {

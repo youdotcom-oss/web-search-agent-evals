@@ -100,6 +100,71 @@ bun scripts/summarize.ts --dry-run
 - MCP tool impact analysis (builtin vs MCP comparison)
 - Recommendations for production, cost-conscious use, and what to avoid
 
+### Calibrate Grader
+
+Interactive wizard to sample failures and review grader accuracy. Helps distinguish between agent failures (agent got it wrong) and grader bugs (agent was correct, grader too strict).
+
+```bash
+# Interactive calibration (recommended)
+bun run calibrate
+```
+
+**Interactive prompts:**
+1. **Mode** - test-runs or dated runs (with list of available dates)
+2. **Agents** - Multi-select via numbers or "all" (e.g., `1 3` or `all`)
+3. **Search providers** - Multi-select via numbers or "all" (e.g., `1 2` or `all`)
+4. **Sample count** - Number of failures to sample (default: 5)
+
+**Output:** `data/calibration/{prefix}-{agent}-{provider}.md`
+
+**Example session:**
+```bash
+$ bun run calibrate
+
+🎯 Grader Calibration Tool
+
+Select mode:
+  1. test-runs (quick test results)
+  2. runs (dated full evaluation runs)
+
+Enter choice (1 or 2) [1]: 1
+
+Select agents (space-separated numbers, or 'all'):
+  1. claude-code
+  2. gemini
+  3. droid
+  4. codex
+
+Enter choices (e.g., "1 3" or "all") [all]: 1
+
+Select search providers (space-separated numbers, or 'all'):
+  1. builtin
+  2. you
+
+Enter choices (e.g., "1 2" or "all") [all]: all
+
+Number of samples [5]: 10
+
+📊 Will generate 2 calibration report(s):
+   - claude-code with builtin
+   - claude-code with you
+
+Proceed? (y/n) [y]: y
+```
+
+**What calibration reveals:**
+- ❌ **Grader too strict** - Agent gave correct answer, grader rejected valid paraphrasing
+- ❌ **Hint too vague** - Grader can't tell good from bad answers
+- ✅ **Real failures** - Agent genuinely gave wrong/incomplete answer
+
+**View results:**
+```bash
+ls data/calibration/
+cat data/calibration/test-claude-code-builtin.md
+```
+
+See [@agent-eval-harness calibration docs](../agent-eval-harness@plaited_agent-eval-harness/SKILL.md#calibrate-command) for grader calibration concepts.
+
 ### Pass@k Trials
 
 Run multiple trials per prompt across all agents and search providers to measure reliability:
@@ -370,7 +435,7 @@ export const MCP_SERVERS = {
     url: 'https://api.you.com/mcp',
     auth: {
       type: 'bearer' as const,
-      envVar: 'YOU_API_KEY',
+      envVar: 'YDC_API_KEY',
     },
   },
   exa: {

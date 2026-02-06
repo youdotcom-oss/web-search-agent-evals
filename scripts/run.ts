@@ -44,10 +44,14 @@
  * - Final exit code reflects worst outcome (0 = all pass, >0 = any failed)
  *
  * Usage:
- *   bun scripts/run.ts                                    # All agents, current mode
+ *   bun scripts/run.ts                                    # All agents, current mode (default: -j 2 --prompt-concurrency 4)
  *   bun scripts/run.ts --agent claude-code                # Single agent
  *   bun scripts/run.ts --mode test                        # Test mode (5 prompts)
  *   bun scripts/run.ts --search-provider you              # Specific MCP server
+ *   bun scripts/run.ts -j 4                               # 4 containers in parallel
+ *   bun scripts/run.ts -j 0                               # Unlimited container parallelism
+ *   bun scripts/run.ts --prompt-concurrency 8             # 8 prompts per container
+ *   bun scripts/run.ts -j 2 --prompt-concurrency 4        # Custom both levels
  *   bun scripts/run.ts --dry-run                          # Show what would run
  *
  * @public
@@ -58,6 +62,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { MCP_SERVERS, type McpServerKey } from "../mcp-servers.ts";
 import { playCompletionSound } from "./utils.ts";
+import { limitConcurrency } from "./lib/concurrency-limiter.ts";
 
 type Agent = "claude-code" | "gemini" | "droid" | "codex";
 type Mode = "test" | "full";
@@ -67,6 +72,8 @@ type RunOptions = {
   agents: Agent[];
   mode?: Mode;
   searchProvider?: SearchProvider;
+  concurrency?: number;
+  promptConcurrency?: number;
   dryRun?: boolean;
 };
 
@@ -76,6 +83,8 @@ const parseArgs = (args: string[]): RunOptions => {
   const agents: Agent[] = [];
   let mode: Mode | undefined;
   let searchProvider: SearchProvider | undefined;
+  let concurrency: number | undefined;
+  let promptConcurrency: number | undefined;
   let dryRun = false;
 
   const validProviders = ["builtin", ...Object.keys(MCP_SERVERS)];
@@ -102,6 +111,22 @@ const parseArgs = (args: string[]): RunOptions => {
       }
       searchProvider = tool as SearchProvider;
       i++;
+    } else if ((args[i] === "-j" || args[i] === "--concurrency") && i + 1 < args.length) {
+      const arg = args[i + 1]!;
+      const value = Number.parseInt(arg, 10);
+      if (Number.isNaN(value) || value < 0) {
+        throw new Error(`Invalid concurrency: ${arg}. Must be a non-negative integer (0 for unlimited)`);
+      }
+      concurrency = value === 0 ? Infinity : value;
+      i++;
+    } else if (args[i] === "--prompt-concurrency" && i + 1 < args.length) {
+      const arg = args[i + 1]!;
+      const value = Number.parseInt(arg, 10);
+      if (Number.isNaN(value) || value < 1) {
+        throw new Error(`Invalid prompt-concurrency: ${arg}. Must be a positive integer`);
+      }
+      promptConcurrency = value;
+      i++;
     } else if (args[i] === "--dry-run") {
       dryRun = true;
     }
@@ -111,6 +136,8 @@ const parseArgs = (args: string[]): RunOptions => {
     agents: agents.length > 0 ? agents : ALL_AGENTS,
     mode,
     searchProvider,
+    concurrency: concurrency ?? Infinity, // Default unlimited (I/O-bound workload)
+    promptConcurrency: promptConcurrency ?? 8, // Default to 8 prompts per container (I/O-bound)
     dryRun,
   };
 };
@@ -139,6 +166,7 @@ const runService = (
   agent: Agent,
   searchProvider: SearchProvider,
   dataset: Mode,
+  promptConcurrency: number,
   scenarioId: number,
   totalScenarios: number,
 ): Promise<number> => {
@@ -152,7 +180,18 @@ const runService = (
 
     const proc = spawn(
       "docker",
-      ["compose", "run", "--rm", "-e", `SEARCH_PROVIDER=${searchProvider}`, "-e", `DATASET=${dataset}`, agent],
+      [
+        "compose",
+        "run",
+        "--rm",
+        "-e",
+        `SEARCH_PROVIDER=${searchProvider}`,
+        "-e",
+        `DATASET=${dataset}`,
+        "-e",
+        `PROMPT_CONCURRENCY=${promptConcurrency}`,
+        agent,
+      ],
       {
         stdio: "pipe", // Capture output instead of inherit
       },
@@ -264,7 +303,10 @@ const main = async () => {
       }
     }
 
-    console.log(`${options.dryRun ? "[DRY RUN] Would run" : "Running"} ${runs.length} scenarios in parallel\n`);
+    const concurrencyLabel = options.concurrency === Infinity ? "unlimited" : options.concurrency;
+    console.log(
+      `${options.dryRun ? "[DRY RUN] Would run" : "Running"} ${runs.length} scenarios (container concurrency: ${concurrencyLabel}, prompt concurrency: ${options.promptConcurrency})\n`,
+    );
 
     if (options.dryRun) {
       console.log("[DRY RUN] Execution plan:");
@@ -274,7 +316,7 @@ const main = async () => {
         console.log(
           `  [${i + 1}/${runs.length}] ${run.agent}-${run.searchProvider}: docker compose run --rm -e SEARCH_PROVIDER=${
             run.searchProvider
-          } -e DATASET=${currentMode} ${run.agent}`,
+          } -e DATASET=${currentMode} -e PROMPT_CONCURRENCY=${options.promptConcurrency} ${run.agent}`,
         );
       }
       console.log("\n[DRY RUN] No services were executed.");
@@ -288,12 +330,15 @@ const main = async () => {
     // Status heartbeat every 30 seconds
     const statusInterval = setInterval(() => {
       const elapsed = Math.floor((Date.now() - startTime) / 1000);
-      const inProgress = runs.length - completed.size;
+      const remaining = runs.length - completed.size;
 
-      if (inProgress > 0) {
+      if (remaining > 0) {
         console.log(`\n⏱️  Status update (${elapsed}s elapsed):`);
         console.log(`   Completed: ${completed.size}/${runs.length}`);
-        console.log(`   In progress: ${inProgress}`);
+
+        const activeLimit = options.concurrency === Infinity ? remaining : Math.min(options.concurrency!, remaining);
+        const queued = Math.max(0, remaining - activeLimit);
+        console.log(`   Active containers: ${activeLimit}, Queued: ${queued}`);
 
         const stillRunning = runs
           .map((run, index) =>
@@ -302,20 +347,25 @@ const main = async () => {
           .filter((x) => x !== null);
 
         if (stillRunning.length > 0) {
-          console.log(`   Still running: ${stillRunning.join(", ")}`);
+          console.log(`   Running/Queued: ${stillRunning.join(", ")}`);
         }
         console.log("");
       }
     }, 30000);
 
-    // Run all scenarios in parallel
-    const results = await Promise.all(
-      runs.map(({ agent, searchProvider }, index) =>
-        runService(agent, searchProvider, currentMode, index + 1, runs.length).then((result) => {
-          completed.add(index + 1);
-          return result;
-        }),
+    // Run all scenarios with controlled concurrency
+    const results = await limitConcurrency(
+      runs.map(
+        ({ agent, searchProvider }, index) =>
+          () =>
+            runService(agent, searchProvider, currentMode, options.promptConcurrency!, index + 1, runs.length).then(
+              (result) => {
+                completed.add(index + 1);
+                return result;
+              },
+            ),
       ),
+      options.concurrency!,
     );
 
     clearInterval(statusInterval);
@@ -348,9 +398,15 @@ const main = async () => {
       }
     }
 
+    const totalElapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+    const minutes = Math.floor(Number(totalElapsed) / 60);
+    const seconds = (Number(totalElapsed) % 60).toFixed(0);
+    const timeDisplay = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
+
     console.log(`\n${"=".repeat(80)}`);
     console.log(`Success: ${successes.length}/${runs.length}`);
     console.log(`Failed: ${failures.length}/${runs.length}`);
+    console.log(`Total time: ${timeDisplay} (${totalElapsed}s)`);
     console.log("=".repeat(80));
 
     if (failures.length > 0) {

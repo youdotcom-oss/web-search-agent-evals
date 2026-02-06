@@ -44,11 +44,14 @@
  * - **Flakiness**: pass@k - pass^k (high = inconsistent)
  *
  * Usage:
- *   bun scripts/run-trials.ts                              # All agents/providers, k=5
+ *   bun scripts/run-trials.ts                              # All agents/providers, k=5 (default: unlimited containers, 8 prompts/container)
  *   bun scripts/run-trials.ts --trial-type capability      # All agents, k=10
  *   bun scripts/run-trials.ts --agent gemini               # Single agent, all providers
  *   bun scripts/run-trials.ts --search-provider you        # All agents, MCP only
  *   bun scripts/run-trials.ts -k 7                         # Custom k value
+ *   bun scripts/run-trials.ts -j 4                         # 4 containers in parallel
+ *   bun scripts/run-trials.ts --prompt-concurrency 8       # 8 prompts per container
+ *   bun scripts/run-trials.ts -j 2 --prompt-concurrency 4  # Custom both levels
  *
  * @public
  */
@@ -56,6 +59,7 @@
 import { spawn } from "node:child_process";
 import { MCP_SERVERS, type McpServerKey } from "../mcp-servers.ts";
 import { playCompletionSound } from "./utils.ts";
+import { limitConcurrency } from "./lib/concurrency-limiter.ts";
 
 type Agent = "claude-code" | "gemini" | "droid" | "codex";
 type TrialType = "default" | "capability" | "regression";
@@ -66,6 +70,8 @@ type TrialsOptions = {
   trialType: TrialType;
   searchProviders: SearchProvider[];
   k?: number;
+  concurrency?: number;
+  promptConcurrency?: number;
   dryRun?: boolean;
 };
 
@@ -84,6 +90,8 @@ const parseArgs = (args: string[]): TrialsOptions => {
   const searchProviders: SearchProvider[] = [];
   let trialType: TrialType = "default";
   let k: number | undefined;
+  let concurrency: number | undefined;
+  let promptConcurrency: number | undefined;
   let dryRun = false;
 
   const validProviders = ["builtin", ...Object.keys(MCP_SERVERS)];
@@ -120,6 +128,22 @@ const parseArgs = (args: string[]): TrialsOptions => {
         throw new Error(`Invalid k value: ${kArg}. Must be a positive integer`);
       }
       i++;
+    } else if ((args[i] === "-j" || args[i] === "--concurrency") && i + 1 < args.length) {
+      const arg = args[i + 1]!;
+      const value = Number.parseInt(arg, 10);
+      if (Number.isNaN(value) || value < 0) {
+        throw new Error(`Invalid concurrency: ${arg}. Must be a non-negative integer (0 for unlimited)`);
+      }
+      concurrency = value === 0 ? Infinity : value;
+      i++;
+    } else if (args[i] === "--prompt-concurrency" && i + 1 < args.length) {
+      const arg = args[i + 1]!;
+      const value = Number.parseInt(arg, 10);
+      if (Number.isNaN(value) || value < 1) {
+        throw new Error(`Invalid prompt-concurrency: ${arg}. Must be a positive integer`);
+      }
+      promptConcurrency = value;
+      i++;
     } else if (args[i] === "--dry-run") {
       dryRun = true;
     }
@@ -133,6 +157,8 @@ const parseArgs = (args: string[]): TrialsOptions => {
     trialType,
     searchProviders: searchProviders.length > 0 ? searchProviders : ["builtin", ...mcpProviders],
     k,
+    concurrency: concurrency ?? Infinity, // Default unlimited (I/O-bound workload)
+    promptConcurrency: promptConcurrency ?? 8, // I/O-bound, safe to run 8 concurrent
     dryRun,
   };
 };
@@ -191,6 +217,7 @@ const runTrials = (
   searchProvider: SearchProvider,
   trialType: TrialType,
   k: number,
+  promptConcurrency: number,
   scenarioId: number,
   totalScenarios: number,
 ): Promise<number> => {
@@ -203,7 +230,7 @@ const runTrials = (
     const startTime = Date.now();
 
     console.log(`\n${"=".repeat(80)}`);
-    console.log(`${label} - STARTING (k=${k})`);
+    console.log(`${label} - STARTING (k=${k}, prompt-concurrency=${promptConcurrency})`);
     console.log(`${"=".repeat(80)}\n`);
 
     // Build output path with trial type suffix
@@ -221,6 +248,8 @@ const runTrials = (
       schema,
       "-k",
       k.toString(),
+      "-j",
+      promptConcurrency.toString(),
       "--grader",
       grader,
       "-o",
@@ -228,11 +257,13 @@ const runTrials = (
       "--progress",
       "--cwd",
       "/workspace",
+      "--workspace-dir",
+      "/workspace/runs",
     ];
 
     // Run via Docker compose with environment variables
     // Pass trial type as TRIAL_TYPE env var for entrypoint to detect
-    const envVars = ["-e", `SEARCH_PROVIDER=${searchProvider}`];
+    const envVars = ["-e", `SEARCH_PROVIDER=${searchProvider}`, "-e", `PROMPT_CONCURRENCY=${promptConcurrency}`];
     if (trialType !== "default") {
       envVars.push("-e", `TRIAL_TYPE=${trialType}`);
     }
@@ -324,11 +355,13 @@ const main = async () => {
     const options = parseArgs(args);
     const k = getKValue(options.trialType, options.k);
 
+    const concurrencyLabel = options.concurrency === Infinity ? "unlimited" : options.concurrency;
     console.log(`${options.dryRun ? "[DRY RUN] " : ""}Pass@k Trials Configuration`);
     console.log(`${"=".repeat(80)}`);
     console.log(`Trial type: ${options.trialType} (k=${k})`);
     console.log(`Agents: ${options.agents.join(", ")}`);
     console.log(`Search providers: ${options.searchProviders.join(", ")}`);
+    console.log(`Container concurrency: ${concurrencyLabel}, Prompt concurrency: ${options.promptConcurrency}`);
     console.log(`Execution: Docker containers (isolated)`);
     console.log(`${"=".repeat(80)}\n`);
 
@@ -341,7 +374,9 @@ const main = async () => {
       }
     }
 
-    console.log(`${options.dryRun ? "[DRY RUN] Would run" : "Running"} ${runs.length} trial scenarios in parallel\n`);
+    console.log(
+      `${options.dryRun ? "[DRY RUN] Would run" : "Running"} ${runs.length} trial scenarios (concurrency: ${concurrencyLabel})\n`,
+    );
 
     if (options.dryRun) {
       console.log("[DRY RUN] Execution plan:");
@@ -356,8 +391,9 @@ const main = async () => {
         console.log(`    Dataset: ${dataset}`);
         console.log(`    Output: ${outputPath}`);
         console.log(`    Trials per prompt: ${k}`);
+        console.log(`    Prompt concurrency: ${options.promptConcurrency}`);
         console.log(
-          `    Docker: docker compose run --rm -e SEARCH_PROVIDER=${run.searchProvider}${options.trialType !== "default" ? ` -e TRIAL_TYPE=${options.trialType}` : ""} ${run.agent} bunx @plaited/agent-eval-harness trials ... -o ${outputPath}\n`,
+          `    Docker: docker compose run --rm -e SEARCH_PROVIDER=${run.searchProvider} -e PROMPT_CONCURRENCY=${options.promptConcurrency}${options.trialType !== "default" ? ` -e TRIAL_TYPE=${options.trialType}` : ""} ${run.agent} bunx @plaited/agent-eval-harness trials ... -j ${options.promptConcurrency} -o ${outputPath}\n`,
         );
       }
       console.log("[DRY RUN] No trials were executed.");
@@ -371,12 +407,15 @@ const main = async () => {
     // Status heartbeat every 60 seconds (trials are longer)
     const statusInterval = setInterval(() => {
       const elapsed = Math.floor((Date.now() - startTime) / 1000);
-      const inProgress = runs.length - completed.size;
+      const remaining = runs.length - completed.size;
 
-      if (inProgress > 0) {
+      if (remaining > 0) {
         console.log(`\n⏱️  Status update (${elapsed}s elapsed):`);
         console.log(`   Completed: ${completed.size}/${runs.length}`);
-        console.log(`   In progress: ${inProgress}`);
+
+        const activeLimit = options.concurrency === Infinity ? remaining : Math.min(options.concurrency!, remaining);
+        const queued = Math.max(0, remaining - activeLimit);
+        console.log(`   Active containers: ${activeLimit}, Queued: ${queued}`);
 
         const stillRunning = runs
           .map((run, index) =>
@@ -385,20 +424,31 @@ const main = async () => {
           .filter((x) => x !== null);
 
         if (stillRunning.length > 0) {
-          console.log(`   Still running: ${stillRunning.join(", ")}`);
+          console.log(`   Running/Queued: ${stillRunning.join(", ")}`);
         }
         console.log("");
       }
     }, 60000);
 
-    // Run all scenarios in parallel
-    const results = await Promise.all(
-      runs.map(({ agent, searchProvider }, index) =>
-        runTrials(agent, searchProvider, options.trialType, k, index + 1, runs.length).then((result) => {
-          completed.add(index + 1);
-          return result;
-        }),
+    // Run all scenarios with controlled concurrency
+    const results = await limitConcurrency(
+      runs.map(
+        ({ agent, searchProvider }, index) =>
+          () =>
+            runTrials(
+              agent,
+              searchProvider,
+              options.trialType,
+              k,
+              options.promptConcurrency!,
+              index + 1,
+              runs.length,
+            ).then((result) => {
+              completed.add(index + 1);
+              return result;
+            }),
       ),
+      options.concurrency!,
     );
 
     clearInterval(statusInterval);
@@ -430,9 +480,16 @@ const main = async () => {
       }
     }
 
+    const totalElapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+    const minutes = Math.floor(Number(totalElapsed) / 60);
+    const seconds = (Number(totalElapsed) % 60).toFixed(0);
+    const timeDisplay = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
+
     console.log(`\n${"=".repeat(80)}`);
     console.log(`Success: ${successes.length}/${runs.length}`);
     console.log(`Failed: ${failures.length}/${runs.length}`);
+    console.log(`Total time: ${timeDisplay} (${totalElapsed}s)`);
+    console.log(`Trials per prompt: k=${k}`);
     console.log("=".repeat(80));
 
     const totalTime = ((Date.now() - startTime) / 1000 / 60).toFixed(1);

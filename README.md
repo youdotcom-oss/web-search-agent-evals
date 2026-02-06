@@ -66,14 +66,14 @@ bun run sample:trials      # 30 prompts for pass@k analysis
 
 ### 4. Run Evaluations
 
-#### Test Mode (5 prompts, ~5 minutes)
+#### Test Mode (5 prompts, ~3.5 minutes)
 
 ```bash
-bun run run              # All agents, test dataset
+bun run run              # All 8 scenarios (unlimited containers, 8 prompts/container)
 bun run run:test         # Explicit test mode
 ```
 
-#### Full Mode (151 prompts, ~2 hours)
+#### Full Mode (151 prompts, ~15-20 minutes)
 
 ```bash
 bun run run:full         # All agents, full dataset
@@ -82,8 +82,13 @@ bun run run:full         # All agents, full dataset
 #### Custom Runs
 
 ```bash
-# Specific agent+tool combinations via Docker
-docker compose run --rm -e SEARCH_PROVIDER=builtin claude-code
+# Control parallelism
+bun run run -- -j 4                          # Limit to 4 containers
+bun run run -- --prompt-concurrency 4        # 4 prompts per container
+bun run run -- -j 1 --prompt-concurrency 1   # Sequential (debugging)
+
+# Specific agent+tool combinations
+bun run run -- --agent claude-code --mcp builtin
 docker compose run --rm -e SEARCH_PROVIDER=you gemini
 ```
 

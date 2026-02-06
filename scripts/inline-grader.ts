@@ -32,7 +32,7 @@ import { GoogleGenAI } from "@google/genai";
  * - Pass requires 65/100, so agents need sources OR LLM boost to pass
  * - Structure/formatting judged by LLM (Format Quality dimension)
  *
- * **Execution Errors:** Timeout or tool failures result in immediate fail (score 0)
+ * **Execution Errors:** Timeout (via metadata.timedOut) or tool failures result in immediate fail (score 0)
  *
  * **Fallback:** Works without GEMINI_API_KEY (deterministic-only mode, max 70/100)
  *
@@ -48,24 +48,17 @@ import { GoogleGenAI } from "@google/genai";
  */
 
 /**
- * Check for errors or timeouts in execution
+ * Check for tool execution errors in trajectory
  */
-const hasExecutionErrors = (
-  output: string,
+const hasToolErrors = (
   trajectory?: Array<{
     type: string;
     status?: string;
     content?: string;
   }>,
-): { hasErrors: boolean; hasTimeout: boolean } => {
-  const hasErrors =
-    trajectory?.some((step) => step.type === "tool_call" && (step.status === "failed" || step.status === "error")) ??
-    false;
-
-  const hasTimeout = output.toLowerCase().includes("timeout") || output.toLowerCase().includes("timed out");
-
-  return { hasErrors, hasTimeout };
-};
+): boolean =>
+  trajectory?.some((step) => step.type === "tool_call" && (step.status === "failed" || step.status === "error")) ??
+  false;
 
 /**
  * Assess basic output presence
@@ -239,7 +232,7 @@ const assessQuality = async ({
   deterministicScore += toolScore;
 
   // 25 pts: No execution errors
-  const { hasErrors } = hasExecutionErrors(output, trajectory);
+  const hasErrors = hasToolErrors(trajectory);
   const cleanScore = !hasErrors && output.length >= 40 ? 25 : 0;
   deterministicScore += cleanScore;
 
@@ -346,7 +339,7 @@ JSON:
  * - LLM: 30 pts (query match, source evidence, content substance, format quality)
  * - Pass threshold: 70/100
  *
- * **Execution errors:** Timeout or tool failures → immediate fail (score 0)
+ * **Execution errors:** Timeout (metadata.timedOut) or tool failures → immediate fail (score 0)
  *
  * **Fallback:** Works without GEMINI_API_KEY (deterministic-only, max 70 pts)
  *
@@ -397,7 +390,8 @@ export const grade = async ({
   const inputStr = Array.isArray(input) ? input.join(" ") : input;
 
   // Check for execution errors first
-  const { hasErrors, hasTimeout } = hasExecutionErrors(output, trajectory);
+  const hasErrors = hasToolErrors(trajectory);
+  const hasTimeout = metadata?.timedOut === true;
 
   // Fail immediately on errors or timeout
   if (hasErrors || hasTimeout) {

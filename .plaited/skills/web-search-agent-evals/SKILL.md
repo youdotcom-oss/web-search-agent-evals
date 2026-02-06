@@ -30,16 +30,24 @@ Evaluate 4 agents (Claude Code, Gemini, Droid, Codex) with 2 tools (builtin, You
 ### Run Evaluations
 
 ```bash
-# Test workflow (5 prompts, ~5 minutes)
-bun run run                 # All 8 scenarios in parallel
+# Test workflow (5 prompts, ~3.5 minutes with default concurrency)
+bun run run                 # All 8 scenarios at once (default: unlimited containers, 8 prompts/container)
 
-# Full workflow (151 prompts, ~2 hours)
+# Full workflow (151 prompts, ~15-20 minutes with default concurrency)
 bun run run:full            # All agents with full dataset
 
+# Control parallelism (both container and prompt levels)
+bun run run -- -j 4                              # Limit to 4 containers
+bun run run -- --prompt-concurrency 4            # 4 prompts per container
+bun run run -- -j 2 --prompt-concurrency 4       # Conservative (low-resource machines)
+
 # Specific combinations
-docker compose run --rm -e MCP_TOOL=builtin claude-code
-docker compose run --rm -e MCP_TOOL=you gemini
-docker compose run --rm -e MCP_TOOL=builtin -e DATASET=full droid
+bun run run -- --agent claude-code --mcp builtin
+bun run run -- --agent gemini --mcp you -j 1     # Single container for debugging
+
+# Direct Docker commands (for manual testing)
+docker compose run --rm -e SEARCH_PROVIDER=builtin claude-code
+docker compose run --rm -e SEARCH_PROVIDER=you -e PROMPT_CONCURRENCY=8 gemini
 ```
 
 ### Compare Results
@@ -170,7 +178,7 @@ See [@agent-eval-harness calibration docs](../agent-eval-harness@plaited_agent-e
 Run multiple trials per prompt across all agents and search providers to measure reliability:
 
 ```bash
-# Run all agents × all providers (8 combinations in parallel)
+# Run all agents × all providers (8 combinations, default: unlimited containers, 8 prompts/container)
 bun run trials                      # All agents/providers, k=5 (default)
 bun run trials:capability           # All agents/providers, k=10
 bun run trials:regression           # All agents/providers, k=3 (faster)
@@ -182,6 +190,12 @@ bun run trials -- --agent claude-code --search-provider builtin
 
 # Custom k value
 bun run trials -- -k 7              # All agents/providers, k=7
+
+# Control parallelism (dramatically speeds up trials)
+bun run trials -- -j 4                              # Limit to 4 containers
+bun run trials -- --prompt-concurrency 8            # 8 prompts per container
+bun run trials -- -j 4 --prompt-concurrency 4       # Conservative
+# Note: With k=5, prompt concurrency reduces 151 prompts from ~37min to ~10min per container
 
 # View results
 cat data/results/trials/2026-01-29/droid/builtin.jsonl | jq '{id, passRate, passAtK, passExpK}'
@@ -195,6 +209,72 @@ cat data/results/trials/*/gemini/you.jsonl | jq '.passRate'
 **Output:** Results written to `data/results/trials/YYYY-MM-DD/{agent}/{provider}.jsonl` (same nested structure as runs)
 
 See [@agent-eval-harness](../agent-eval-harness@plaited_agent-eval-harness/SKILL.md) skill for detailed trials command documentation.
+
+## Parallelization
+
+The evaluation harness supports **two-level parallelization** for optimal performance:
+
+### Container-Level Concurrency (`-j`, `--concurrency`)
+
+Controls how many Docker containers (agent×provider scenarios) run simultaneously.
+
+```bash
+bun run run              # Unlimited (default, all 8 scenarios at once)
+bun run run -- -j 4     # Limit to 4 containers
+bun run run -- -j 1     # Sequential (debugging)
+```
+
+**Use cases:**
+- Unlimited (default) - All scenarios at once, I/O-bound workload handles it fine
+- `-j 4` - Limit concurrency if hitting API rate limits
+- `-j 2` - Conservative, for low-resource machines
+- `-j 1` - Sequential execution for debugging
+
+### Prompt-Level Concurrency (`--prompt-concurrency`)
+
+Controls how many prompts run in parallel **within each container**.
+
+```bash
+bun run run -- --prompt-concurrency 8    # 8 prompts (default)
+bun run run -- --prompt-concurrency 4    # 4 prompts (conservative)
+bun run run -- --prompt-concurrency 1    # Sequential (debugging)
+```
+
+**How it works:**
+- Uses harness `-j` flag with `--workspace-dir` for isolation
+- Each prompt gets its own workspace directory: `/workspace/runs/{prompt-id}/`
+- Workspace cleanup happens automatically after container finishes
+
+**Performance impact:**
+- Web searches are **I/O-bound** (high network latency, low CPU usage)
+- Parallel prompts maximize network bandwidth utilization
+- **Example**: 151 prompts @ 3s avg → 7.5min sequential → **~1min with `-j 8`**
+
+### Combined Usage
+
+```bash
+# All containers, 8 prompts each (default)
+bun run run
+
+# Conservative: limit containers and prompts
+bun run run -- -j 4 --prompt-concurrency 4
+
+# Debugging: Single container, sequential prompts
+bun run run -- -j 1 --prompt-concurrency 1 --agent claude-code --mcp builtin
+```
+
+**Performance comparison:**
+
+| Config | Containers | Prompts/Container | Test (5 prompts) | Full (151 prompts) |
+|--------|-----------|-------------------|------------------|-------------------|
+| Sequential | 1 | 1 | ~10 min | ~60 min |
+| Conservative | 4 | 4 | ~5 min | ~15-20 min |
+| **Default** | **unlimited** | **8** | **~3.5 min** | **~15-20 min** |
+
+**Dial back if needed:**
+- `-j 4` if hitting API rate limits
+- `--prompt-concurrency 4` if containers run out of memory
+- `-j 1 --prompt-concurrency 1` for debugging
 
 ## Prompts
 
@@ -247,7 +327,7 @@ bun scripts/sample.ts --dir trials --count 30
 **Use cases:**
 - **After updating full dataset** - Get fresh test samples reflecting new prompts
 - **Before committing** - Ensure test set represents current full dataset
-- **Rapid iteration** - Test different scenarios without running full evaluation (~5 min vs ~2 hours)
+- **Rapid iteration** - Test different scenarios without running full evaluation (~3.5 min vs ~15-20 min)
 
 ## Results
 

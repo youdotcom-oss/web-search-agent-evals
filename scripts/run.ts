@@ -34,7 +34,7 @@
  * Each scenario logs:
  * - Start/completion timestamps with duration
  * - Real-time stdout/stderr from Docker containers
- * - Exit codes with visual indicators (✅ success, ❌ failure)
+ * - Exit codes with visual indicators (✓ success, ✗ failure)
  * - Summary report of all scenarios at the end
  *
  * ## Error Handling
@@ -57,16 +57,14 @@
  * @public
  */
 
-import { spawn } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { MCP_SERVERS, type McpServerKey } from "../mcp-servers.ts";
-import { playCompletionSound } from "./utils.ts";
-import { limitConcurrency } from "./lib/concurrency-limiter.ts";
-
-type Agent = "claude-code" | "gemini" | "droid" | "codex";
-type Mode = "test" | "full";
-type SearchProvider = McpServerKey | "builtin";
+import type { Agent, Mode, RunConfig, SearchProvider } from "./shared/shared.types.ts";
+import { ALL_AGENTS } from "./shared/shared.constants.ts";
+import { limitConcurrency } from "./shared/concurrency-limiter.ts";
+import { runDockerScenario } from "./shared/docker-runner.ts";
+import { createStatusHeartbeat, printResultsSummary, handleExit } from "./shared/reporting.ts";
 
 type RunOptions = {
   agents: Agent[];
@@ -76,8 +74,6 @@ type RunOptions = {
   promptConcurrency?: number;
   dryRun?: boolean;
 };
-
-const ALL_AGENTS: Agent[] = ["claude-code", "gemini", "droid", "codex"];
 
 const parseArgs = (args: string[]): RunOptions => {
   const agents: Agent[] = [];
@@ -162,114 +158,6 @@ const detectCurrentMode = async (): Promise<Mode> => {
   throw new Error("Could not detect current mode from docker/entrypoint");
 };
 
-const runService = (
-  agent: Agent,
-  searchProvider: SearchProvider,
-  dataset: Mode,
-  promptConcurrency: number,
-  scenarioId: number,
-  totalScenarios: number,
-): Promise<number> => {
-  return new Promise((resolve) => {
-    const label = `[${scenarioId}/${totalScenarios}] ${agent}-${searchProvider}`;
-    const startTime = Date.now();
-
-    console.log(`\n${"=".repeat(80)}`);
-    console.log(`${label} - STARTING`);
-    console.log(`${"=".repeat(80)}\n`);
-
-    const proc = spawn(
-      "docker",
-      [
-        "compose",
-        "run",
-        "--rm",
-        "-e",
-        `SEARCH_PROVIDER=${searchProvider}`,
-        "-e",
-        `DATASET=${dataset}`,
-        "-e",
-        `PROMPT_CONCURRENCY=${promptConcurrency}`,
-        agent,
-      ],
-      {
-        stdio: "pipe", // Capture output instead of inherit
-      },
-    );
-
-    let currentPrompt = "";
-    let hasError = false;
-
-    // Show progress lines that matter
-    proc.stdout?.on("data", (data) => {
-      const lines = data.toString().split("\n");
-      for (const line of lines) {
-        // Track current prompt for context
-        const promptMatch = line.match(/\[(\d+)\/(\d+)\]/);
-        if (promptMatch) {
-          currentPrompt = `${promptMatch[1]}/${promptMatch[2]}`;
-        }
-
-        // Only show important progress indicators
-        if (
-          (line.includes("[") && line.includes("/") && line.includes("]")) || // [1/5] progress
-          line.includes("Done!") ||
-          line.includes("TIMEOUT") ||
-          line.includes("ERROR") ||
-          line.includes("Failed") ||
-          line.match(/✓|✗|!/) !== null
-        ) {
-          const elapsed = ((Date.now() - startTime) / 1000).toFixed(0);
-          const prefix = currentPrompt ? `[${currentPrompt}] ` : "";
-          console.log(`  ${label} ${prefix}(${elapsed}s): ${line.trim()}`);
-
-          // Track if there are errors
-          if (line.includes("ERROR") || line.includes("Failed")) {
-            hasError = true;
-          }
-        }
-      }
-    });
-
-    proc.stderr?.on("data", (data) => {
-      const lines = data.toString().split("\n");
-      for (const line of lines) {
-        if (line.includes("ERROR") && !line.includes("MCP ERROR")) {
-          // Fatal errors (non-MCP)
-          const elapsed = ((Date.now() - startTime) / 1000).toFixed(0);
-          console.error(`  ${label} (${elapsed}s): ⚠️  FATAL: ${line.trim()}`);
-          hasError = true;
-        } else if (line.includes("MCP ERROR")) {
-          // MCP errors are often warnings (tool may continue)
-          const elapsed = ((Date.now() - startTime) / 1000).toFixed(0);
-          console.warn(`  ${label} (${elapsed}s): ⚠️  WARNING: ${line.trim()}`);
-        }
-      }
-    });
-
-    proc.on("close", (code) => {
-      const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-      const status = code === 0 ? "✓ COMPLETED" : "✗ FAILED";
-      const errorNote = hasError && code === 0 ? " (had warnings)" : "";
-
-      console.log(`\n${"=".repeat(80)}`);
-      console.log(`${label} - ${status}${errorNote} (${elapsed}s, exit code: ${code})`);
-      console.log(`${"=".repeat(80)}\n`);
-
-      resolve(code ?? 1);
-    });
-
-    proc.on("error", (err) => {
-      const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-      console.error(`\n${"=".repeat(80)}`);
-      console.error(`${label} - ✗ ERROR (${elapsed}s)`);
-      console.error(`  ${err.message}`);
-      console.error(`${"=".repeat(80)}\n`);
-      resolve(1);
-    });
-  });
-};
-
 const main = async () => {
   const args = process.argv.slice(2);
 
@@ -295,7 +183,6 @@ const main = async () => {
     console.log("");
 
     // Build execution list (each agent runs with each search provider)
-    type RunConfig = { agent: Agent; searchProvider: SearchProvider };
     const runs: RunConfig[] = [];
     for (const agent of options.agents) {
       for (const provider of searchProviders) {
@@ -327,102 +214,43 @@ const main = async () => {
     const completed = new Set<number>();
     const startTime = Date.now();
 
-    // Status heartbeat every 30 seconds
-    const statusInterval = setInterval(() => {
-      const elapsed = Math.floor((Date.now() - startTime) / 1000);
-      const remaining = runs.length - completed.size;
-
-      if (remaining > 0) {
-        console.log(`\n⏱️  Status update (${elapsed}s elapsed):`);
-        console.log(`   Completed: ${completed.size}/${runs.length}`);
-
-        const activeLimit = options.concurrency === Infinity ? remaining : Math.min(options.concurrency!, remaining);
-        const queued = Math.max(0, remaining - activeLimit);
-        console.log(`   Active containers: ${activeLimit}, Queued: ${queued}`);
-
-        const stillRunning = runs
-          .map((run, index) =>
-            completed.has(index + 1) ? null : `[${index + 1}/${runs.length}] ${run.agent}-${run.searchProvider}`,
-          )
-          .filter((x) => x !== null);
-
-        if (stillRunning.length > 0) {
-          console.log(`   Running/Queued: ${stillRunning.join(", ")}`);
-        }
-        console.log("");
-      }
-    }, 30000);
+    const statusInterval = createStatusHeartbeat({
+      runs,
+      completed,
+      concurrency: options.concurrency!,
+      intervalMs: 30000,
+      startTime,
+    });
 
     // Run all scenarios with controlled concurrency
     const results = await limitConcurrency(
       runs.map(
         ({ agent, searchProvider }, index) =>
           () =>
-            runService(agent, searchProvider, currentMode, options.promptConcurrency!, index + 1, runs.length).then(
-              (result) => {
-                completed.add(index + 1);
-                return result;
-              },
-            ),
+            runDockerScenario({
+              agent,
+              searchProvider,
+              envVars: [
+                "-e",
+                `SEARCH_PROVIDER=${searchProvider}`,
+                "-e",
+                `DATASET=${currentMode}`,
+                "-e",
+                `PROMPT_CONCURRENCY=${options.promptConcurrency}`,
+              ],
+              label: `[${index + 1}/${runs.length}] ${agent}-${searchProvider}`,
+            }).then((result) => {
+              completed.add(index + 1);
+              return result.exitCode;
+            }),
       ),
       options.concurrency!,
     );
 
     clearInterval(statusInterval);
 
-    // Report results summary
-    console.log(`\n${"=".repeat(80)}`);
-    console.log("FINAL RESULTS SUMMARY");
-    console.log("=".repeat(80));
-
-    const failures: Array<{ label: string; exitCode: number }> = [];
-    const successes: string[] = [];
-
-    for (let i = 0; i < runs.length; i++) {
-      const run = runs[i];
-      const exitCode = results[i];
-
-      // Skip if run or result is missing (should never happen, but TypeScript requires the check)
-      if (!run || exitCode === undefined) {
-        continue;
-      }
-
-      const label = `[${i + 1}/${runs.length}] ${run.agent}-${run.searchProvider}`;
-
-      if (exitCode === 0) {
-        successes.push(label);
-        console.log(`✓ ${label}`);
-      } else {
-        failures.push({ label, exitCode });
-        console.log(`✗ ${label} (exit code: ${exitCode})`);
-      }
-    }
-
-    const totalElapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-    const minutes = Math.floor(Number(totalElapsed) / 60);
-    const seconds = (Number(totalElapsed) % 60).toFixed(0);
-    const timeDisplay = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
-
-    console.log(`\n${"=".repeat(80)}`);
-    console.log(`Success: ${successes.length}/${runs.length}`);
-    console.log(`Failed: ${failures.length}/${runs.length}`);
-    console.log(`Total time: ${timeDisplay} (${totalElapsed}s)`);
-    console.log("=".repeat(80));
-
-    if (failures.length > 0) {
-      console.error(`\n⚠️  Failed scenarios (${failures.length}):`);
-      failures.forEach(({ label, exitCode }) => {
-        const errorType = exitCode === 143 || exitCode === 124 ? "TIMEOUT" : "ERROR";
-        console.error(`  - ${label}: ${errorType} (exit code ${exitCode})`);
-      });
-      console.error("\n💡 Tip: Check output above for specific error details (tool errors, MCP issues, etc.)");
-      await playCompletionSound(false);
-      process.exit(1);
-    } else {
-      console.log("\n✅ All scenarios completed successfully!");
-      await playCompletionSound(true);
-      process.exit(0);
-    }
+    const { failures } = printResultsSummary({ runs, results, startTime });
+    await handleExit(failures);
   } catch (error) {
     console.error("Error:", (error as Error).message);
     process.exit(1);

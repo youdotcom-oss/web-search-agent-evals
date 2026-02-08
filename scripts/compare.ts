@@ -68,9 +68,9 @@
 import { spawn } from "node:child_process";
 import { MCP_SERVERS, type McpServerKey } from "../mcp-servers.ts";
 
-type Mode = "test" | "full";
-type Agent = "claude-code" | "gemini" | "droid" | "codex";
-type SearchProvider = McpServerKey | "builtin";
+import type { Agent, Mode, SearchProvider } from "./shared/shared.types.ts";
+import { ALL_AGENTS } from "./shared/shared.constants.ts";
+
 type Strategy = "weighted" | "statistical";
 
 type CompareOptions = {
@@ -83,7 +83,6 @@ type CompareOptions = {
   fixtureDir?: string;
 };
 
-const ALL_AGENTS: Agent[] = ["claude-code", "gemini", "droid", "codex"];
 const ALL_STRATEGIES: Strategy[] = ["weighted", "statistical"];
 
 const parseArgs = (args: string[]): CompareOptions => {

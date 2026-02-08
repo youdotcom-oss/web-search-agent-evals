@@ -62,10 +62,11 @@
 import { spawn } from "node:child_process";
 import { MCP_SERVERS, type McpServerKey } from "../mcp-servers.ts";
 
-type Agent = "claude-code" | "gemini" | "droid" | "codex";
+import type { Agent, SearchProvider } from "./shared/shared.types.ts";
+import { ALL_AGENTS } from "./shared/shared.constants.ts";
+
 type TrialType = "default" | "capability" | "regression";
 type Strategy = "weighted" | "statistical";
-type SearchProvider = McpServerKey | "builtin";
 
 type CompareOptions = {
   agents: Agent[];
@@ -76,7 +77,6 @@ type CompareOptions = {
   dryRun?: boolean;
 };
 
-const ALL_AGENTS: Agent[] = ["claude-code", "gemini", "droid", "codex"];
 const ALL_STRATEGIES: Strategy[] = ["weighted", "statistical"];
 
 /**

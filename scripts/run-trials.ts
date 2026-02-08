@@ -56,14 +56,14 @@
  * @public
  */
 
-import { spawn } from "node:child_process";
 import { MCP_SERVERS, type McpServerKey } from "../mcp-servers.ts";
-import { playCompletionSound } from "./utils.ts";
-import { limitConcurrency } from "./lib/concurrency-limiter.ts";
+import type { Agent, RunConfig, SearchProvider } from "./shared/shared.types.ts";
+import { ALL_AGENTS } from "./shared/shared.constants.ts";
+import { limitConcurrency } from "./shared/concurrency-limiter.ts";
+import { runDockerScenario } from "./shared/docker-runner.ts";
+import { createStatusHeartbeat, printResultsSummary, handleExit } from "./shared/reporting.ts";
 
-type Agent = "claude-code" | "gemini" | "droid" | "codex";
 type TrialType = "default" | "capability" | "regression";
-type SearchProvider = McpServerKey | "builtin";
 
 type TrialsOptions = {
   agents: Agent[];
@@ -74,8 +74,6 @@ type TrialsOptions = {
   promptConcurrency?: number;
   dryRun?: boolean;
 };
-
-const ALL_AGENTS: Agent[] = ["claude-code", "gemini", "droid", "codex"];
 
 /**
  * Parse command-line arguments for trials execution
@@ -199,149 +197,13 @@ const getPromptPath = (searchProvider: SearchProvider): string => {
     : `/eval/data/prompts/trials/prompts-${searchProvider}.jsonl`;
 };
 
-/**
- * Run trials for a single agent-provider combination using Docker
- *
- * @param agent - Agent name
- * @param searchProvider - Search provider
- * @param trialType - Type of trial
- * @param k - Number of trials per prompt
- * @param scenarioId - Scenario number for progress tracking
- * @param totalScenarios - Total number of scenarios
- * @returns Promise resolving to exit code
- *
- * @internal
- */
-const runTrials = (
-  agent: Agent,
-  searchProvider: SearchProvider,
-  trialType: TrialType,
-  k: number,
-  promptConcurrency: number,
-  scenarioId: number,
-  totalScenarios: number,
-): Promise<number> => {
-  return new Promise((resolve) => {
-    const label = `[${scenarioId}/${totalScenarios}] ${agent}-${searchProvider}`;
-    const dataset = getPromptPath(searchProvider);
-    const schema = `/eval/agent-schemas/${agent}.json`;
-    const grader = "/eval/scripts/inline-grader.ts";
-
-    const startTime = Date.now();
-
-    console.log(`\n${"=".repeat(80)}`);
-    console.log(`${label} - STARTING (k=${k}, prompt-concurrency=${promptConcurrency})`);
-    console.log(`${"=".repeat(80)}\n`);
-
-    // Build output path with trial type suffix
-    const runDate = new Date().toISOString().split("T")[0];
-    const typeSuffix = trialType === "default" ? "" : `-${trialType}`;
-    const outputPath = `/eval/data/results/trials/${runDate}/${agent}/${searchProvider}${typeSuffix}.jsonl`;
-
-    // Build trials command to run inside Docker container with explicit output path
-    const trialsCmd = [
-      "bunx",
-      "@plaited/agent-eval-harness",
-      "trials",
-      dataset,
-      "--schema",
-      schema,
-      "-k",
-      k.toString(),
-      "-j",
-      promptConcurrency.toString(),
-      "--grader",
-      grader,
-      "-o",
-      outputPath,
-      "--progress",
-      "--cwd",
-      "/workspace",
-      "--workspace-dir",
-      "/workspace/runs",
-    ];
-
-    // Run via Docker compose with environment variables
-    // Pass trial type as TRIAL_TYPE env var for entrypoint to detect
-    const envVars = ["-e", `SEARCH_PROVIDER=${searchProvider}`, "-e", `PROMPT_CONCURRENCY=${promptConcurrency}`];
-    if (trialType !== "default") {
-      envVars.push("-e", `TRIAL_TYPE=${trialType}`);
-    }
-
-    const proc = spawn("docker", ["compose", "run", "--rm", ...envVars, agent, ...trialsCmd], {
-      stdio: "pipe", // Capture output for selective logging
-    });
-
-    let currentPrompt = "";
-    let hasError = false;
-
-    // Show important progress indicators
-    proc.stdout?.on("data", (data) => {
-      const lines = data.toString().split("\n");
-      for (const line of lines) {
-        // Track current prompt
-        const promptMatch = line.match(/\[(\d+)\/(\d+)\]/);
-        if (promptMatch) {
-          currentPrompt = `${promptMatch[1]}/${promptMatch[2]}`;
-        }
-
-        // Show key progress events
-        if (
-          line.includes("Running") ||
-          line.includes("Done!") ||
-          line.includes("TIMEOUT") ||
-          line.includes("ERROR") ||
-          line.match(/✓|✗/) !== null
-        ) {
-          const elapsed = ((Date.now() - startTime) / 1000).toFixed(0);
-          const prefix = currentPrompt ? `[${currentPrompt}] ` : "";
-          console.log(`  ${label} ${prefix}(${elapsed}s): ${line.trim()}`);
-
-          if (line.includes("ERROR") && !line.includes("MCP ERROR")) {
-            hasError = true;
-          }
-        }
-      }
-    });
-
-    proc.stderr?.on("data", (data) => {
-      const lines = data.toString().split("\n");
-      for (const line of lines) {
-        if (line.includes("ERROR") && !line.includes("MCP ERROR")) {
-          // Fatal errors (non-MCP)
-          const elapsed = ((Date.now() - startTime) / 1000).toFixed(0);
-          console.error(`  ${label} (${elapsed}s): ⚠️  FATAL: ${line.trim()}`);
-          hasError = true;
-        } else if (line.includes("MCP ERROR")) {
-          // MCP errors are often warnings (tool may continue)
-          const elapsed = ((Date.now() - startTime) / 1000).toFixed(0);
-          console.warn(`  ${label} (${elapsed}s): ⚠️  WARNING: ${line.trim()}`);
-        }
-      }
-    });
-
-    proc.on("close", (code) => {
-      const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-      const status = code === 0 ? "✓ COMPLETED" : "✗ FAILED";
-      const errorNote = hasError && code === 0 ? " (had warnings)" : "";
-
-      console.log(`\n${"=".repeat(80)}`);
-      console.log(`${label} - ${status}${errorNote} (${elapsed}s, exit code: ${code})`);
-      console.log(`${"=".repeat(80)}\n`);
-
-      resolve(code ?? 1);
-    });
-
-    proc.on("error", (err) => {
-      const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-      console.error(`\n${"=".repeat(80)}`);
-      console.error(`${label} - ✗ ERROR (${elapsed}s)`);
-      console.error(`  ${err.message}`);
-      console.error(`${"=".repeat(80)}\n`);
-      resolve(1);
-    });
-  });
-};
+/** Stdout filter for trials — includes "Running" lines for trial progress */
+const trialsStdoutFilter = (line: string): boolean =>
+  line.includes("Running") ||
+  line.includes("Done!") ||
+  line.includes("TIMEOUT") ||
+  line.includes("ERROR") ||
+  line.match(/✓|✗/) !== null;
 
 /**
  * Main entry point
@@ -366,7 +228,6 @@ const main = async () => {
     console.log(`${"=".repeat(80)}\n`);
 
     // Build execution matrix
-    type RunConfig = { agent: Agent; searchProvider: SearchProvider };
     const runs: RunConfig[] = [];
     for (const agent of options.agents) {
       for (const provider of options.searchProviders) {
@@ -404,111 +265,85 @@ const main = async () => {
     const completed = new Set<number>();
     const startTime = Date.now();
 
-    // Status heartbeat every 60 seconds (trials are longer)
-    const statusInterval = setInterval(() => {
-      const elapsed = Math.floor((Date.now() - startTime) / 1000);
-      const remaining = runs.length - completed.size;
-
-      if (remaining > 0) {
-        console.log(`\n⏱️  Status update (${elapsed}s elapsed):`);
-        console.log(`   Completed: ${completed.size}/${runs.length}`);
-
-        const activeLimit = options.concurrency === Infinity ? remaining : Math.min(options.concurrency!, remaining);
-        const queued = Math.max(0, remaining - activeLimit);
-        console.log(`   Active containers: ${activeLimit}, Queued: ${queued}`);
-
-        const stillRunning = runs
-          .map((run, index) =>
-            completed.has(index + 1) ? null : `[${index + 1}/${runs.length}] ${run.agent}-${run.searchProvider}`,
-          )
-          .filter((x) => x !== null);
-
-        if (stillRunning.length > 0) {
-          console.log(`   Running/Queued: ${stillRunning.join(", ")}`);
-        }
-        console.log("");
-      }
-    }, 60000);
+    const statusInterval = createStatusHeartbeat({
+      runs,
+      completed,
+      concurrency: options.concurrency!,
+      intervalMs: 60000,
+      startTime,
+    });
 
     // Run all scenarios with controlled concurrency
     const results = await limitConcurrency(
-      runs.map(
-        ({ agent, searchProvider }, index) =>
-          () =>
-            runTrials(
-              agent,
-              searchProvider,
-              options.trialType,
-              k,
-              options.promptConcurrency!,
-              index + 1,
-              runs.length,
-            ).then((result) => {
-              completed.add(index + 1);
-              return result;
-            }),
-      ),
+      runs.map(({ agent, searchProvider }, index) => () => {
+        const runDate = new Date().toISOString().split("T")[0];
+        const dataset = getPromptPath(searchProvider);
+        const schema = `/eval/agent-schemas/${agent}.json`;
+        const grader = "/eval/scripts/inline-grader.ts";
+        const typeSuffix = options.trialType === "default" ? "" : `-${options.trialType}`;
+        const outputPath = `/eval/data/results/trials/${runDate}/${agent}/${searchProvider}${typeSuffix}.jsonl`;
+
+        const trialsCmd = [
+          "bunx",
+          "@plaited/agent-eval-harness",
+          "trials",
+          dataset,
+          "--schema",
+          schema,
+          "-k",
+          k.toString(),
+          "-j",
+          options.promptConcurrency!.toString(),
+          "--grader",
+          grader,
+          "-o",
+          outputPath,
+          "--progress",
+          "--cwd",
+          "/workspace",
+          "--workspace-dir",
+          "/workspace/runs",
+        ];
+
+        const envVars = [
+          "-e",
+          `SEARCH_PROVIDER=${searchProvider}`,
+          "-e",
+          `PROMPT_CONCURRENCY=${options.promptConcurrency}`,
+        ];
+        if (options.trialType !== "default") {
+          envVars.push("-e", `TRIAL_TYPE=${options.trialType}`);
+        }
+
+        return runDockerScenario({
+          agent,
+          searchProvider,
+          envVars,
+          command: trialsCmd,
+          label: `[${index + 1}/${runs.length}] ${agent}-${searchProvider}`,
+          startBanner: `(k=${k}, prompt-concurrency=${options.promptConcurrency})`,
+          stdoutFilter: trialsStdoutFilter,
+        }).then((result) => {
+          completed.add(index + 1);
+          return result.exitCode;
+        });
+      }),
       options.concurrency!,
     );
 
     clearInterval(statusInterval);
 
-    // Report results summary
-    console.log(`\n${"=".repeat(80)}`);
-    console.log("FINAL RESULTS SUMMARY");
-    console.log("=".repeat(80));
-
-    const failures: Array<{ label: string; exitCode: number }> = [];
-    const successes: string[] = [];
-
-    for (let i = 0; i < runs.length; i++) {
-      const run = runs[i];
-      const exitCode = results[i];
-
-      if (!run || exitCode === undefined) {
-        continue;
-      }
-
-      const label = `[${i + 1}/${runs.length}] ${run.agent}-${run.searchProvider}`;
-
-      if (exitCode === 0) {
-        successes.push(label);
-        console.log(`✓ ${label}`);
-      } else {
-        failures.push({ label, exitCode });
-        console.log(`✗ ${label} (exit code: ${exitCode})`);
-      }
-    }
-
-    const totalElapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-    const minutes = Math.floor(Number(totalElapsed) / 60);
-    const seconds = (Number(totalElapsed) % 60).toFixed(0);
-    const timeDisplay = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
-
-    console.log(`\n${"=".repeat(80)}`);
-    console.log(`Success: ${successes.length}/${runs.length}`);
-    console.log(`Failed: ${failures.length}/${runs.length}`);
-    console.log(`Total time: ${timeDisplay} (${totalElapsed}s)`);
-    console.log(`Trials per prompt: k=${k}`);
-    console.log("=".repeat(80));
+    const { failures } = printResultsSummary({
+      runs,
+      results,
+      startTime,
+      extraLines: [`Trials per prompt: k=${k}`],
+    });
 
     const totalTime = ((Date.now() - startTime) / 1000 / 60).toFixed(1);
     console.log(`\nTotal time: ${totalTime} minutes`);
 
-    if (failures.length > 0) {
-      console.error(`\n⚠️  Failed scenarios (${failures.length}):`);
-      failures.forEach(({ label, exitCode }) => {
-        const errorType = exitCode === 143 || exitCode === 124 ? "TIMEOUT" : "ERROR";
-        console.error(`  - ${label}: ${errorType} (exit code ${exitCode})`);
-      });
-      console.error("\n💡 Tip: Check output above for specific error details (authentication, MCP issues, etc.)");
-      await playCompletionSound(false);
-      process.exit(1);
-    } else {
-      console.log("\n✅ All trial scenarios completed successfully!");
-      await playCompletionSound(true);
-      process.exit(0);
-    }
+    await handleExit(failures, "All trial scenarios completed successfully!");
   } catch (error) {
     console.error("Error:", (error as Error).message);
     process.exit(1);

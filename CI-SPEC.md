@@ -250,7 +250,7 @@ jobs:
 
 | Config | Grader | Container `-j` | Prompt `-j` | Est. Time |
 |--------|--------|----------------|-------------|-----------|
-| macOS (current) | Gemini API (13s) | 4 | 4 | ~15-20 min |
+| macOS (current) | Gemini API (13s) | unlimited | 8 | ~35 min |
 | CI GPU | Ollama 7B (~2s) | 8 | 8 | ~3-5 min |
 | CI GPU, no grader | none | 8 | 8 | ~2-3 min |
 

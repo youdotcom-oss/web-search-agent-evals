@@ -33,7 +33,7 @@ Evaluate 4 agents (Claude Code, Gemini, Droid, Codex) with 2 tools (builtin, You
 # Test workflow (5 prompts, ~3.5 minutes with default concurrency)
 bun run run                 # All 8 scenarios at once (default: unlimited containers, 8 prompts/container)
 
-# Full workflow (151 prompts, ~15-20 minutes with default concurrency)
+# Full workflow (151 prompts, ~35 minutes with default concurrency)
 bun run run:full            # All agents with full dataset
 
 # Control parallelism (both container and prompt levels)
@@ -268,8 +268,8 @@ bun run run -- -j 1 --prompt-concurrency 1 --agent claude-code --mcp builtin
 | Config | Containers | Prompts/Container | Test (5 prompts) | Full (151 prompts) |
 |--------|-----------|-------------------|------------------|-------------------|
 | Sequential | 1 | 1 | ~10 min | ~60 min |
-| Conservative | 4 | 4 | ~5 min | ~15-20 min |
-| **Default** | **unlimited** | **8** | **~3.5 min** | **~15-20 min** |
+| Conservative | 4 | 4 | ~5 min | ~45-50 min |
+| **Default** | **unlimited** | **8** | **~3.5 min** | **~35 min** |
 
 **Dial back if needed:**
 - `-j 4` if hitting API rate limits
@@ -327,7 +327,7 @@ bun scripts/sample.ts --dir trials --count 30
 **Use cases:**
 - **After updating full dataset** - Get fresh test samples reflecting new prompts
 - **Before committing** - Ensure test set represents current full dataset
-- **Rapid iteration** - Test different scenarios without running full evaluation (~3.5 min vs ~15-20 min)
+- **Rapid iteration** - Test different scenarios without running full evaluation (~3.5 min vs ~35 min)
 
 ## Results
 

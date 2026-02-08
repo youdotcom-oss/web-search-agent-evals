@@ -44,7 +44,7 @@
  * - **Flakiness**: pass@k - pass^k (high = inconsistent)
  *
  * Usage:
- *   bun scripts/run-trials.ts                              # All agents/providers, k=5 (default: unlimited containers, 8 prompts/container)
+ *   bun scripts/run-trials.ts                              # All agents/providers, k=5 (default: unlimited containers, sequential prompts)
  *   bun scripts/run-trials.ts --trial-type capability      # All agents, k=10
  *   bun scripts/run-trials.ts --agent gemini               # Single agent, all providers
  *   bun scripts/run-trials.ts --search-provider you        # All agents, MCP only
@@ -158,7 +158,7 @@ const parseArgs = (args: string[]): TrialsOptions => {
     searchProviders: searchProviders.length > 0 ? searchProviders : ["builtin", ...mcpProviders],
     k,
     concurrency: concurrency ?? Infinity, // Default unlimited (I/O-bound workload)
-    promptConcurrency: promptConcurrency ?? 8, // I/O-bound, safe to run 8 concurrent
+    promptConcurrency: promptConcurrency ?? 1, // Default 1: stream-mode agents OOM at higher values (see issue #45)
     dryRun,
   };
 };

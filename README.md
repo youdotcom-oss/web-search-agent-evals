@@ -69,11 +69,11 @@ bun run sample:trials      # 30 prompts for pass@k analysis
 #### Test Mode (5 prompts, ~3.5 minutes)
 
 ```bash
-bun run run              # All 8 scenarios (unlimited containers, 8 prompts/container)
+bun run run              # All 8 scenarios (unlimited containers, sequential prompts)
 bun run run:test         # Explicit test mode
 ```
 
-#### Full Mode (151 prompts, ~15-20 minutes)
+#### Full Mode (151 prompts, ~35 minutes)
 
 ```bash
 bun run run:full         # All agents, full dataset

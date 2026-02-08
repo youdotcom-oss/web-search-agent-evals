@@ -44,7 +44,7 @@
  * - Final exit code reflects worst outcome (0 = all pass, >0 = any failed)
  *
  * Usage:
- *   bun scripts/run.ts                                    # All agents, current mode (default: -j 2 --prompt-concurrency 4)
+ *   bun scripts/run.ts                                    # All agents, current mode (default: unlimited containers, sequential prompts)
  *   bun scripts/run.ts --agent claude-code                # Single agent
  *   bun scripts/run.ts --mode test                        # Test mode (5 prompts)
  *   bun scripts/run.ts --search-provider you              # Specific MCP server
@@ -137,7 +137,7 @@ const parseArgs = (args: string[]): RunOptions => {
     mode,
     searchProvider,
     concurrency: concurrency ?? Infinity, // Default unlimited (I/O-bound workload)
-    promptConcurrency: promptConcurrency ?? 8, // Default to 8 prompts per container (I/O-bound)
+    promptConcurrency: promptConcurrency ?? 1, // Default 1: stream-mode agents OOM at higher values (see issue #45)
     dryRun,
   };
 };

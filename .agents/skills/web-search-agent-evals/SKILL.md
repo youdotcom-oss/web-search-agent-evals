@@ -31,7 +31,7 @@ Evaluate 4 agents (Claude Code, Gemini, Droid, Codex) with 2 tools (builtin, You
 
 ```bash
 # Test workflow (5 prompts, ~3.5 minutes with default concurrency)
-bun run run                 # All 8 scenarios at once (default: unlimited containers, 8 prompts/container)
+bun run run                 # All 8 scenarios at once (default: unlimited containers, sequential prompts)
 
 # Full workflow (151 prompts, ~35 minutes with default concurrency)
 bun run run:full            # All agents with full dataset
@@ -178,7 +178,7 @@ See [@agent-eval-harness calibration docs](../agent-eval-harness@plaited_agent-e
 Run multiple trials per prompt across all agents and search providers to measure reliability:
 
 ```bash
-# Run all agents × all providers (8 combinations, default: unlimited containers, 8 prompts/container)
+# Run all agents × all providers (8 combinations, default: unlimited containers, sequential prompts)
 bun run trials                      # All agents/providers, k=5 (default)
 bun run trials:capability           # All agents/providers, k=10
 bun run trials:regression           # All agents/providers, k=3 (faster)
@@ -235,9 +235,9 @@ bun run run -- -j 1     # Sequential (debugging)
 Controls how many prompts run in parallel **within each container**.
 
 ```bash
-bun run run -- --prompt-concurrency 8    # 8 prompts (default)
-bun run run -- --prompt-concurrency 4    # 4 prompts (conservative)
-bun run run -- --prompt-concurrency 1    # Sequential (debugging)
+bun run run -- --prompt-concurrency 4    # 4 prompts (moderate parallelism)
+bun run run -- --prompt-concurrency 1    # Sequential (default, safest)
+bun run run -- --prompt-concurrency 8    # 8 prompts (high memory, CI only)
 ```
 
 **How it works:**
@@ -253,11 +253,11 @@ bun run run -- --prompt-concurrency 1    # Sequential (debugging)
 ### Combined Usage
 
 ```bash
-# All containers, 8 prompts each (default)
+# All containers, sequential prompts (default — safe for all agents)
 bun run run
 
-# Conservative: limit containers and prompts
-bun run run -- -j 4 --prompt-concurrency 4
+# Faster: add prompt parallelism (watch memory usage)
+bun run run -- --prompt-concurrency 4
 
 # Debugging: Single container, sequential prompts
 bun run run -- -j 1 --prompt-concurrency 1 --agent claude-code --mcp builtin
@@ -267,14 +267,14 @@ bun run run -- -j 1 --prompt-concurrency 1 --agent claude-code --mcp builtin
 
 | Config | Containers | Prompts/Container | Test (5 prompts) | Full (151 prompts) |
 |--------|-----------|-------------------|------------------|-------------------|
-| Sequential | 1 | 1 | ~10 min | ~60 min |
-| Conservative | 4 | 4 | ~5 min | ~45-50 min |
-| **Default** | **unlimited** | **8** | **~3.5 min** | **~35 min** |
+| **Default** | **unlimited** | **1** | **~3.5 min** | **~35 min** |
+| Faster | unlimited | 4 | ~3 min | ~20 min |
+| CI (high memory) | unlimited | 8 | ~2.5 min | ~15 min |
 
-**Dial back if needed:**
-- `-j 4` if hitting API rate limits
-- `--prompt-concurrency 4` if containers run out of memory
-- `-j 1 --prompt-concurrency 1` for debugging
+**Scale up if resources allow:**
+- `--prompt-concurrency 4` for faster runs (needs ~2GB per container)
+- `--prompt-concurrency 8` for CI runners with 16GB+ RAM
+- **Warning:** Stream-mode agents (claude-code, droid) use ~400-500MB RSS per prompt process. With `-j 8` that's 3-4GB per container — OOM kills likely in Docker (see [issue #45](https://github.com/plaited/agent-eval-harness/issues/45))
 
 ## Prompts
 

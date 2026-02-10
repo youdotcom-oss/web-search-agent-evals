@@ -18,7 +18,7 @@ describe("summarize.ts", () => {
     });
 
     test("accepts --mode full", async () => {
-      const { exitCode } = await runScript(SCRIPT_PATH, [
+      const { exitCode, stderr } = await runScript(SCRIPT_PATH, [
         "--mode",
         "full",
         "--fixture-dir",
@@ -27,6 +27,9 @@ describe("summarize.ts", () => {
         "/tmp/test-summary.md",
       ]);
 
+      if (exitCode !== 0) {
+        console.log("Error output:", stderr);
+      }
       expect(exitCode).toBe(0);
     });
 
@@ -109,7 +112,7 @@ describe("summarize.ts", () => {
 
       expect(exitCode).toBe(1);
       expect(stderr).toContain("Invalid mode: invalid");
-      expect(stderr).toContain("Must be 'test' or 'full'");
+      expect(stderr).toContain("Must be 'test', 'full', or 'trials'");
     });
   });
 

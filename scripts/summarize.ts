@@ -18,7 +18,7 @@
  */
 
 import { join } from "node:path";
-import type { ReliabilityMetrics, WeightedComparison } from "./schemas/comparisons.ts";
+import type { QualityMetrics, ReliabilityMetrics, WeightedComparison } from "./schemas/comparisons.ts";
 import { WeightedComparisonSchema } from "./schemas/comparisons.ts";
 import { loadJsonFile } from "./schemas/common.ts";
 import type { Mode } from "./schemas/configs.ts";
@@ -102,6 +102,13 @@ const findLatestRunDate = async (fixtureDir?: string): Promise<string> => {
 const findLatestTrialsDate = async (fixtureDir?: string): Promise<string> => {
   const baseDir = fixtureDir ?? "data";
   const trialsDir = `${baseDir}/comparisons/trials`;
+
+  // Check if trials directory exists
+  const trialsDirFile = Bun.file(trialsDir);
+  if (!(await trialsDirFile.exists())) {
+    throw new Error(`Trials directory not found: ${trialsDir}`);
+  }
+
   const dirs = await Array.fromAsync(new Bun.Glob("*").scan({ cwd: trialsDir, onlyFiles: false }));
   const dates = dirs
     .filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d))
@@ -308,7 +315,12 @@ const generateSummary = async (options: SummarizeOptions): Promise<string> => {
   // Try to load trials data if available (only if not using custom input and mode is full)
   let trialsWeighted: WeightedComparison | null = null;
   if (!input && mode === "full") {
-    trialsWeighted = await loadTrialsComparison(runDate, "weighted", undefined, fixtureDir);
+    try {
+      trialsWeighted = await loadTrialsComparison(runDate, "weighted", undefined, fixtureDir);
+    } catch (_error) {
+      // Trials data is optional for full mode, so silently skip if not available
+      // This allows full mode summaries to work without trials data
+    }
   }
 
   const { meta, quality, performance, reliability, capability, flakiness } = weighted;
@@ -424,7 +436,7 @@ const generateSummary = async (options: SummarizeOptions): Promise<string> => {
         md.push(
           `| ${idx + 1} | ${entry.run} | ${formatNumber(
             entry.avgScore,
-          )} | ${formatPercent(entry.passRate)} | ${metrics.passCount} | ${metrics.failCount} |\n`,
+          )} | ${formatPercent(metrics.passRate)} | ${metrics.passCount} | ${metrics.failCount} |\n`,
         );
       });
     }
@@ -574,12 +586,7 @@ const generateSummary = async (options: SummarizeOptions): Promise<string> => {
 
           // For reliability, use passRate for regular runs, or passExpK for trials
           let reliabilityDiff = 0;
-          if (
-            reliability &&
-            reliability[builtinRun] &&
-            reliability[mcpRun] &&
-            !isRegularRunReliability(reliability[builtinRun])
-          ) {
+          if (reliability?.[builtinRun] && reliability[mcpRun] && !isRegularRunReliability(reliability[builtinRun])) {
             // Trial format: use passExpK
             const builtinRel = reliability[builtinRun];
             const mcpRel = reliability[mcpRun];
@@ -620,7 +627,11 @@ const generateSummary = async (options: SummarizeOptions): Promise<string> => {
             }
 
             // Reliability CI: check both regular run and trials format
-            if (statMcpQuality?.confidenceIntervals?.passRate) {
+            if (
+              statMcpQuality?.confidenceIntervals &&
+              "passRate" in statMcpQuality.confidenceIntervals &&
+              statMcpQuality.confidenceIntervals.passRate
+            ) {
               // Regular run format
               const [lower, upper] = statMcpQuality.confidenceIntervals.passRate;
               const margin = ((upper - lower) / 2) * 100;
@@ -629,7 +640,13 @@ const generateSummary = async (options: SummarizeOptions): Promise<string> => {
               // Trials format: use avgPassExpK from reliability object
               const statMcpRel = statistical.reliability[mcpRun];
               const statBuiltinRel = statistical.reliability[builtinRun];
-              if (statMcpRel?.confidenceIntervals?.avgPassExpK && statBuiltinRel && "avgPassExpK" in statBuiltinRel) {
+              if (
+                statMcpRel?.confidenceIntervals &&
+                "avgPassExpK" in statMcpRel.confidenceIntervals &&
+                statMcpRel.confidenceIntervals.avgPassExpK &&
+                statBuiltinRel &&
+                "avgPassExpK" in statBuiltinRel
+              ) {
                 const [lower, upper] = statMcpRel.confidenceIntervals.avgPassExpK;
                 const margin = ((upper - lower) / 2) * 100;
                 reliabilityMargin = ` ± ${formatNumber(margin, 1)}pp`;

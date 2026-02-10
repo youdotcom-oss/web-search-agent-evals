@@ -95,7 +95,7 @@ const parseArgs = (args: string[]): CompareOptions => {
   let runDate: string | undefined;
   let dryRun = false;
 
-  const validProviders = ["builtin", "skill", ...Object.keys(MCP_SERVERS)];
+  const validProviders = ["builtin", ...Object.keys(MCP_SERVERS)];
 
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--agent" && i + 1 < args.length) {

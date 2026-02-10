@@ -54,13 +54,7 @@ services:
       resources:
         limits:
           memory: 4G
-    volumes:
-      - ./data:/eval/data:ro
-      - ./agent-schemas:/eval/agent-schemas:ro
-      - ./scripts:/eval/scripts:ro
-      - ./data/results:/eval/data/results:rw
-      - ./.agents/skills/youdotcom-cli:/eval/skill/.factory/skills/youdotcom-cli:ro
-      - ./docker/droid-skill-agents.md:/eval/skill/AGENTS.md:ro
+    volumes: *common-volumes
 
   # Codex Agent
   # Run with: docker compose run --rm -e SEARCH_PROVIDER=builtin codex

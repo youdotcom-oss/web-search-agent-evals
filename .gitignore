@@ -44,6 +44,5 @@ data/calibration/
 # backup files
 *.bak
 
-
 # claude
 settings.local.json

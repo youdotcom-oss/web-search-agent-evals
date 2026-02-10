@@ -15,6 +15,9 @@
  * - Hybrid scoring (deterministic 50 + LLM 50 = 100)
  * - Pass threshold (0.65 = 65/100)
  *
+ * LLM dimension parsing, hallucination penalty, and prompt construction
+ * are tested separately in grader-llm.spec.ts.
+ *
  * @public
  */
 

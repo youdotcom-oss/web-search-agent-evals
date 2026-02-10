@@ -161,13 +161,13 @@ describe("run.ts", () => {
       expect(stdout).toContain("Search providers:");
     });
 
-    test("shows scenario count for default (4 agents × 2 MCP = 8)", async () => {
+    test("shows scenario count for default (4 agents × 2 providers = 8)", async () => {
       const { stdout } = await runScript(SCRIPT_PATH, ["--dry-run"]);
 
       expect(stdout).toContain("[DRY RUN] Would run 8 scenarios");
     });
 
-    test("shows scenario count for single agent (1 × 2 MCP = 2)", async () => {
+    test("shows scenario count for single agent (1 × 2 providers = 2)", async () => {
       const { stdout } = await runScript(SCRIPT_PATH, ["--agent", "gemini", "--dry-run"]);
 
       expect(stdout).toContain("[DRY RUN] Would run 2 scenarios");
@@ -188,7 +188,7 @@ describe("run.ts", () => {
     test("shows all scenarios in execution matrix for default", async () => {
       const { stdout } = await runScript(SCRIPT_PATH, ["--dry-run"]);
 
-      // Should show 8 scenarios: 4 agents × 2 MCP tools
+      // Should show 8 scenarios: 4 agents × 2 providers (builtin, you)
       expect(stdout).toMatch(/\[1\/8\] claude-code-builtin/);
       expect(stdout).toMatch(/\[2\/8\] claude-code-you/);
       expect(stdout).toMatch(/\[3\/8\] gemini-builtin/);

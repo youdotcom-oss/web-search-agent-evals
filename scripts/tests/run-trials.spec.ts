@@ -11,10 +11,10 @@ describe("run-trials.ts", () => {
 
       expect(exitCode).toBe(0);
       expect(stdout).toContain("Agents: claude-code, gemini, droid, codex");
-      expect(stdout).toContain("Search providers: builtin, skill, you");
+      expect(stdout).toContain("Search providers: builtin, you");
       expect(stdout).toContain("Trial type: default");
       expect(stdout).toContain("(k=5)");
-      expect(stdout).toContain("12 trial scenarios");
+      expect(stdout).toContain("8 trial scenarios");
     });
 
     test("accepts --agent flag", async () => {
@@ -22,7 +22,7 @@ describe("run-trials.ts", () => {
 
       expect(exitCode).toBe(0);
       expect(stdout).toContain("Agents: gemini");
-      expect(stdout).toContain("3 trial scenarios"); // gemini × 3 providers
+      expect(stdout).toContain("2 trial scenarios"); // gemini × 2 providers
     });
 
     test("accepts --search-provider builtin", async () => {
@@ -276,29 +276,24 @@ describe("run-trials.ts", () => {
       const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--dry-run"]);
 
       expect(exitCode).toBe(0);
-      expect(stdout).toContain("12 trial scenarios"); // 4 agents × 3 providers
-      expect(stdout).toContain("[1/12] claude-code-builtin");
-      expect(stdout).toContain("[2/12] claude-code-skill");
-      expect(stdout).toContain("[3/12] claude-code-you");
-      expect(stdout).toContain("[4/12] gemini-builtin");
-      expect(stdout).toContain("[5/12] gemini-skill");
-      expect(stdout).toContain("[6/12] gemini-you");
-      expect(stdout).toContain("[7/12] droid-builtin");
-      expect(stdout).toContain("[8/12] droid-skill");
-      expect(stdout).toContain("[9/12] droid-you");
-      expect(stdout).toContain("[10/12] codex-builtin");
-      expect(stdout).toContain("[11/12] codex-skill");
-      expect(stdout).toContain("[12/12] codex-you");
+      expect(stdout).toContain("8 trial scenarios"); // 4 agents × 2 providers
+      expect(stdout).toContain("[1/8] claude-code-builtin");
+      expect(stdout).toContain("[2/8] claude-code-you");
+      expect(stdout).toContain("[3/8] gemini-builtin");
+      expect(stdout).toContain("[4/8] gemini-you");
+      expect(stdout).toContain("[5/8] droid-builtin");
+      expect(stdout).toContain("[6/8] droid-you");
+      expect(stdout).toContain("[7/8] codex-builtin");
+      expect(stdout).toContain("[8/8] codex-you");
     });
 
     test("filters to single agent", async () => {
       const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--agent", "droid", "--dry-run"]);
 
       expect(exitCode).toBe(0);
-      expect(stdout).toContain("3 trial scenarios"); // droid × 3 providers
-      expect(stdout).toContain("[1/3] droid-builtin");
-      expect(stdout).toContain("[2/3] droid-skill");
-      expect(stdout).toContain("[3/3] droid-you");
+      expect(stdout).toContain("2 trial scenarios"); // droid × 2 providers
+      expect(stdout).toContain("[1/2] droid-builtin");
+      expect(stdout).toContain("[2/2] droid-you");
     });
 
     test("filters to single provider", async () => {

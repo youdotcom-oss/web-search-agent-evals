@@ -95,7 +95,7 @@ const parseArgs = (args: string[]): TrialsOptions => {
   let promptConcurrency: number | undefined;
   let dryRun = false;
 
-  const validProviders = ["builtin", "skill", ...Object.keys(MCP_SERVERS)];
+  const validProviders = ["builtin", ...Object.keys(MCP_SERVERS)];
 
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--agent" && i + 1 < args.length) {
@@ -164,7 +164,7 @@ const parseArgs = (args: string[]): TrialsOptions => {
     agents: agents.length > 0 ? agents : ALL_AGENTS,
     trialType,
     dataset,
-    searchProviders: searchProviders.length > 0 ? searchProviders : ["builtin", "skill", ...mcpProviders],
+    searchProviders: searchProviders.length > 0 ? searchProviders : ["builtin", ...mcpProviders],
     k,
     concurrency: concurrency ?? Infinity, // Default unlimited (I/O-bound workload)
     promptConcurrency: promptConcurrency ?? 1, // Default 1: stream-mode agents OOM at higher values (see issue #45)
@@ -204,8 +204,7 @@ const getKValue = (trialType: TrialType, override?: number): number => {
  * @internal
  */
 const getPromptPath = (searchProvider: SearchProvider, dataset: "trials" | "full"): string => {
-  // "skill" reuses builtin prompts (no MCP metadata needed)
-  return searchProvider === "builtin" || searchProvider === "skill"
+  return searchProvider === "builtin"
     ? `/eval/data/prompts/${dataset}/prompts.jsonl`
     : `/eval/data/prompts/${dataset}/prompts-${searchProvider}.jsonl`;
 };

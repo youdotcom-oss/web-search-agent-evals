@@ -12,7 +12,7 @@ export const AgentSchema = z.enum(["claude-code", "gemini", "droid", "codex"]);
  *
  * @public
  */
-export const ModeSchema = z.enum(["test", "full"]);
+export const ModeSchema = z.enum(["test", "full", "trials"]);
 
 /**
  * Comparison strategy for evaluations

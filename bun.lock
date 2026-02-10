@@ -3,23 +3,23 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "dependencies": {
-        "@anthropic-ai/sdk": "^0.71.2",
-        "@google/genai": "^1.38.0",
-        "@plaited/agent-eval-harness": "^0.9.0",
-        "zod": "^4.3.5",
-      },
       "devDependencies": {
+        "@anthropic-ai/sdk": "^0.71.2",
         "@biomejs/biome": "2.3.13",
         "@commitlint/cli": "20.3.1",
         "@commitlint/config-conventional": "20.3.1",
         "@commitlint/types": "20.3.1",
+        "@google/genai": "^1.38.0",
+        "@plaited/agent-eval-harness": "^0.12.1",
+        "@plaited/development-skills": "^0.8.0",
         "@types/bun": "1.3.7",
         "@types/node": "25.1.0",
+        "@youdotcom-oss/api": "0.2.2",
         "bun-types": "1.3.7",
         "format-package": "7.0.0",
         "lint-staged": "16.2.7",
         "typescript": "5.9.3",
+        "zod": "^4.3.5",
       },
     },
   },
@@ -106,9 +106,9 @@
 
     "@pkgjs/parseargs": ["@pkgjs/parseargs@0.11.0", "", {}, "sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg=="],
 
-    "@plaited/agent-eval-harness": ["@plaited/agent-eval-harness@0.9.0", "", { "dependencies": { "@plaited/development-skills": "0.6.5", "zod": "^4.3.6" }, "bin": { "agent-eval-harness": "bin/cli.ts" } }, "sha512-bt7Yuk1cqZwLdfSi3TAAXGO3f0NXd3fPlxRqs0d1DzI9x86yQvtkkMyjqd/IQLUGRJTDhfnr5qD6iG2FJteuMQ=="],
+    "@plaited/agent-eval-harness": ["@plaited/agent-eval-harness@0.12.1", "", { "dependencies": { "@plaited/development-skills": "0.7.0", "zod": "^4.3.6" }, "bin": { "agent-eval-harness": "bin/cli.ts" } }, "sha512-Kn6UfYXsUjNLm/zl8hPiTvYd3yj3ozOo6gSWOqBmjMtQ/olcjqsEB2QSSYbDlJICCzkDaSVwgvY0iNjr/4j8Qw=="],
 
-    "@plaited/development-skills": ["@plaited/development-skills@0.6.5", "", { "peerDependencies": { "typescript-language-server": "^5.1.3" }, "bin": { "development-skills": "bin/cli.ts" } }, "sha512-VGXdAikAleV85ObPFt4Cv4oqnrJD3sV84Ea0X/NzFf/JY6SrE6FG+paOYqff4Lx2vizaUsmCfp7vMaCmqqAIQg=="],
+    "@plaited/development-skills": ["@plaited/development-skills@0.8.0", "", { "peerDependencies": { "typescript-language-server": "^5.1.3" }, "bin": { "development-skills": "bin/cli.ts" } }, "sha512-1dXWKPco9fkFLJhFuuOJB1aktF1qY97v/evthfNsun11VG1gA8efD44s3txxUIPs4FcL5KSvcvvlaqbmHQk7ew=="],
 
     "@protobufjs/aspromise": ["@protobufjs/aspromise@1.1.2", "", {}, "sha512-j+gKExEuLmKwvz3OgROXtrJ2UG2x8Ch2YZUxahh+s1F2HZ+wAceUNLkvy6zKCPVRkU++ZWQrdxsUeQXmcg4uoQ=="],
 
@@ -135,6 +135,8 @@
     "@types/conventional-commits-parser": ["@types/conventional-commits-parser@5.0.2", "", { "dependencies": { "@types/node": "*" } }, "sha512-BgT2szDXnVypgpNxOK8aL5SGjUdaQbC++WZNjF1Qge3Og2+zhHj+RWhmehLhYyvQwqAmvezruVfOf8+3m74W+g=="],
 
     "@types/node": ["@types/node@25.1.0", "", { "dependencies": { "undici-types": "~7.16.0" } }, "sha512-t7frlewr6+cbx+9Ohpl0NOTKXZNV9xHRmNOvql47BFJKcEG1CxtxlPEEe+gR9uhVWM4DwhnvTF110mIL4yP9RA=="],
+
+    "@youdotcom-oss/api": ["@youdotcom-oss/api@0.2.2", "", { "dependencies": { "zod": "^4.3.6" }, "bin": { "ydc": "bin/cli.js" } }, "sha512-HxlsXp0W792Eq8fTqfS5kr82ERL3f/SxBZfOvF3KMzR8h+dX5UEozJ+XvsJjwvUAwr3CcSdOwoPauLG+vx0ytg=="],
 
     "JSONStream": ["JSONStream@1.3.5", "", { "dependencies": { "jsonparse": "^1.2.0", "through": ">=2.2.7 <3" }, "bin": { "JSONStream": "./bin.js" } }, "sha512-E+iruNOY8VV9s4JEbe1aNEm6MiszPRr/UfcHMz0TQh1BXSxHK+ASV1R6W4HpjBhSeS+54PIsAMCBmwD06LLsqQ=="],
 
@@ -523,6 +525,8 @@
     "@isaacs/cliui/strip-ansi": ["strip-ansi@7.1.2", "", { "dependencies": { "ansi-regex": "^6.0.1" } }, "sha512-gmBGslpoQJtgnMAvOVqGZpEz9dyoKTCzy2nfz/n8aIFhN/jCE/rCmcxabB6jOOHV+0WNnylOxaxBQPSvcWklhA=="],
 
     "@isaacs/cliui/wrap-ansi": ["wrap-ansi@8.1.0", "", { "dependencies": { "ansi-styles": "^6.1.0", "string-width": "^5.0.1", "strip-ansi": "^7.0.1" } }, "sha512-si7QWI6zUMq56bESFvagtmzMdGOtoxfR+Sez11Mobfc7tm+VkUckk9bW2UeffTGVUbOksxmSw0AA2gs8g71NCQ=="],
+
+    "@plaited/agent-eval-harness/@plaited/development-skills": ["@plaited/development-skills@0.7.0", "", { "peerDependencies": { "typescript-language-server": "^5.1.3" }, "bin": { "development-skills": "bin/cli.ts" } }, "sha512-BCD66iXVmeTcb27fds2QWQCdjXqJrcWSx9/XPsMgiOJMrpl54mGRcnwL8hrN5E4st249RKoybvAOL5zqDc79Cg=="],
 
     "@types/conventional-commits-parser/@types/node": ["@types/node@25.0.10", "", { "dependencies": { "undici-types": "~7.16.0" } }, "sha512-zWW5KPngR/yvakJgGOmZ5vTBemDoSqF3AcV/LrO5u5wTWyEAVVh+IT39G4gtyAkh3CtTZs8aX/yRM82OfzHJRg=="],
 

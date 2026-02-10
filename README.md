@@ -53,7 +53,7 @@ Required keys:
 - `GEMINI_API_KEY` - Gemini agent + inline grader LLM scoring
 - `FACTORY_API_KEY` - Droid agent
 - `OPENAI_API_KEY` - Codex agent
-- `YOU_API_KEY` - You.com MCP tool
+- `YDC_API_KEY` - You.com MCP tool
 
 ### 3. Generate Test Prompts
 
@@ -66,14 +66,14 @@ bun run sample:trials      # 30 prompts for pass@k analysis
 
 ### 4. Run Evaluations
 
-#### Test Mode (5 prompts, ~5 minutes)
+#### Test Mode (5 prompts, ~9 minutes)
 
 ```bash
-bun run run              # All agents, test dataset
+bun run run              # All 8 scenarios (unlimited containers, sequential prompts)
 bun run run:test         # Explicit test mode
 ```
 
-#### Full Mode (151 prompts, ~2 hours)
+#### Full Mode (151 prompts, ~2.5 hours)
 
 ```bash
 bun run run:full         # All agents, full dataset
@@ -82,8 +82,13 @@ bun run run:full         # All agents, full dataset
 #### Custom Runs
 
 ```bash
-# Specific agent+tool combinations via Docker
-docker compose run --rm -e SEARCH_PROVIDER=builtin claude-code
+# Control parallelism
+bun run run -- -j 4                          # Limit to 4 containers
+bun run run -- --prompt-concurrency 4        # 4 prompts per container
+bun run run -- -j 1 --prompt-concurrency 1   # Sequential (debugging)
+
+# Specific agent+tool combinations
+bun run run -- --agent claude-code --mcp builtin
 docker compose run --rm -e SEARCH_PROVIDER=you gemini
 ```
 
@@ -169,7 +174,7 @@ Single source of truth for MCP server configurations. The TypeScript entrypoint 
 
 **Available Tools:**
 - `builtin` - Agent's native search (no MCP config)
-- `you` - You.com MCP server (requires `YOU_API_KEY`)
+- `you` - You.com MCP server (requires `YDC_API_KEY`)
   - Expected tools: `you-search`, `you-express`, `you-contents`
 
 To add new MCP tools, see `.claude/skills/web-search-agent-evals/SKILL.md`.

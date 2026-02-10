@@ -27,10 +27,8 @@ import { readdir, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { MCP_SERVERS, type McpServerKey } from "../mcp-servers.ts";
 
-type Agent = "claude-code" | "gemini" | "droid" | "codex";
-type SearchProvider = McpServerKey | "builtin";
-
-const ALL_AGENTS: Agent[] = ["claude-code", "gemini", "droid", "codex"];
+import type { Agent, SearchProvider } from "./shared/shared.types.ts";
+import { ALL_AGENTS } from "./shared/shared.constants.ts";
 
 /**
  * Prompt user for input with readline

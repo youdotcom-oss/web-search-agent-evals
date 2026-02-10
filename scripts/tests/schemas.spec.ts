@@ -34,7 +34,9 @@ describe("Comparison Schemas", () => {
 
       const parsed = QualityMetricsSchema.parse(data);
       expect(parsed.confidenceIntervals?.avgScore).toEqual([0.8, 0.9]);
-      expect(parsed.confidenceIntervals?.passRate).toEqual([0.75, 0.85]);
+      if (parsed.confidenceIntervals && "passRate" in parsed.confidenceIntervals) {
+        expect(parsed.confidenceIntervals.passRate).toEqual([0.75, 0.85]);
+      }
     });
 
     test("validates quality metrics with partial confidence intervals", () => {

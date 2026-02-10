@@ -1,51 +1,52 @@
+# Common configuration shared by all agent services
+x-common-volumes: &common-volumes
+  - ./data:/eval/data:ro
+  - ./agent-schemas:/eval/agent-schemas:ro
+  - ./scripts:/eval/scripts:ro
+  - ./data/results:/eval/data/results:rw
+
+x-common-config: &common-config
+  env_file: .env
+  working_dir: /workspace
+
 services:
   # Gemini AI Agent
   # Run with: docker compose run --rm -e SEARCH_PROVIDER=builtin gemini
   #       or: docker compose run --rm -e SEARCH_PROVIDER=you gemini
   gemini:
+    <<: *common-config
     build:
       context: .
       dockerfile: docker/gemini.Dockerfile
     image: evals-gemini:latest
-    env_file: .env
     environment:
       - AGENT=gemini
       # SEARCH_PROVIDER will be injected by `docker compose run -e SEARCH_PROVIDER=...`
-    volumes:
-      - ./data:/eval/data:ro
-      - ./agent-schemas:/eval/agent-schemas:ro
-      - ./scripts:/eval/scripts:ro
-      - ./data/results:/eval/data/results:rw
-    working_dir: /workspace
+    volumes: *common-volumes
 
   # Claude Code Agent
   # Run with: docker compose run --rm -e SEARCH_PROVIDER=builtin claude-code
   #       or: docker compose run --rm -e SEARCH_PROVIDER=you claude-code
   claude-code:
+    <<: *common-config
     build:
       context: .
       dockerfile: docker/claude-code.Dockerfile
     image: evals-claude-code:latest
-    env_file: .env
     environment:
       - AGENT=claude-code
       # SEARCH_PROVIDER will be injected by `docker compose run -e SEARCH_PROVIDER=...`
-    volumes:
-      - ./data:/eval/data:ro
-      - ./agent-schemas:/eval/agent-schemas:ro
-      - ./scripts:/eval/scripts:ro
-      - ./data/results:/eval/data/results:rw
-    working_dir: /workspace
+    volumes: *common-volumes
 
   # Droid Agent
   # Run with: docker compose run --rm -e SEARCH_PROVIDER=builtin droid
   #       or: docker compose run --rm -e SEARCH_PROVIDER=you droid
   droid:
+    <<: *common-config
     build:
       context: .
       dockerfile: docker/droid.Dockerfile
     image: evals-droid:latest
-    env_file: .env
     environment:
       - AGENT=droid
       # SEARCH_PROVIDER will be injected by `docker compose run -e SEARCH_PROVIDER=...`
@@ -53,28 +54,18 @@ services:
       resources:
         limits:
           memory: 4G
-    volumes:
-      - ./data:/eval/data:ro
-      - ./agent-schemas:/eval/agent-schemas:ro
-      - ./scripts:/eval/scripts:ro
-      - ./data/results:/eval/data/results:rw
-    working_dir: /workspace
+    volumes: *common-volumes
 
   # Codex Agent
   # Run with: docker compose run --rm -e SEARCH_PROVIDER=builtin codex
   #       or: docker compose run --rm -e SEARCH_PROVIDER=you codex
   codex:
+    <<: *common-config
     build:
       context: .
       dockerfile: docker/codex.Dockerfile
     image: evals-codex:latest
-    env_file: .env
     environment:
       - AGENT=codex
       # SEARCH_PROVIDER will be injected by `docker compose run -e SEARCH_PROVIDER=...`
-    volumes:
-      - ./data:/eval/data:ro
-      - ./agent-schemas:/eval/agent-schemas:ro
-      - ./scripts:/eval/scripts:ro
-      - ./data/results:/eval/data/results:rw
-    working_dir: /workspace
+    volumes: *common-volumes

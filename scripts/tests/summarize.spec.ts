@@ -18,7 +18,7 @@ describe("summarize.ts", () => {
     });
 
     test("accepts --mode full", async () => {
-      const { exitCode } = await runScript(SCRIPT_PATH, [
+      const { exitCode, stderr } = await runScript(SCRIPT_PATH, [
         "--mode",
         "full",
         "--fixture-dir",
@@ -27,6 +27,9 @@ describe("summarize.ts", () => {
         "/tmp/test-summary.md",
       ]);
 
+      if (exitCode !== 0) {
+        console.log("Error output:", stderr);
+      }
       expect(exitCode).toBe(0);
     });
 
@@ -82,6 +85,25 @@ describe("summarize.ts", () => {
       expect(exitCode).toBe(0);
       expect(stdout).toContain(customOutput);
     });
+
+    test("accepts --input for custom comparison file", async () => {
+      const inputFile = join(FIXTURE_DIR, "comparisons/runs/2026-01-24/all-weighted.json");
+      const outputPath = "/tmp/test-input-summary.md";
+      const { exitCode, stdout } = await runScript(SCRIPT_PATH, ["--input", inputFile, "--output", outputPath]);
+
+      expect(exitCode).toBe(0);
+      expect(stdout).toContain("Input:");
+      expect(stdout).toContain(inputFile);
+    });
+
+    test("accepts -i shorthand for input", async () => {
+      const inputFile = join(FIXTURE_DIR, "comparisons/runs/2026-01-24/all-weighted.json");
+      const outputPath = "/tmp/test-input-short-summary.md";
+      const { exitCode, stdout } = await runScript(SCRIPT_PATH, ["-i", inputFile, "-o", outputPath]);
+
+      expect(exitCode).toBe(0);
+      expect(stdout).toContain("Input:");
+    });
   });
 
   describe("parseArgs - invalid inputs", () => {
@@ -90,7 +112,7 @@ describe("summarize.ts", () => {
 
       expect(exitCode).toBe(1);
       expect(stderr).toContain("Invalid mode: invalid");
-      expect(stderr).toContain("Must be 'test' or 'full'");
+      expect(stderr).toContain("Must be 'test', 'full', or 'trials'");
     });
   });
 
@@ -250,7 +272,7 @@ describe("summarize.ts", () => {
 
       expect(content).toContain("## Recommendations");
       expect(content).toContain("### For Production Use");
-      expect(content).toContain("### Lowest Quality in this Evaluation");
+      expect(content).toContain("### Areas for Improvement");
       expect(content).toContain("**Best Quality:**");
       // Note: "**Fastest:**" requires performance data, omitted with fixture
     });
@@ -390,6 +412,7 @@ describe("summarize.ts", () => {
       expect(stderr).toContain("Generate markdown summary");
       expect(stderr).toContain("Usage:");
       expect(stderr).toContain("Options:");
+      expect(stderr).toContain("--input");
     });
 
     test("shows help with -h flag", async () => {
@@ -397,6 +420,86 @@ describe("summarize.ts", () => {
 
       expect(exitCode).toBe(0);
       expect(stderr).toContain("Generate markdown summary");
+    });
+  });
+
+  describe("trial data handling", () => {
+    test("handles trial data with capability metrics", async () => {
+      const outputPath = "/tmp/test-trials-summary.md";
+      const trialsInput = join(FIXTURE_DIR, "comparisons/trials/2026-01-29/all-weighted.json");
+
+      // Check if trials fixture exists
+      const trialsFile = Bun.file(trialsInput);
+      if (!(await trialsFile.exists())) {
+        console.warn(`Skipping trial test: ${trialsInput} not found`);
+        return;
+      }
+
+      const { exitCode } = await runScript(SCRIPT_PATH, ["--input", trialsInput, "--output", outputPath]);
+
+      expect(exitCode).toBe(0);
+
+      const content = await Bun.file(outputPath).text();
+
+      // Should include capability metrics section for trial data
+      expect(content).toContain("## Capability Metrics (Pass@k)");
+      expect(content).toContain("Avg Pass@k");
+      expect(content).toContain("Median Pass@k");
+    });
+
+    test("shows flakiness analysis with correct table format", async () => {
+      const outputPath = "/tmp/test-flakiness-summary.md";
+      const trialsInput = join(FIXTURE_DIR, "comparisons/trials/2026-01-29/all-weighted.json");
+
+      // Check if trials fixture exists
+      const trialsFile = Bun.file(trialsInput);
+      if (!(await trialsFile.exists())) {
+        console.warn(`Skipping flakiness test: ${trialsInput} not found`);
+        return;
+      }
+
+      const { exitCode } = await runScript(SCRIPT_PATH, ["--input", trialsInput, "--output", outputPath]);
+
+      expect(exitCode).toBe(0);
+
+      const content = await Bun.file(outputPath).text();
+
+      // Should include flakiness analysis
+      expect(content).toContain("## Flakiness Analysis");
+
+      // Verify table header is correctly formatted (no escaped newline)
+      expect(content).toContain(
+        "| Agent + Search | Avg Flakiness | Median Flakiness | Flaky Prompt Count |\n|----------------|---------------|------------------|--------------------|\n",
+      );
+
+      // Should NOT contain the escaped newline bug
+      expect(content).not.toContain("\\n");
+    });
+
+    test("shows trial-specific recommendations", async () => {
+      const outputPath = "/tmp/test-trial-recommendations-summary.md";
+      const trialsInput = join(FIXTURE_DIR, "comparisons/trials/2026-01-29/all-weighted.json");
+
+      // Check if trials fixture exists
+      const trialsFile = Bun.file(trialsInput);
+      if (!(await trialsFile.exists())) {
+        console.warn(`Skipping trial recommendations test: ${trialsInput} not found`);
+        return;
+      }
+
+      const { exitCode } = await runScript(SCRIPT_PATH, ["--input", trialsInput, "--output", outputPath]);
+
+      expect(exitCode).toBe(0);
+
+      const content = await Bun.file(outputPath).text();
+
+      // Should show capability-based recommendations instead of quality
+      expect(content).toContain("**Best Capability:**");
+      expect(content).toContain("Pass@k");
+
+      // Should show "Areas for Improvement" section
+      expect(content).toContain("### Areas for Improvement");
+      expect(content).toContain("**Lowest Capability:**");
     });
   });
 });

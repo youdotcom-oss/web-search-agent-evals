@@ -54,7 +54,7 @@
 - **Fastest:** claude-code-builtin (30.0s P50 latency)
 - **Best Balance:** claude-code-builtin (weighted: 50% quality + 30% speed + 20% reliability)
 
-### Lowest Quality in this Evaluation
+### Areas for Improvement
 
 - **Lowest Quality:** codex-you (0.82 avg score)
 

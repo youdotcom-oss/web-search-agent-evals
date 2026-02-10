@@ -57,6 +57,22 @@ describe("run-trials.ts", () => {
       expect(stdout).toContain("(k=3)");
     });
 
+    test("uses trials dataset by default", async () => {
+      const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--dry-run"]);
+
+      expect(exitCode).toBe(0);
+      expect(stdout).toContain("Dataset: trials (30 prompts)");
+      expect(stdout).toContain("Dataset: /eval/data/prompts/trials/prompts.jsonl");
+    });
+
+    test("accepts --dataset full", async () => {
+      const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--dataset", "full", "--dry-run"]);
+
+      expect(exitCode).toBe(0);
+      expect(stdout).toContain("Dataset: full (151 prompts)");
+      expect(stdout).toContain("Dataset: /eval/data/prompts/full/prompts.jsonl");
+    });
+
     test("accepts --trial-type default", async () => {
       const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--trial-type", "default", "--dry-run"]);
 
@@ -117,6 +133,14 @@ describe("run-trials.ts", () => {
       expect(exitCode).toBe(1);
       expect(stderr).toContain("Invalid trial type: invalid-type");
       expect(stderr).toContain("Must be");
+    });
+
+    test("rejects invalid dataset", async () => {
+      const { stderr, exitCode } = await runScript(SCRIPT_PATH, ["--dataset", "invalid-dataset"]);
+
+      expect(exitCode).toBe(1);
+      expect(stderr).toContain("Invalid dataset: invalid-dataset");
+      expect(stderr).toContain('Must be "trials" or "full"');
     });
 
     test("rejects invalid -k value (non-numeric)", async () => {

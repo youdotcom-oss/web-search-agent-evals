@@ -46,3 +46,7 @@ data/calibration/
 
 # claude
 settings.local.json
+
+# Planning
+CI-SPEC.md
+data/prompts/full/prompts-without-hints.jsonl

@@ -1,6 +1,6 @@
 # Web Search Agent Evaluation Summary
-**Generated:** Tuesday, February 10, 2026 at 4:09 PM
-**Mode:** Full evaluation
+**Generated:** Tuesday, February 10, 2026 at 4:36 PM
+**Mode:** Test run
 **Prompts:** 151
 **Trials per prompt:** 5
 
@@ -61,7 +61,7 @@
 
 | Agent | Quality (builtin → MCP) | Speed (builtin → MCP) | Reliability (builtin → MCP) |
 |-------|------------------------|----------------------|----------------------------|
-| droid (you) | ↑ 24.8% | ↑ 40.5% | ↑ 38.9pp |
+| droid (you) | ↑ 24.8% ± 1.2% | ↑ 40.5% ± 2.4% | ↑ 38.9pp ± 4.5pp |
 
 ## Recommendations
 

@@ -30,7 +30,7 @@
     "summarize": "bun scripts/summarize.ts",
     "summarize:full": "bun scripts/summarize.ts --mode full",
     "summarize:test": "bun scripts/summarize.ts --mode test",
-    "summarize:trials": "bun scripts/summarize-trials.ts",
+    "summarize:trials": "bun scripts/summarize.ts --mode trials",
     "test": "bun test",
     "trials": "bun scripts/run-trials.ts",
     "trials:capability": "bun scripts/run-trials.ts --trial-type capability",

@@ -1,6 +1,6 @@
 {
   "meta": {
-    "generatedAt": "2026-02-10T16:09:39.760Z",
+    "generatedAt": "2026-02-10T16:36:13.487Z",
     "runs": ["droid-builtin", "droid-you"],
     "promptCount": 151,
     "trialsPerPrompt": 5,

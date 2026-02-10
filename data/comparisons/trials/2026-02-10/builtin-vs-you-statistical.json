@@ -1,6 +1,6 @@
 {
   "meta": {
-    "generatedAt": "2026-02-10T16:19:15.079Z",
+    "generatedAt": "2026-02-10T16:36:17.184Z",
     "runs": ["droid-builtin", "droid-you"],
     "promptCount": 151,
     "trialsPerPrompt": 5,
@@ -13,7 +13,7 @@
       "p25PassAtK": 0,
       "p75PassAtK": 1,
       "confidenceIntervals": {
-        "avgPassAtK": [0.6039056953642382, 0.7457716556291388]
+        "avgPassAtK": [0.6099263576158939, 0.737934834437086]
       }
     },
     "droid-you": {
@@ -22,7 +22,7 @@
       "p25PassAtK": 1,
       "p75PassAtK": 1,
       "confidenceIntervals": {
-        "avgPassAtK": [0.9595825165562915, 0.9978490066225166]
+        "avgPassAtK": [0.9607056953642383, 0.9973912582781458]
       }
     }
   },
@@ -34,7 +34,7 @@
       "p25PassExpK": 0,
       "p75PassExpK": 1,
       "confidenceIntervals": {
-        "avgPassExpK": [0.419019867549669, 0.5695427814569537]
+        "avgPassExpK": [0.41743046357615904, 0.5712487417218545]
       }
     },
     "droid-you": {
@@ -44,7 +44,7 @@
       "p25PassExpK": 1,
       "p75PassExpK": 1,
       "confidenceIntervals": {
-        "avgPassExpK": [0.8296095364238412, 0.925431523178808]
+        "avgPassExpK": [0.832786225165563, 0.923013509933775]
       }
     }
   },
@@ -151,7 +151,7 @@
       "p25Score": 0.45,
       "p75Score": 0.97,
       "confidenceIntervals": {
-        "avgScore": [0.7195894039735129, 0.7526357615894067]
+        "avgScore": [0.7190463576158956, 0.7556158940397388]
       }
     },
     "droid-you": {
@@ -160,7 +160,7 @@
       "p25Score": 0.91,
       "p75Score": 0.99,
       "confidenceIntervals": {
-        "avgScore": [0.9121456953642426, 0.9283046357615932]
+        "avgScore": [0.9111920529801362, 0.9286092715231824]
       }
     }
   },
@@ -176,7 +176,7 @@
       },
       "totalDuration": 31007914,
       "confidenceIntervals": {
-        "latencyMean": [39870.33112582781, 42306.79602649007]
+        "latencyMean": [39850.7298013245, 42236.19337748345]
       }
     },
     "droid-you": {
@@ -190,7 +190,7 @@
       },
       "totalDuration": 20152078,
       "confidenceIntervals": {
-        "latencyMean": [25773.509933774836, 27595.882119205296]
+        "latencyMean": [25724.259602649006, 27706.417218543047]
       }
     }
   },

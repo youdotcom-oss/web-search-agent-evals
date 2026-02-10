@@ -17,21 +17,40 @@ export const LatencyMetricsSchema = z.object({
 /**
  * Quality metrics for a single run
  *
+ * @remarks
+ * For regular runs: avgScore, passRate, passCount, failCount
+ * For trials: avgScore, medianScore, p25Score, p75Score
+ *
  * @public
  */
-export const QualityMetricsSchema = z.object({
-  avgScore: z.number(),
-  passRate: z.number(),
-  passCount: z.number(),
-  failCount: z.number(),
-  scoreDistribution: z.record(z.string(), z.number()).optional(),
-  confidenceIntervals: z
-    .object({
-      avgScore: z.tuple([z.number(), z.number()]).optional(),
-      passRate: z.tuple([z.number(), z.number()]).optional(),
-    })
-    .optional(),
-});
+export const QualityMetricsSchema = z.union([
+  // Regular run format
+  z.object({
+    avgScore: z.number(),
+    passRate: z.number(),
+    passCount: z.number(),
+    failCount: z.number(),
+    scoreDistribution: z.record(z.string(), z.number()).optional(),
+    confidenceIntervals: z
+      .object({
+        avgScore: z.tuple([z.number(), z.number()]).optional(),
+        passRate: z.tuple([z.number(), z.number()]).optional(),
+      })
+      .optional(),
+  }),
+  // Trial format
+  z.object({
+    avgScore: z.number(),
+    medianScore: z.number(),
+    p25Score: z.number(),
+    p75Score: z.number(),
+    confidenceIntervals: z
+      .object({
+        avgScore: z.tuple([z.number(), z.number()]),
+      })
+      .optional(),
+  }),
+]);
 
 /**
  * Performance metrics for a single run
@@ -66,6 +85,13 @@ export const ReliabilityMetricsSchema = z.discriminatedUnion("type", [
     timeouts: z.number(),
     timeoutRate: z.number(),
     completionRate: z.number(),
+    confidenceIntervals: z
+      .object({
+        toolErrorRate: z.tuple([z.number(), z.number()]).optional(),
+        timeoutRate: z.tuple([z.number(), z.number()]).optional(),
+        completionRate: z.tuple([z.number(), z.number()]).optional(),
+      })
+      .optional(),
   }),
   z.object({
     type: z.literal("trial"),
@@ -73,6 +99,11 @@ export const ReliabilityMetricsSchema = z.discriminatedUnion("type", [
     medianPassExpK: z.number(),
     p25PassExpK: z.number(),
     p75PassExpK: z.number(),
+    confidenceIntervals: z
+      .object({
+        avgPassExpK: z.tuple([z.number(), z.number()]),
+      })
+      .optional(),
   }),
 ]);
 

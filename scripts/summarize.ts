@@ -45,8 +45,8 @@ const parseArgs = (args: string[]): SummarizeOptions => {
 
     if (arg === "--mode") {
       const value = args[++i];
-      if (value !== "test" && value !== "full") {
-        throw new Error(`Invalid mode: ${value}. Must be 'test' or 'full'`);
+      if (value !== "test" && value !== "full" && value !== "trials") {
+        throw new Error(`Invalid mode: ${value}. Must be 'test', 'full', or 'trials'`);
       }
       mode = value;
     } else if (arg === "--run-date") {
@@ -67,7 +67,7 @@ Usage:
   bun scripts/summarize.ts [options]
 
 Options:
-  --mode <test|full>        Mode to summarize (default: full)
+  --mode <test|full|trials> Mode to summarize (default: full)
   --run-date <YYYY-MM-DD>   Specific run date (default: latest)
   --input, -i <file>        Custom input comparison file path (overrides mode/date)
   --output, -o <file>       Output file path (default: auto-generated)
@@ -99,6 +99,24 @@ const findLatestRunDate = async (fixtureDir?: string): Promise<string> => {
   return latestDate;
 };
 
+const findLatestTrialsDate = async (fixtureDir?: string): Promise<string> => {
+  const baseDir = fixtureDir ?? "data";
+  const trialsDir = `${baseDir}/comparisons/trials`;
+  const dirs = await Array.fromAsync(new Bun.Glob("*").scan({ cwd: trialsDir, onlyFiles: false }));
+  const dates = dirs
+    .filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d))
+    .sort()
+    .reverse();
+  if (dates.length === 0) {
+    throw new Error(`No dated trials found in ${trialsDir}`);
+  }
+  const latestDate = dates[0];
+  if (!latestDate) {
+    throw new Error(`No dated trials found in ${trialsDir}`);
+  }
+  return latestDate;
+};
+
 const loadComparison = async (
   mode: Mode,
   runDate: string | undefined,
@@ -110,6 +128,9 @@ const loadComparison = async (
   if (mode === "test") {
     const baseDir = fixtureDir ?? "data";
     path = `${baseDir}/comparisons/test-runs/all-${type}.json`;
+  } else if (mode === "trials") {
+    // For trials mode, delegate to loadTrialsComparison
+    return await loadTrialsComparison(runDate, type, undefined, fixtureDir);
   } else {
     const date = runDate ?? (await findLatestRunDate(fixtureDir));
     const baseDir = fixtureDir ?? "data";
@@ -136,7 +157,7 @@ const loadTrialsComparison = async (
   filter?: "builtin" | "you",
   fixtureDir?: string,
 ): Promise<WeightedComparison | null> => {
-  const date = runDate ?? (await findLatestRunDate(fixtureDir));
+  const date = runDate ?? (await findLatestTrialsDate(fixtureDir));
   const baseDir = fixtureDir ?? "data";
   const trialsDir = `${baseDir}/comparisons/trials/${date}`;
 
@@ -219,6 +240,28 @@ const isRegularRunReliability = (
   return metrics.type === "run";
 };
 
+const isRegularRunQuality = (
+  metrics: QualityMetrics,
+): metrics is {
+  avgScore: number;
+  passRate: number;
+  passCount: number;
+  failCount: number;
+} => {
+  return "passRate" in metrics && "passCount" in metrics && "failCount" in metrics;
+};
+
+const isTrialQuality = (
+  metrics: QualityMetrics,
+): metrics is {
+  avgScore: number;
+  medianScore: number;
+  p25Score: number;
+  p75Score: number;
+} => {
+  return "medianScore" in metrics && "p25Score" in metrics && "p75Score" in metrics;
+};
+
 const generateSummary = async (options: SummarizeOptions): Promise<string> => {
   const { mode, runDate, input, fixtureDir } = options;
 
@@ -239,11 +282,32 @@ const generateSummary = async (options: SummarizeOptions): Promise<string> => {
   }
 
   // Load statistical comparison for confidence intervals
-  const statistical = await loadComparison(mode, runDate, "statistical", fixtureDir);
+  let statistical: WeightedComparison | null = null;
+  if (input) {
+    // If using custom input, try to load companion statistical file
+    // Support both trials and regular comparison formats
+    const inputDir = input.substring(0, input.lastIndexOf("/"));
+    const inputFilename = input.substring(input.lastIndexOf("/") + 1);
 
-  // Try to load trials data if available
+    // Try to find statistical version by replacing -weighted with -statistical
+    if (inputFilename.includes("-weighted.json")) {
+      const statisticalPath = `${inputDir}/${inputFilename.replace("-weighted.json", "-statistical.json")}`;
+      const statisticalFile = Bun.file(statisticalPath);
+      if (await statisticalFile.exists()) {
+        const { data, errors } = await loadJsonFile(WeightedComparisonSchema, statisticalPath);
+        if (errors.length === 0) {
+          statistical = data;
+        }
+      }
+    }
+  } else {
+    // Auto-discovery mode
+    statistical = await loadComparison(mode, runDate, "statistical", fixtureDir);
+  }
+
+  // Try to load trials data if available (only if not using custom input and mode is full)
   let trialsWeighted: WeightedComparison | null = null;
-  if (mode === "full") {
+  if (!input && mode === "full") {
     trialsWeighted = await loadTrialsComparison(runDate, "weighted", undefined, fixtureDir);
   }
 
@@ -275,7 +339,8 @@ const generateSummary = async (options: SummarizeOptions): Promise<string> => {
         .map(([run, metrics]) => ({
           run,
           avgScore: metrics.avgScore,
-          passRate: metrics.passRate,
+          passRate: isRegularRunQuality(metrics) ? metrics.passRate : undefined,
+          medianScore: isTrialQuality(metrics) ? metrics.medianScore : undefined,
         }))
         .sort((a, b) => b.avgScore - a.avgScore)
     : [];
@@ -293,11 +358,17 @@ const generateSummary = async (options: SummarizeOptions): Promise<string> => {
   const fastestAgent = latencyRankings[0];
 
   if (bestQuality) {
-    md.push(
-      `**Best Quality:** ${bestQuality.run} (${formatNumber(
-        bestQuality.avgScore,
-      )} avg score, ${formatPercent(bestQuality.passRate)} pass rate)\n\n`,
-    );
+    if (bestQuality.passRate !== undefined) {
+      // Regular run format with pass rate
+      md.push(
+        `**Best Quality:** ${bestQuality.run} (${formatNumber(
+          bestQuality.avgScore,
+        )} avg score, ${formatPercent(bestQuality.passRate)} pass rate)\n\n`,
+      );
+    } else {
+      // Trial format without pass rate
+      md.push(`**Best Quality:** ${bestQuality.run} (${formatNumber(bestQuality.avgScore)} avg score)\n\n`);
+    }
   }
 
   if (fastestAgent) {
@@ -325,18 +396,38 @@ const generateSummary = async (options: SummarizeOptions): Promise<string> => {
   // Quality Rankings (only if quality data available)
   if (quality && Object.keys(quality).length > 0) {
     md.push("## Quality Rankings\n\n");
-    md.push("| Rank | Agent + Search | Avg Score | Pass Rate | Pass Count | Fail Count |\n");
-    md.push("|------|----------------|-----------|-----------|------------|------------|\n");
 
-    qualityRankings.forEach((entry, idx) => {
-      const metrics = quality[entry.run];
-      if (!metrics) return;
-      md.push(
-        `| ${idx + 1} | ${entry.run} | ${formatNumber(
-          entry.avgScore,
-        )} | ${formatPercent(entry.passRate)} | ${metrics.passCount} | ${metrics.failCount} |\n`,
-      );
-    });
+    // Check if we have trial or regular run quality metrics
+    const firstMetrics = Object.values(quality)[0];
+    const isTrial = firstMetrics && isTrialQuality(firstMetrics);
+
+    if (isTrial) {
+      // Trial format: show score distribution
+      md.push("| Rank | Agent + Search | Avg Score | Median Score | P25 Score | P75 Score |\n");
+      md.push("|------|----------------|-----------|--------------|-----------|----------|\n");
+
+      qualityRankings.forEach((entry, idx) => {
+        const metrics = quality[entry.run];
+        if (!metrics || !isTrialQuality(metrics)) return;
+        md.push(
+          `| ${idx + 1} | ${entry.run} | ${formatNumber(metrics.avgScore)} | ${formatNumber(metrics.medianScore)} | ${formatNumber(metrics.p25Score)} | ${formatNumber(metrics.p75Score)} |\n`,
+        );
+      });
+    } else {
+      // Regular run format: show pass/fail counts
+      md.push("| Rank | Agent + Search | Avg Score | Pass Rate | Pass Count | Fail Count |\n");
+      md.push("|------|----------------|-----------|-----------|------------|------------|\n");
+
+      qualityRankings.forEach((entry, idx) => {
+        const metrics = quality[entry.run];
+        if (!metrics || !isRegularRunQuality(metrics)) return;
+        md.push(
+          `| ${idx + 1} | ${entry.run} | ${formatNumber(
+            entry.avgScore,
+          )} | ${formatPercent(entry.passRate)} | ${metrics.passCount} | ${metrics.failCount} |\n`,
+        );
+      });
+    }
 
     md.push("\n");
   }
@@ -416,7 +507,7 @@ const generateSummary = async (options: SummarizeOptions): Promise<string> => {
   if (flakiness && Object.keys(flakiness).length > 0) {
     md.push("## Flakiness Analysis\n\n");
     md.push("| Agent + Search | Avg Flakiness | Median Flakiness | Flaky Prompt Count |\n");
-    md.push("|----------------|---------------|------------------|--------------------|\\n");
+    md.push("|----------------|---------------|------------------|--------------------|\n");
 
     const flakinessRankings = Object.entries(flakiness).sort((a, b) => a[1].avgFlakiness - b[1].avgFlakiness);
 
@@ -480,7 +571,25 @@ const generateSummary = async (options: SummarizeOptions): Promise<string> => {
 
           const qualityDiff = ((mcpQuality.avgScore - builtinQuality.avgScore) / builtinQuality.avgScore) * 100;
           const speedDiff = ((mcpPerf.latency.p50 - builtinPerf.latency.p50) / builtinPerf.latency.p50) * 100;
-          const reliabilityDiff = (mcpQuality.passRate - builtinQuality.passRate) * 100;
+
+          // For reliability, use passRate for regular runs, or passExpK for trials
+          let reliabilityDiff = 0;
+          if (
+            reliability &&
+            reliability[builtinRun] &&
+            reliability[mcpRun] &&
+            !isRegularRunReliability(reliability[builtinRun])
+          ) {
+            // Trial format: use passExpK
+            const builtinRel = reliability[builtinRun];
+            const mcpRel = reliability[mcpRun];
+            if ("avgPassExpK" in builtinRel && "avgPassExpK" in mcpRel) {
+              reliabilityDiff = (mcpRel.avgPassExpK - builtinRel.avgPassExpK) * 100;
+            }
+          } else if (isRegularRunQuality(builtinQuality) && isRegularRunQuality(mcpQuality)) {
+            // Regular run format: use passRate
+            reliabilityDiff = (mcpQuality.passRate - builtinQuality.passRate) * 100;
+          }
 
           const mcpProvider = parseRunLabel(mcpRun).provider;
           const qualityArrow = qualityDiff > 0 ? "↑" : qualityDiff < 0 ? "↓" : "→";
@@ -510,10 +619,21 @@ const generateSummary = async (options: SummarizeOptions): Promise<string> => {
               speedMargin = ` ± ${formatNumber(margin, 1)}%`;
             }
 
+            // Reliability CI: check both regular run and trials format
             if (statMcpQuality?.confidenceIntervals?.passRate) {
+              // Regular run format
               const [lower, upper] = statMcpQuality.confidenceIntervals.passRate;
               const margin = ((upper - lower) / 2) * 100;
               reliabilityMargin = ` ± ${formatNumber(margin, 1)}pp`;
+            } else if (statistical?.reliability) {
+              // Trials format: use avgPassExpK from reliability object
+              const statMcpRel = statistical.reliability[mcpRun];
+              const statBuiltinRel = statistical.reliability[builtinRun];
+              if (statMcpRel?.confidenceIntervals?.avgPassExpK && statBuiltinRel && "avgPassExpK" in statBuiltinRel) {
+                const [lower, upper] = statMcpRel.confidenceIntervals.avgPassExpK;
+                const margin = ((upper - lower) / 2) * 100;
+                reliabilityMargin = ` ± ${formatNumber(margin, 1)}pp`;
+              }
             }
           }
 
@@ -541,39 +661,78 @@ const generateSummary = async (options: SummarizeOptions): Promise<string> => {
 
   md.push("### For Production Use\n\n");
 
-  // Best quality
-  const topQuality = qualityRankings[0];
-  if (topQuality) {
-    md.push(`- **Best Quality:** ${topQuality.run} (${formatNumber(topQuality.avgScore)} avg score)\n`);
-  }
-
-  // Most reliable (if trials data available)
-  if (trialsWeighted?.flakiness && quality && Object.keys(trialsWeighted.flakiness).length > 0) {
-    const reliabilityRankings = Object.entries(trialsWeighted.flakiness)
+  // For trial data: use capability rankings
+  if (capability && Object.keys(capability).length > 0 && qualityRankings.length === 0) {
+    const capabilityRankings = Object.entries(capability)
       .map(([run, metrics]) => ({
         run,
-        flakiness: metrics.avgFlakiness,
-        quality: quality[run]?.avgScore ?? 0,
+        passAtK: metrics.avgPassAtK,
+        medianPassAtK: metrics.medianPassAtK,
       }))
-      .filter((r) => r.quality > 0.8) // Only consider high-quality agents
-      .sort((a, b) => a.flakiness - b.flakiness);
+      .sort((a, b) => b.passAtK - a.passAtK);
 
-    if (reliabilityRankings.length > 0) {
-      const mostReliable = reliabilityRankings[0];
-      if (mostReliable) {
-        md.push(
-          `- **Most Reliable:** ${mostReliable.run} (${formatPercent(
-            mostReliable.flakiness,
-          )} flakiness, ${formatNumber(mostReliable.quality)} quality)\n`,
-        );
+    const topCapability = capabilityRankings[0];
+    if (topCapability) {
+      md.push(`- **Best Capability:** ${topCapability.run} (${formatPercent(topCapability.passAtK)} Pass@k)\n`);
+    }
+
+    // Most reliable from trials
+    if (flakiness) {
+      const reliabilityRankings = Object.entries(flakiness)
+        .map(([run, metrics]) => ({
+          run,
+          flakiness: metrics.avgFlakiness,
+          capability: capability[run]?.avgPassAtK ?? 0,
+        }))
+        .filter((r) => r.capability > 0.8) // Only consider high-capability agents
+        .sort((a, b) => a.flakiness - b.flakiness);
+
+      if (reliabilityRankings.length > 0) {
+        const mostReliable = reliabilityRankings[0];
+        if (mostReliable) {
+          md.push(
+            `- **Most Reliable:** ${mostReliable.run} (${formatPercent(
+              mostReliable.flakiness,
+            )} flakiness, ${formatPercent(mostReliable.capability)} Pass@k)\n`,
+          );
+        }
       }
     }
-  }
+  } else {
+    // For regular run data: use quality rankings
+    const topQuality = qualityRankings[0];
+    if (topQuality) {
+      md.push(`- **Best Quality:** ${topQuality.run} (${formatNumber(topQuality.avgScore)} avg score)\n`);
+    }
 
-  // Fastest
-  const topSpeed = latencyRankings[0];
-  if (topSpeed) {
-    md.push(`- **Fastest:** ${topSpeed.run} (${formatMs(topSpeed.p50)} P50 latency)\n`);
+    // Most reliable (if trials data available)
+    if (trialsWeighted?.flakiness && quality && Object.keys(trialsWeighted.flakiness).length > 0) {
+      const reliabilityRankings = Object.entries(trialsWeighted.flakiness)
+        .map(([run, metrics]) => ({
+          run,
+          flakiness: metrics.avgFlakiness,
+          quality: quality[run]?.avgScore ?? 0,
+        }))
+        .filter((r) => r.quality > 0.8) // Only consider high-quality agents
+        .sort((a, b) => a.flakiness - b.flakiness);
+
+      if (reliabilityRankings.length > 0) {
+        const mostReliable = reliabilityRankings[0];
+        if (mostReliable) {
+          md.push(
+            `- **Most Reliable:** ${mostReliable.run} (${formatPercent(
+              mostReliable.flakiness,
+            )} flakiness, ${formatNumber(mostReliable.quality)} quality)\n`,
+          );
+        }
+      }
+    }
+
+    // Fastest
+    const topSpeed = latencyRankings[0];
+    if (topSpeed) {
+      md.push(`- **Fastest:** ${topSpeed.run} (${formatMs(topSpeed.p50)} P50 latency)\n`);
+    }
   }
 
   // Best balance
@@ -598,12 +757,27 @@ const generateSummary = async (options: SummarizeOptions): Promise<string> => {
     md.push(`- **Best Balance:** ${topBalance.run} (weighted: 50% quality + 30% speed + 20% reliability)\n\n`);
   }
 
-  md.push("### Lowest Quality in this Evaluation\n\n");
+  md.push("### Areas for Improvement\n\n");
 
-  // Find worst performers
-  const worstQuality = qualityRankings[qualityRankings.length - 1];
-  if (worstQuality) {
-    md.push(`- **Lowest Quality:** ${worstQuality.run} (${formatNumber(worstQuality.avgScore)} avg score)\n`);
+  // For trial data: show lowest capability
+  if (capability && Object.keys(capability).length > 0 && qualityRankings.length === 0) {
+    const capabilityRankings = Object.entries(capability)
+      .map(([run, metrics]) => ({
+        run,
+        passAtK: metrics.avgPassAtK,
+      }))
+      .sort((a, b) => b.passAtK - a.passAtK);
+
+    const worstCapability = capabilityRankings[capabilityRankings.length - 1];
+    if (worstCapability) {
+      md.push(`- **Lowest Capability:** ${worstCapability.run} (${formatPercent(worstCapability.passAtK)} Pass@k)\n`);
+    }
+  } else {
+    // For regular run data: show lowest quality
+    const worstQuality = qualityRankings[qualityRankings.length - 1];
+    if (worstQuality) {
+      md.push(`- **Lowest Quality:** ${worstQuality.run} (${formatNumber(worstQuality.avgScore)} avg score)\n`);
+    }
   }
 
   if (flakiness && Object.keys(flakiness).length > 0) {
@@ -649,6 +823,10 @@ const main = async () => {
   } else if (mode === "test") {
     const baseDir = fixtureDir ?? "data";
     outputPath = `${baseDir}/comparisons/test-runs/SUMMARY.md`;
+  } else if (mode === "trials") {
+    const date = runDate ?? (await findLatestTrialsDate(fixtureDir));
+    const baseDir = fixtureDir ?? "data";
+    outputPath = `${baseDir}/comparisons/trials/${date}/SUMMARY.md`;
   } else {
     const date = runDate ?? (await findLatestRunDate(fixtureDir));
     const baseDir = fixtureDir ?? "data";

@@ -11,6 +11,7 @@
  *   bun scripts/summarize.ts                              # Latest full run
  *   bun scripts/summarize.ts --mode test                  # Test results
  *   bun scripts/summarize.ts --run-date 2026-01-29        # Specific run
+ *   bun scripts/summarize.ts --input path/to/comparison.json  # Custom input file
  *   bun scripts/summarize.ts --output summary.md          # Custom output file
  *
  * @public
@@ -26,6 +27,7 @@ type SummarizeOptions = {
   mode: Mode;
   runDate?: string;
   output?: string;
+  input?: string;
   fixtureDir?: string;
   dryRun?: boolean;
 };
@@ -34,6 +36,7 @@ const parseArgs = (args: string[]): SummarizeOptions => {
   let mode: Mode = "full";
   let runDate: string | undefined;
   let output: string | undefined;
+  let input: string | undefined;
   let fixtureDir: string | undefined;
   let dryRun = false;
 
@@ -50,6 +53,8 @@ const parseArgs = (args: string[]): SummarizeOptions => {
       runDate = args[++i];
     } else if (arg === "--output" || arg === "-o") {
       output = args[++i];
+    } else if (arg === "--input" || arg === "-i") {
+      input = args[++i];
     } else if (arg === "--fixture-dir") {
       fixtureDir = args[++i];
     } else if (arg === "--dry-run") {
@@ -64,6 +69,7 @@ Usage:
 Options:
   --mode <test|full>        Mode to summarize (default: full)
   --run-date <YYYY-MM-DD>   Specific run date (default: latest)
+  --input, -i <file>        Custom input comparison file path (overrides mode/date)
   --output, -o <file>       Output file path (default: auto-generated)
   --fixture-dir <path>      Use fixture data directory (for testing)
   --dry-run                 Show what would be done without writing files
@@ -73,7 +79,7 @@ Options:
     }
   }
 
-  return { mode, runDate, output, fixtureDir, dryRun };
+  return { mode, runDate, output, input, fixtureDir, dryRun };
 };
 
 const findLatestRunDate = async (fixtureDir?: string): Promise<string> => {
@@ -214,10 +220,20 @@ const isRegularRunReliability = (
 };
 
 const generateSummary = async (options: SummarizeOptions): Promise<string> => {
-  const { mode, runDate, fixtureDir } = options;
+  const { mode, runDate, input, fixtureDir } = options;
 
-  // Load comparisons
-  const weighted = await loadComparison(mode, runDate, "weighted", fixtureDir);
+  // Load comparisons - use custom input path if provided
+  let weighted: WeightedComparison | null = null;
+  if (input) {
+    const { data, errors } = await loadJsonFile(WeightedComparisonSchema, input);
+    if (errors.length > 0) {
+      throw new Error(`Validation error in ${input}\n${errors.join("\n")}`);
+    }
+    weighted = data;
+  } else {
+    weighted = await loadComparison(mode, runDate, "weighted", fixtureDir);
+  }
+
   if (!weighted) {
     throw new Error("Could not load weighted comparison");
   }
@@ -606,15 +622,19 @@ const generateSummary = async (options: SummarizeOptions): Promise<string> => {
 
 const main = async () => {
   const options = parseArgs(process.argv.slice(2));
-  const { mode, runDate, output: customOutput, fixtureDir, dryRun } = options;
+  const { mode, runDate, input, output: customOutput, fixtureDir, dryRun } = options;
 
   if (dryRun) {
     console.log("[DRY RUN]\n");
   }
 
   console.log("Configuration:");
-  console.log(`  Mode: ${mode}`);
-  if (runDate) console.log(`  Run date: ${runDate}`);
+  if (input) {
+    console.log(`  Input: ${input}`);
+  } else {
+    console.log(`  Mode: ${mode}`);
+    if (runDate) console.log(`  Run date: ${runDate}`);
+  }
   if (fixtureDir) console.log(`  Fixture dir: ${fixtureDir}`);
   console.log();
 
@@ -622,6 +642,10 @@ const main = async () => {
   let outputPath: string;
   if (customOutput) {
     outputPath = customOutput;
+  } else if (input) {
+    // When using custom input, place SUMMARY.md in same directory
+    const inputDir = input.substring(0, input.lastIndexOf("/"));
+    outputPath = `${inputDir}/SUMMARY.md`;
   } else if (mode === "test") {
     const baseDir = fixtureDir ?? "data";
     outputPath = `${baseDir}/comparisons/test-runs/SUMMARY.md`;

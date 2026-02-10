@@ -44,7 +44,8 @@
  * - **Flakiness**: pass@k - pass^k (high = inconsistent)
  *
  * Usage:
- *   bun scripts/run-trials.ts                              # All agents/providers, k=5 (default: unlimited containers, sequential prompts)
+ *   bun scripts/run-trials.ts                              # All agents/providers, k=5, trials dataset (30 prompts)
+ *   bun scripts/run-trials.ts --dataset full               # All agents/providers, k=5, full dataset (151 prompts)
  *   bun scripts/run-trials.ts --trial-type capability      # All agents, k=10
  *   bun scripts/run-trials.ts --agent gemini               # Single agent, all providers
  *   bun scripts/run-trials.ts --search-provider you        # All agents, MCP only
@@ -69,6 +70,7 @@ type TrialsOptions = {
   agents: Agent[];
   trialType: TrialType;
   searchProviders: SearchProvider[];
+  dataset: "trials" | "full";
   k?: number;
   concurrency?: number;
   promptConcurrency?: number;
@@ -87,12 +89,13 @@ const parseArgs = (args: string[]): TrialsOptions => {
   const agents: Agent[] = [];
   const searchProviders: SearchProvider[] = [];
   let trialType: TrialType = "default";
+  let dataset: "trials" | "full" = "trials";
   let k: number | undefined;
   let concurrency: number | undefined;
   let promptConcurrency: number | undefined;
   let dryRun = false;
 
-  const validProviders = ["builtin", ...Object.keys(MCP_SERVERS)];
+  const validProviders = ["builtin", "skill", ...Object.keys(MCP_SERVERS)];
 
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--agent" && i + 1 < args.length) {
@@ -115,6 +118,13 @@ const parseArgs = (args: string[]): TrialsOptions => {
         throw new Error(`Invalid trial type: ${typeArg}. Must be "default", "capability", or "regression"`);
       }
       trialType = typeArg as TrialType;
+      i++;
+    } else if (args[i] === "--dataset" && i + 1 < args.length) {
+      const datasetArg = args[i + 1];
+      if (datasetArg !== "trials" && datasetArg !== "full") {
+        throw new Error(`Invalid dataset: ${datasetArg}. Must be "trials" or "full"`);
+      }
+      dataset = datasetArg as "trials" | "full";
       i++;
     } else if (args[i] === "-k" && i + 1 < args.length) {
       const kArg = args[i + 1];
@@ -153,7 +163,8 @@ const parseArgs = (args: string[]): TrialsOptions => {
   return {
     agents: agents.length > 0 ? agents : ALL_AGENTS,
     trialType,
-    searchProviders: searchProviders.length > 0 ? searchProviders : ["builtin", ...mcpProviders],
+    dataset,
+    searchProviders: searchProviders.length > 0 ? searchProviders : ["builtin", "skill", ...mcpProviders],
     k,
     concurrency: concurrency ?? Infinity, // Default unlimited (I/O-bound workload)
     promptConcurrency: promptConcurrency ?? 1, // Default 1: stream-mode agents OOM at higher values (see issue #45)
@@ -187,14 +198,16 @@ const getKValue = (trialType: TrialType, override?: number): number => {
  * Get prompt dataset path for trials
  *
  * @param searchProvider - Search provider (builtin or MCP server key)
+ * @param dataset - Dataset to use (trials or full)
  * @returns Prompt dataset path
  *
  * @internal
  */
-const getPromptPath = (searchProvider: SearchProvider): string => {
-  return searchProvider === "builtin"
-    ? "/eval/data/prompts/trials/prompts.jsonl"
-    : `/eval/data/prompts/trials/prompts-${searchProvider}.jsonl`;
+const getPromptPath = (searchProvider: SearchProvider, dataset: "trials" | "full"): string => {
+  // "skill" reuses builtin prompts (no MCP metadata needed)
+  return searchProvider === "builtin" || searchProvider === "skill"
+    ? `/eval/data/prompts/${dataset}/prompts.jsonl`
+    : `/eval/data/prompts/${dataset}/prompts-${searchProvider}.jsonl`;
 };
 
 /** Stdout filter for trials — includes "Running" lines for trial progress */
@@ -218,9 +231,11 @@ const main = async () => {
     const k = getKValue(options.trialType, options.k);
 
     const concurrencyLabel = options.concurrency === Infinity ? "unlimited" : options.concurrency;
+    const promptCount = options.dataset === "trials" ? 30 : 151;
     console.log(`${options.dryRun ? "[DRY RUN] " : ""}Pass@k Trials Configuration`);
     console.log(`${"=".repeat(80)}`);
     console.log(`Trial type: ${options.trialType} (k=${k})`);
+    console.log(`Dataset: ${options.dataset} (${promptCount} prompts)`);
     console.log(`Agents: ${options.agents.join(", ")}`);
     console.log(`Search providers: ${options.searchProviders.join(", ")}`);
     console.log(`Container concurrency: ${concurrencyLabel}, Prompt concurrency: ${options.promptConcurrency}`);
@@ -245,11 +260,11 @@ const main = async () => {
       for (let i = 0; i < runs.length; i++) {
         const run = runs[i];
         if (!run) continue;
-        const dataset = getPromptPath(run.searchProvider);
+        const datasetPath = getPromptPath(run.searchProvider, options.dataset);
         const typeSuffix = options.trialType === "default" ? "" : `-${options.trialType}`;
         const outputPath = `/eval/data/results/trials/${runDate}/${run.agent}/${run.searchProvider}${typeSuffix}.jsonl`;
         console.log(`  [${i + 1}/${runs.length}] ${run.agent}-${run.searchProvider}:`);
-        console.log(`    Dataset: ${dataset}`);
+        console.log(`    Dataset: ${datasetPath}`);
         console.log(`    Output: ${outputPath}`);
         console.log(`    Trials per prompt: ${k}`);
         console.log(`    Prompt concurrency: ${options.promptConcurrency}`);
@@ -277,7 +292,7 @@ const main = async () => {
     const results = await limitConcurrency(
       runs.map(({ agent, searchProvider }, index) => () => {
         const runDate = new Date().toISOString().split("T")[0];
-        const dataset = getPromptPath(searchProvider);
+        const datasetPath = getPromptPath(searchProvider, options.dataset);
         const schema = `/eval/agent-schemas/${agent}.json`;
         const grader = "/eval/scripts/inline-grader.ts";
         const typeSuffix = options.trialType === "default" ? "" : `-${options.trialType}`;
@@ -287,7 +302,7 @@ const main = async () => {
           "bunx",
           "@plaited/agent-eval-harness",
           "trials",
-          dataset,
+          datasetPath,
           "--schema",
           schema,
           "-k",

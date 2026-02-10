@@ -90,12 +90,18 @@ bun run summarize:full              # Same as above
 # Generate summary for test results
 bun run summarize:test              # → data/comparisons/test-runs/SUMMARY.md
 
+# Generate summary for latest trial results (NEW!)
+bun run summarize:trials            # → data/comparisons/trials/YYYY-MM-DD/SUMMARY.md
+
 # Custom options
 bun scripts/summarize.ts --mode full --run-date 2026-01-24
 bun scripts/summarize.ts --output my-summary.md
+bun scripts/summarize-trials.ts --run-date 2026-02-10
+bun scripts/summarize-trials.ts --trial-type capability
 
 # Preview without writing (dry-run)
 bun scripts/summarize.ts --dry-run
+bun scripts/summarize-trials.ts --dry-run
 ```
 
 **Summary includes:**

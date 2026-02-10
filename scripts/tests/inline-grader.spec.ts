@@ -3,15 +3,16 @@
  *
  * @remarks
  * Tests the hybrid grading system that combines deterministic scoring
- * (basic output, tool usage, error detection, sources) with LLM-based
- * quality assessment.
+ * (basic output, tool usage, multi-tool, output depth, error detection)
+ * with LLM-based quality assessment.
  *
  * Key areas covered:
  * - Basic output detection (40 char threshold)
- * - Source/URL detection
- * - Tool usage scoring with MCP detection
+ * - Tool usage scoring with MCP detection (5 pts)
+ * - Multi-tool engagement gradient (5/3/0 pts)
+ * - Output depth gradient (5/3/2/0 pts)
  * - Error and timeout detection
- * - Hybrid scoring (deterministic + LLM)
+ * - Hybrid scoring (deterministic 50 + LLM 50 = 100)
  * - Pass threshold (0.65 = 65/100)
  *
  * @public
@@ -61,73 +62,16 @@ describe("inline-grader", () => {
     });
   });
 
-  describe("source detection", () => {
-    test("detects HTTP URLs", async () => {
-      const result = await grade({
-        input: "Test query",
-        output:
-          "According to http://example.com, the answer is 42. This response has sufficient length to pass basic checks.",
-        trajectory: [{ type: "tool_call", name: "WebSearch", status: "success", timestamp: Date.now() }],
-      });
-
-      expect(result.reasoning).toContain("sources=10");
-    });
-
-    test("detects HTTPS URLs", async () => {
-      const result = await grade({
-        input: "Test query",
-        output:
-          "According to https://example.com, the answer is 42. This response has sufficient length to pass basic checks.",
-        trajectory: [{ type: "tool_call", name: "WebSearch", status: "success", timestamp: Date.now() }],
-      });
-
-      expect(result.reasoning).toContain("sources=10");
-    });
-
-    test("detects 'source:' references", async () => {
-      const result = await grade({
-        input: "Test query",
-        output:
-          "The answer is 42. Source: Documentation Page 5. This response has sufficient length to pass basic checks.",
-        trajectory: [{ type: "tool_call", name: "WebSearch", status: "success", timestamp: Date.now() }],
-      });
-
-      expect(result.reasoning).toContain("sources=10");
-    });
-
-    test("detects 'reference:' citations", async () => {
-      const result = await grade({
-        input: "Test query",
-        output:
-          "The answer is 42. Reference: API Documentation. This response has sufficient length to pass basic checks.",
-        trajectory: [{ type: "tool_call", name: "WebSearch", status: "success", timestamp: Date.now() }],
-      });
-
-      expect(result.reasoning).toContain("sources=10");
-    });
-
-    test("no sources bonus without URLs or references", async () => {
-      const result = await grade({
-        input: "Test query",
-        output:
-          "The answer is 42. This response has no sources or URLs but has sufficient length to pass basic checks.",
-        trajectory: [{ type: "tool_call", name: "WebSearch", status: "success", timestamp: Date.now() }],
-      });
-
-      expect(result.reasoning).toContain("sources=0");
-    });
-  });
-
   describe("tool usage assessment - builtin mode", () => {
     test("awards full points for any tool when no MCP expected", async () => {
       const result = await grade({
         input: "Test query",
         output: "Result from web search with sufficient length for basic output check.",
         trajectory: [{ type: "tool_call", name: "WebSearch", status: "success", timestamp: Date.now() }],
-        metadata: {}, // No mcpServer or expectedTools
+        metadata: {},
       });
 
-      expect(result.reasoning).toContain("tools=25");
+      expect(result.reasoning).toContain("tools=5");
     });
 
     test("awards 0 points when no tools used (builtin)", async () => {
@@ -161,7 +105,7 @@ describe("inline-grader", () => {
         },
       });
 
-      expect(result.reasoning).toContain("tools=25");
+      expect(result.reasoning).toContain("tools=5");
       expect(result.metadata?.mcpToolCalled).toBe(true);
     });
 
@@ -185,7 +129,7 @@ describe("inline-grader", () => {
         },
       });
 
-      expect(result.reasoning).toContain("tools=25");
+      expect(result.reasoning).toContain("tools=5");
       expect(result.metadata?.mcpToolCalled).toBe(true);
     });
 
@@ -207,7 +151,7 @@ describe("inline-grader", () => {
         },
       });
 
-      expect(result.reasoning).toContain("tools=25");
+      expect(result.reasoning).toContain("tools=5");
       expect(result.metadata?.mcpToolCalled).toBe(true);
     });
 
@@ -229,7 +173,7 @@ describe("inline-grader", () => {
         },
       });
 
-      expect(result.reasoning).toContain("tools=25");
+      expect(result.reasoning).toContain("tools=5");
       expect(result.metadata?.mcpToolCalled).toBe(true);
     });
 
@@ -251,7 +195,7 @@ describe("inline-grader", () => {
         },
       });
 
-      expect(result.reasoning).toContain("tools=25");
+      expect(result.reasoning).toContain("tools=5");
     });
 
     test("awards partial points for wrong MCP tool", async () => {
@@ -272,7 +216,7 @@ describe("inline-grader", () => {
         },
       });
 
-      expect(result.reasoning).toContain("tools=15");
+      expect(result.reasoning).toContain("tools=3");
       expect(result.metadata?.mcpToolCalled).toBe(false);
     });
 
@@ -310,7 +254,98 @@ describe("inline-grader", () => {
       });
 
       // Should not match DROID pattern due to toolu_ prefix
-      expect(result.reasoning).toContain("tools=15"); // Wrong tool, not no tool
+      expect(result.reasoning).toContain("tools=3"); // Wrong tool, not no tool
+    });
+  });
+
+  describe("multi-tool engagement gradient", () => {
+    test("awards 5 points for 3+ tool calls", async () => {
+      const result = await grade({
+        input: "Test query",
+        output: "Response with many tool calls and sufficient length for basic output.",
+        trajectory: [
+          { type: "tool_call", name: "WebSearch", status: "success", timestamp: Date.now() },
+          { type: "tool_call", name: "Read", status: "success", timestamp: Date.now() },
+          { type: "tool_call", name: "Write", status: "success", timestamp: Date.now() },
+        ],
+        metadata: {},
+      });
+
+      expect(result.reasoning).toContain("multiTool=5");
+    });
+
+    test("awards 3 points for 2 tool calls", async () => {
+      const result = await grade({
+        input: "Test query",
+        output: "Response with two tool calls and sufficient length for basic output.",
+        trajectory: [
+          { type: "tool_call", name: "WebSearch", status: "success", timestamp: Date.now() },
+          { type: "tool_call", name: "Read", status: "success", timestamp: Date.now() },
+        ],
+        metadata: {},
+      });
+
+      expect(result.reasoning).toContain("multiTool=3");
+    });
+
+    test("awards 0 points for 1 or fewer tool calls", async () => {
+      const result = await grade({
+        input: "Test query",
+        output: "Response with single tool call and sufficient length for basic output.",
+        trajectory: [{ type: "tool_call", name: "WebSearch", status: "success", timestamp: Date.now() }],
+        metadata: {},
+      });
+
+      expect(result.reasoning).toContain("multiTool=0");
+    });
+  });
+
+  describe("output depth gradient", () => {
+    test("awards 5 points for 500+ char output", async () => {
+      const longOutput = "A".repeat(500);
+      const result = await grade({
+        input: "Test query",
+        output: longOutput,
+        trajectory: [{ type: "tool_call", name: "WebSearch", status: "success", timestamp: Date.now() }],
+        metadata: {},
+      });
+
+      expect(result.reasoning).toContain("depth=5");
+    });
+
+    test("awards 3 points for 200-499 char output", async () => {
+      const medOutput = "A".repeat(250);
+      const result = await grade({
+        input: "Test query",
+        output: medOutput,
+        trajectory: [{ type: "tool_call", name: "WebSearch", status: "success", timestamp: Date.now() }],
+        metadata: {},
+      });
+
+      expect(result.reasoning).toContain("depth=3");
+    });
+
+    test("awards 2 points for 100-199 char output", async () => {
+      const shortOutput = "A".repeat(120);
+      const result = await grade({
+        input: "Test query",
+        output: shortOutput,
+        trajectory: [{ type: "tool_call", name: "WebSearch", status: "success", timestamp: Date.now() }],
+        metadata: {},
+      });
+
+      expect(result.reasoning).toContain("depth=2");
+    });
+
+    test("awards 0 points for <100 char output", async () => {
+      const result = await grade({
+        input: "Test query",
+        output: "This output is under one hundred characters but above forty.",
+        trajectory: [{ type: "tool_call", name: "WebSearch", status: "success", timestamp: Date.now() }],
+        metadata: {},
+      });
+
+      expect(result.reasoning).toContain("depth=0");
     });
   });
 
@@ -355,11 +390,12 @@ describe("inline-grader", () => {
       expect(result.metadata?.hasErrors).toBe(true);
     });
 
-    test("fails immediately on timeout in output", async () => {
+    test("fails immediately on metadata timedOut flag", async () => {
       const result = await grade({
         input: "Test query",
-        output: "Execution timed out after 120 seconds",
+        output: "Some output from before the timeout occurred during execution.",
         trajectory: [{ type: "tool_call", name: "WebSearch", status: "success", timestamp: Date.now() }],
+        metadata: { timedOut: true },
       });
 
       expect(result.pass).toBe(false);
@@ -368,22 +404,23 @@ describe("inline-grader", () => {
       expect(result.metadata?.hasTimeout).toBe(true);
     });
 
-    test('fails immediately on "timed out" in output', async () => {
+    test("does not falsely detect timeout from output text", async () => {
       const result = await grade({
         input: "Test query",
-        output: "The operation timed out while searching",
+        output: "The operation timed out but this is just text, not a real timeout indicator for the grader.",
         trajectory: [{ type: "tool_call", name: "WebSearch", status: "success", timestamp: Date.now() }],
+        metadata: {},
       });
 
-      expect(result.pass).toBe(false);
-      expect(result.score).toBe(0);
-      expect(result.reasoning).toContain("Execution timed out");
+      // Without metadata.timedOut, should NOT treat as timeout
+      expect(result.metadata?.hasTimeout).toBe(false);
+      expect(result.score).toBeGreaterThan(0);
     });
 
     test("awards clean execution points when no errors", async () => {
       const result = await grade({
         input: "Test query",
-        output: "Clean execution with sufficient output length and a source http://example.com",
+        output: "Clean execution with sufficient output length for basic check.",
         trajectory: [
           {
             type: "tool_call",
@@ -400,44 +437,62 @@ describe("inline-grader", () => {
 
   describe("hybrid scoring system", () => {
     test("deterministic scoring components add up correctly", async () => {
+      // 1 tool call, 65 chars output → basic=10, tools=5, multiTool=0, depth=0, clean=25 = 40
       const result = await grade({
         input: "Test query",
-        output:
-          "Complete response with tool usage, no errors, and sources from https://example.com to validate scoring.",
+        output: "Complete response with tool usage, no errors, for scoring test.",
         trajectory: [{ type: "tool_call", name: "WebSearch", status: "success", timestamp: Date.now() }],
         metadata: {},
       });
 
-      // Should have: basic(10) + tools(25) + clean(25) + sources(10) = 70
-      expect(result.metadata?.deterministicScore).toBe(70);
+      expect(result.metadata?.deterministicScore).toBe(40);
+    });
+
+    test("maximum deterministic score with all bonuses", async () => {
+      // 3 tool calls, 500+ chars → basic=10, tools=5, multiTool=5, depth=5, clean=25 = 50
+      const longOutput = "A".repeat(500);
+      const result = await grade({
+        input: "Test query",
+        output: longOutput,
+        trajectory: [
+          { type: "tool_call", name: "WebSearch", status: "success", timestamp: Date.now() },
+          { type: "tool_call", name: "Read", status: "success", timestamp: Date.now() },
+          { type: "tool_call", name: "Grep", status: "success", timestamp: Date.now() },
+        ],
+        metadata: {},
+      });
+
+      expect(result.metadata?.deterministicScore).toBe(50);
     });
 
     test("pass threshold is 0.65 (65/100 points)", async () => {
+      // Max deterministic without LLM = 50/100 = 0.50, which is below threshold
+      const longOutput = "A".repeat(500);
       const result = await grade({
         input: "Test query",
-        output: "Response with sufficient length, tool usage, and source https://example.com for passing grade.",
-        trajectory: [{ type: "tool_call", name: "WebSearch", status: "success", timestamp: Date.now() }],
+        output: longOutput,
+        trajectory: [
+          { type: "tool_call", name: "WebSearch", status: "success", timestamp: Date.now() },
+          { type: "tool_call", name: "Read", status: "success", timestamp: Date.now() },
+          { type: "tool_call", name: "Grep", status: "success", timestamp: Date.now() },
+        ],
         metadata: {},
       });
 
-      // Deterministic: 70 pts (10+25+25+10)
-      // LLM: variable (may be 0 if no API key)
-      // Should pass if deterministic >= 70 (which is > 65 threshold)
-      if (result.metadata?.deterministicScore === 70) {
-        expect(result.pass).toBe(true);
-      }
+      // Deterministic-only: 50/100 = 0.50, below 0.65 threshold
+      expect(result.metadata?.deterministicScore).toBe(50);
+      expect(result.pass).toBe(false); // Needs LLM pts to pass
     });
 
-    test("fails when deterministic score is below 65", async () => {
+    test("fails when deterministic score is low", async () => {
       const result = await grade({
         input: "Test query",
-        output: "Response with length but no sources or tool usage to keep score low.",
-        trajectory: [], // No tools = 0 pts
+        output: "Response with length but no tool usage to keep score low enough.",
+        trajectory: [], // No tools = 0 pts for tools and multiTool
         metadata: {},
       });
 
-      // Deterministic: 35 pts (10+0+25+0) - missing tool usage and sources
-      // Below 65 threshold, should fail
+      // Deterministic: 10 (basic) + 0 (tools) + 0 (multiTool) + 0 (depth) + 25 (clean) = 35
       expect(result.metadata?.deterministicScore).toBe(35);
       expect(result.pass).toBe(false);
     });
@@ -445,7 +500,7 @@ describe("inline-grader", () => {
     test("tracks grader latency", async () => {
       const result = await grade({
         input: "Test query",
-        output: "Response for latency test with sufficient length and source https://example.com",
+        output: "Response for latency test with sufficient length for basic check.",
         trajectory: [{ type: "tool_call", name: "WebSearch", status: "success", timestamp: Date.now() }],
       });
 
@@ -455,16 +510,12 @@ describe("inline-grader", () => {
     test("tracks LLM latency when API key available", async () => {
       const result = await grade({
         input: "Test query",
-        output: "Response for LLM latency test with sufficient length and source https://example.com",
+        output: "Response for LLM latency test with sufficient length for check.",
         trajectory: [{ type: "tool_call", name: "WebSearch", status: "success", timestamp: Date.now() }],
       });
 
-      // If GEMINI_API_KEY is set, should have LLM latency
-      if (process.env.GEMINI_API_KEY) {
-        expect(result.metadata?.llmLatency).toBeGreaterThan(0);
-      } else {
-        expect(result.metadata?.llmLatency).toBe(0);
-      }
+      // GEMINI_API_KEY deleted in beforeAll, so LLM latency should be 0
+      expect(result.metadata?.llmLatency).toBe(0);
     });
   });
 
@@ -506,7 +557,7 @@ describe("inline-grader", () => {
     test("includes deterministic and LLM scores in metadata", async () => {
       const result = await grade({
         input: "Test query",
-        output: "Response for score metadata validation with source https://example.com",
+        output: "Response for score metadata validation with sufficient length.",
         trajectory: [{ type: "tool_call", name: "WebSearch", status: "success", timestamp: Date.now() }],
       });
 
@@ -521,7 +572,7 @@ describe("inline-grader", () => {
     test("handles array input by joining", async () => {
       const result = await grade({
         input: ["First turn", "Second turn", "Third turn"],
-        output: "Response to multi-turn conversation with sufficient length and source https://example.com",
+        output: "Response to multi-turn conversation with sufficient length for basic check.",
         trajectory: [{ type: "tool_call", name: "WebSearch", status: "success", timestamp: Date.now() }],
       });
 
@@ -532,7 +583,7 @@ describe("inline-grader", () => {
     test("handles string input directly", async () => {
       const result = await grade({
         input: "Single turn query",
-        output: "Response to single turn with sufficient length and source https://example.com",
+        output: "Response to single turn with sufficient length for basic output check.",
         trajectory: [{ type: "tool_call", name: "WebSearch", status: "success", timestamp: Date.now() }],
       });
 

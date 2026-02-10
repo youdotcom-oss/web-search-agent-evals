@@ -16,6 +16,7 @@
         "@commitlint/types": "20.3.1",
         "@types/bun": "1.3.7",
         "@types/node": "25.1.0",
+        "@youdotcom-oss/api": "0.2.2",
         "bun-types": "1.3.7",
         "format-package": "7.0.0",
         "lint-staged": "16.2.7",
@@ -135,6 +136,8 @@
     "@types/conventional-commits-parser": ["@types/conventional-commits-parser@5.0.2", "", { "dependencies": { "@types/node": "*" } }, "sha512-BgT2szDXnVypgpNxOK8aL5SGjUdaQbC++WZNjF1Qge3Og2+zhHj+RWhmehLhYyvQwqAmvezruVfOf8+3m74W+g=="],
 
     "@types/node": ["@types/node@25.1.0", "", { "dependencies": { "undici-types": "~7.16.0" } }, "sha512-t7frlewr6+cbx+9Ohpl0NOTKXZNV9xHRmNOvql47BFJKcEG1CxtxlPEEe+gR9uhVWM4DwhnvTF110mIL4yP9RA=="],
+
+    "@youdotcom-oss/api": ["@youdotcom-oss/api@0.2.2", "", { "dependencies": { "zod": "^4.3.6" }, "bin": { "ydc": "bin/cli.js" } }, "sha512-HxlsXp0W792Eq8fTqfS5kr82ERL3f/SxBZfOvF3KMzR8h+dX5UEozJ+XvsJjwvUAwr3CcSdOwoPauLG+vx0ytg=="],
 
     "JSONStream": ["JSONStream@1.3.5", "", { "dependencies": { "jsonparse": "^1.2.0", "through": ">=2.2.7 <3" }, "bin": { "JSONStream": "./bin.js" } }, "sha512-E+iruNOY8VV9s4JEbe1aNEm6MiszPRr/UfcHMz0TQh1BXSxHK+ASV1R6W4HpjBhSeS+54PIsAMCBmwD06LLsqQ=="],
 

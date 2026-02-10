@@ -10,6 +10,7 @@
     "flag": "-o",
     "value": "stream-json"
   },
+  "cwdFlag": "--cwd",
   "autoApprove": ["--skip-permissions-unsafe"],
   "resume": {
     "flag": "-s",

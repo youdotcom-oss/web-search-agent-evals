@@ -13,6 +13,8 @@ This evaluation system runs a matrix comparison: 4 agents × 2 tools = 8 pairing
 - **TypeScript entrypoint** - Bun shell script for runtime MCP configuration
 - **Isolated execution** - Each pairing runs in its own Docker container
 
+### Evaluation Pipeline
+
 ```mermaid
 flowchart TD
     Env[SEARCH_PROVIDER & DATASET env vars] --> Entrypoint[docker/entrypoint]
@@ -25,6 +27,26 @@ flowchart TD
     Prompts[prompts.jsonl] --> Harness
     Schemas[agent-schemas/*.json] --> Harness
     Harness --> Results[data/results/agent/tool.jsonl]
+```
+
+### Analysis Pipeline
+
+```mermaid
+flowchart LR
+    Results[Captured Results<br/>agent/tool.jsonl] --> Compare[compare.ts<br/>or compare-trials.ts]
+    Grader[inline-grader.ts] --> Compare
+
+    Compare -->|weighted| Weighted[*-weighted.json<br/>Quality + Speed + Reliability]
+    Compare -->|statistical| Statistical[*-statistical.json<br/>Bootstrap CIs]
+
+    Weighted --> Summarize[summarize.ts]
+    Statistical --> Summarize
+
+    Summarize --> Summary[SUMMARY.md<br/>Rankings + Recommendations]
+
+    style Compare fill:#e1f5ff
+    style Summarize fill:#e1f5ff
+    style Summary fill:#d4edda
 ```
 
 ## Latest Results

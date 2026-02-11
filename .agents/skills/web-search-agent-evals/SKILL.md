@@ -114,6 +114,93 @@ bun scripts/summarize-trials.ts --dry-run
 - MCP tool impact analysis (builtin vs MCP comparison)
 - Recommendations for production, cost-conscious use, and what to avoid
 
+### Analyze Trial Data
+
+Deep-dive analysis scripts for examining tool call patterns and failure modes from trial runs.
+
+**Output location:** `data/analysis/`
+
+#### Tool Call Statistics
+
+Calculate percentile metrics (P50, P90, P99, mean, min, max) for tool calls per prompt:
+
+```bash
+# Analyze latest trial data
+bun scripts/analyze-tool-calls.ts
+
+# Analyze specific date
+bun scripts/analyze-tool-calls.ts 2026-02-10
+
+# Save to file
+bun scripts/analyze-tool-calls.ts > data/analysis/tool-call-statistics.md
+```
+
+**Output includes:**
+- Median tool calls per prompt (P50)
+- P90/P99 percentiles for heavy usage scenarios
+- Mean, min, max values
+- Side-by-side comparison: builtin vs You.com MCP
+- Percentage differences and change calculations
+
+**Use cases:**
+- Understand tool call efficiency trade-offs
+- Identify heavy vs light usage patterns
+- Compare MCP overhead vs builtin approaches
+
+#### Tool Call Distribution
+
+Visualize the distribution of tool calls with ASCII histograms:
+
+```bash
+# Generate histograms
+bun scripts/visualize-tool-calls.ts
+
+# Save to file
+bun scripts/visualize-tool-calls.ts > data/analysis/tool-call-distribution.md
+```
+
+**Output includes:**
+- Frequency histograms showing tool call distribution
+- Percentage breakdown by call count
+- Key observations (zero calls, modal values, heavy users 5+)
+- Builtin vs You.com MCP comparison
+
+**Use cases:**
+- Spot bimodal or multimodal distributions
+- Identify outliers and edge cases
+- Understand concentration vs dispersion patterns
+
+#### Find Failing Prompts
+
+Identify prompts with 0% or low pass@k rates to diagnose capability gaps:
+
+```bash
+# Find all failures (pass@k = 0%)
+bun scripts/find-failing-prompts.ts
+
+# Save detailed report
+bun scripts/find-failing-prompts.ts > data/analysis/droid-builtin-failures.md
+```
+
+**Output includes:**
+- Complete list of failing prompt IDs
+- Pass rates, pass@k, and pass^k metrics
+- Full query text for each failing prompt
+- Summary statistics (total failures, low performers)
+
+**Use cases:**
+- Debug why specific prompts fail consistently
+- Identify capability gaps (e.g., API docs, structured data)
+- Understand bimodal distributions (P25=0%, P75=100%)
+- Guide dataset improvements and grader calibration
+
+**Example findings:**
+- **29% complete failures** for droid-builtin (explains P25=0%)
+- Common failure patterns: API documentation, version queries, structured data
+- Capability gaps vs reliability issues
+
+**Note:** The script currently analyzes droid-builtin by default. Edit `scripts/find-failing-prompts.ts` to change the agent/provider or make it configurable via CLI args.
+
 ### Calibrate Grader
 
 Interactive wizard to sample failures and review grader accuracy. Helps distinguish between agent failures (agent got it wrong) and grader bugs (agent was correct, grader too strict).

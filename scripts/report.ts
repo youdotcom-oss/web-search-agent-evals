@@ -25,10 +25,10 @@
  * @public
  */
 
+import { MCP_SERVERS } from "../mcp-servers.ts";
+import { loadJsonFile } from "./schemas/common.ts";
 import type { QualityMetrics, ReliabilityMetrics, WeightedComparison } from "./schemas/comparisons.ts";
 import { WeightedComparisonSchema } from "./schemas/comparisons.ts";
-import { loadJsonFile } from "./schemas/common.ts";
-import { MCP_SERVERS } from "../mcp-servers.ts";
 import { ALL_AGENTS } from "./shared/shared.constants.ts";
 
 type TrialType = "default" | "capability" | "regression";

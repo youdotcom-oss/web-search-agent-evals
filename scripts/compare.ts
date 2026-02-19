@@ -60,9 +60,8 @@
  */
 
 import { MCP_SERVERS, type McpServerKey } from "../mcp-servers.ts";
-
-import type { Agent, SearchProvider } from "./shared/shared.types.ts";
 import { ALL_AGENTS } from "./shared/shared.constants.ts";
+import type { Agent, SearchProvider } from "./shared/shared.types.ts";
 
 type TrialType = "default" | "capability" | "regression";
 type Strategy = "weighted" | "statistical";

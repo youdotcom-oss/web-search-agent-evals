@@ -1,2 +1,0 @@
-{"id":"test-1","input":"<web-search>Test prompt 1</web-search>","output":"Test output 1","trajectory":[{"type":"message","content":"Test","timestamp":1000}],"metadata":{"category":"Test","agent":"gemini"},"timing":{"total":1000},"toolErrors":false,"score":{"pass":true,"score":0.91}}
-{"id":"test-2","input":"<web-search>Test prompt 2</web-search>","output":"Test output 2","trajectory":[{"type":"message","content":"Test","timestamp":1000}],"metadata":{"category":"Test","agent":"gemini"},"timing":{"total":1000},"toolErrors":false,"score":{"pass":true,"score":0.86}}

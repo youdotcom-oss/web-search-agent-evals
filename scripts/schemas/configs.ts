@@ -8,11 +8,11 @@ import { z } from "zod";
 export const AgentSchema = z.enum(["claude-code", "gemini", "droid", "codex"]);
 
 /**
- * Evaluation mode (test subset vs full dataset)
+ * Evaluation mode (trials only)
  *
  * @public
  */
-export const ModeSchema = z.enum(["test", "full", "trials"]);
+export const ModeSchema = z.literal("trials");
 
 /**
  * Comparison strategy for evaluations

@@ -30,89 +30,84 @@ Evaluate 4 agents (Claude Code, Gemini, Droid, Codex) with 2 tools (builtin, You
 ### Run Evaluations
 
 ```bash
-# Test workflow (5 prompts, ~9 minutes with default concurrency)
-bun run run                 # All 8 scenarios at once (default: unlimited containers, sequential prompts)
+# Full dataset (151 prompts), k=5 — all 8 agent×provider scenarios
+bun run trials
 
-# Full workflow (151 prompts, ~2.5 hours with default concurrency)
-bun run run:full            # All agents with full dataset
+# Quick smoke test (5 random prompts, single trial)
+bun run trials -- --count 5 -k 1
 
-# Control parallelism (both container and prompt levels)
-bun run run -- -j 4                              # Limit to 4 containers
-bun run run -- --prompt-concurrency 4            # 4 prompts per container
-bun run run -- -j 2 --prompt-concurrency 4       # Conservative (low-resource machines)
+# Specific agent or provider
+bun run trials -- --agent claude-code --search-provider builtin
+bun run trials -- --agent gemini --search-provider you
 
-# Specific combinations
-bun run run -- --agent claude-code --mcp builtin
-bun run run -- --agent gemini --mcp you -j 1     # Single container for debugging
+# Trial type presets
+bun run trials -- --trial-type capability   # k=10, deep exploration
+bun run trials -- --trial-type regression   # k=3, fast regression check
 
-# Direct Docker commands (for manual testing)
+# Custom k value
+bun run trials -- -k 7
+
+# Control parallelism
+bun run trials -- -j 4                      # Limit to 4 containers
+bun run trials -- --prompt-concurrency 4    # 4 prompts per container
+
+# Direct Docker (manual testing)
 docker compose run --rm -e SEARCH_PROVIDER=builtin claude-code
-docker compose run --rm -e SEARCH_PROVIDER=you -e PROMPT_CONCURRENCY=8 gemini
+docker compose run --rm -e SEARCH_PROVIDER=you -e PROMPT_COUNT=5 gemini
 ```
 
 ### Compare Results
 
-Comparisons are versioned alongside the results they analyze.
-
-**Test mode:** Outputs to `data/comparisons/test-runs/`
-**Full mode:** Outputs to `data/comparisons/runs/YYYY-MM-DD/`
+Comparisons are written to `data/comparisons/YYYY-MM-DD/`.
 
 ```bash
-# Flexible CLI tool (recommended)
-bun scripts/compare.ts                          # All agents, test, weighted
-bun scripts/compare.ts --mode full              # Latest full run
-bun scripts/compare.ts --mode full --run-date 2026-01-24  # Specific run
+# Latest date auto-detected
+bun run compare
 
-# Quick shortcuts
-bun run compare:test-weighted       # → test-runs/all-weighted.json
-bun run compare:test-statistical    # → test-runs/all-statistical.json
-bun run compare:test-builtin        # → test-runs/builtin-weighted.json
-bun run compare:test-you            # → test-runs/you-weighted.json
+# Statistical analysis with bootstrap confidence intervals
+bun run compare:stat
+
+# Specific date or filter
+bun run compare -- --run-date 2026-02-18
+bun run compare -- --agent droid
+bun run compare -- --search-provider builtin
+bun run compare -- --trial-type capability
 
 # View results
-cat data/comparisons/test-runs/all-weighted.json | jq '.meta, .quality'
-cat data/comparisons/runs/2026-01-24/all-weighted.json | jq '.headToHead.pairwise'
+cat data/comparisons/2026-02-18/all-builtin-weighted.json | jq '.capability'
+cat data/comparisons/2026-02-18/builtin-vs-you-weighted.json | jq '.headToHead.capability'
 ```
 
 **Comparison strategies:**
-- `weighted` - Balances quality (inline grader), latency, reliability
-- `statistical` - Bootstrap sampling with significance testing (p<0.05)
+- `weighted` (default) - Capability, reliability, and consistency weighted scoring
+- `statistical` - Bootstrap sampling with 95% confidence intervals
 
-### Generate Summary Reports
+### Generate Report
 
-Generate human-readable markdown summaries from comparison results:
+Generate a comprehensive `REPORT.md` from comparison results:
 
 ```bash
-# Generate summary for latest full run
-bun run summarize                   # → data/comparisons/runs/YYYY-MM-DD/SUMMARY.md
-bun run summarize:full              # Same as above
+# Latest date auto-detected
+bun run report
 
-# Generate summary for test results
-bun run summarize:test              # → data/comparisons/test-runs/SUMMARY.md
+# Specific date
+bun run report -- --run-date 2026-02-18
 
-# Generate summary for latest trial results (NEW!)
-bun run summarize:trials            # → data/comparisons/trials/YYYY-MM-DD/SUMMARY.md
-
-# Custom options
-bun scripts/summarize.ts --mode full --run-date 2026-01-24
-bun scripts/summarize.ts --output my-summary.md
-bun scripts/summarize-trials.ts --run-date 2026-02-10
-bun scripts/summarize-trials.ts --trial-type capability
-
-# Preview without writing (dry-run)
-bun scripts/summarize.ts --dry-run
-bun scripts/summarize-trials.ts --dry-run
+# Preview without writing
+bun run report -- --dry-run
 ```
 
-**Summary includes:**
-- Executive summary with best quality, fastest, most reliable
-- Quality rankings with scores and pass rates
+**Report includes:**
+- Executive summary with best capability, reliability, and performance
+- Quality rankings with pass@k and pass^k scores
 - Performance rankings (latency P50/P90/P99)
-- Reliability metrics (errors, timeouts, completion rates)
-- Capability metrics (Pass@k) if trials data available
 - Flakiness analysis with top flaky prompts
 - MCP tool impact analysis (builtin vs MCP comparison)
-- Recommendations for production, cost-conscious use, and what to avoid
+- Tool call statistics (P50/P90/P99/mean per provider)
+- Tool call distribution histograms
+- Failing prompts list (pass@k = 0%) with query text
+
+**Output:** `data/comparisons/YYYY-MM-DD/REPORT.md`
 
 ### Calibrate Grader
 
@@ -124,97 +119,19 @@ bun run calibrate
 ```
 
 **Interactive prompts:**
-1. **Mode** - test-runs or dated runs (with list of available dates)
-2. **Agents** - Multi-select via numbers or "all" (e.g., `1 3` or `all`)
-3. **Search providers** - Multi-select via numbers or "all" (e.g., `1 2` or `all`)
+1. **Run date** - Select from available dated runs
+2. **Agents** - Multi-select via numbers or "all"
+3. **Search providers** - Multi-select via numbers or "all"
 4. **Sample count** - Number of failures to sample (default: 5)
 
-**Output:** `data/calibration/{prefix}-{agent}-{provider}.md`
-
-**Example session:**
-```bash
-$ bun run calibrate
-
-🎯 Grader Calibration Tool
-
-Select mode:
-  1. test-runs (quick test results)
-  2. runs (dated full evaluation runs)
-
-Enter choice (1 or 2) [1]: 1
-
-Select agents (space-separated numbers, or 'all'):
-  1. claude-code
-  2. gemini
-  3. droid
-  4. codex
-
-Enter choices (e.g., "1 3" or "all") [all]: 1
-
-Select search providers (space-separated numbers, or 'all'):
-  1. builtin
-  2. you
-
-Enter choices (e.g., "1 2" or "all") [all]: all
-
-Number of samples [5]: 10
-
-📊 Will generate 2 calibration report(s):
-   - claude-code with builtin
-   - claude-code with you
-
-Proceed? (y/n) [y]: y
-```
+**Output:** `data/calibration/{date}-{agent}-{provider}.md`
 
 **What calibration reveals:**
 - ❌ **Grader too strict** - Agent gave correct answer, grader rejected valid paraphrasing
 - ❌ **Hint too vague** - Grader can't tell good from bad answers
 - ✅ **Real failures** - Agent genuinely gave wrong/incomplete answer
 
-**View results:**
-```bash
-ls data/calibration/
-cat data/calibration/test-claude-code-builtin.md
-```
-
 See [@agent-eval-harness calibration docs](../agent-eval-harness@plaited_agent-eval-harness/SKILL.md#calibrate-command) for grader calibration concepts.
-
-### Pass@k Trials
-
-Run multiple trials per prompt across all agents and search providers to measure reliability:
-
-```bash
-# Run all agents × all providers (8 combinations, default: unlimited containers, sequential prompts)
-bun run trials                      # All agents/providers, k=5 (default)
-bun run trials:capability           # All agents/providers, k=10
-bun run trials:regression           # All agents/providers, k=3 (faster)
-
-# Filter to specific agents or providers
-bun run trials -- --agent gemini                    # Single agent, all providers
-bun run trials -- --search-provider you             # All agents, MCP only
-bun run trials -- --agent claude-code --search-provider builtin
-
-# Custom k value
-bun run trials -- -k 7              # All agents/providers, k=7
-
-# Control parallelism (dramatically speeds up trials)
-bun run trials -- -j 4                              # Limit to 4 containers
-bun run trials -- --prompt-concurrency 8            # 8 prompts per container
-bun run trials -- -j 4 --prompt-concurrency 4       # Conservative
-# Note: With k=5, prompt concurrency reduces 151 prompts from ~37min to ~10min per container
-
-# View results
-cat data/results/trials/2026-01-29/droid/builtin.jsonl | jq '{id, passRate, passAtK, passExpK}'
-cat data/results/trials/*/gemini/you.jsonl | jq '.passRate'
-```
-
-**Metrics:**
-- `passAtK` = capability (can do task?), computed as 1 - (1 - p)^k
-- `passExpK` = reliability (always succeeds?), computed as p^k
-
-**Output:** Results written to `data/results/trials/YYYY-MM-DD/{agent}/{provider}.jsonl` (same nested structure as runs)
-
-See [@agent-eval-harness](../agent-eval-harness@plaited_agent-eval-harness/SKILL.md) skill for detailed trials command documentation.
 
 ## Parallelization
 
@@ -225,9 +142,9 @@ The evaluation harness supports **two-level parallelization** for optimal perfor
 Controls how many Docker containers (agent×provider scenarios) run simultaneously.
 
 ```bash
-bun run run              # Unlimited (default, all 8 scenarios at once)
-bun run run -- -j 4     # Limit to 4 containers
-bun run run -- -j 1     # Sequential (debugging)
+bun run trials              # Unlimited (default, all 8 scenarios at once)
+bun run trials -- -j 4     # Limit to 4 containers
+bun run trials -- -j 1     # Sequential (debugging)
 ```
 
 **Use cases:**
@@ -241,123 +158,71 @@ bun run run -- -j 1     # Sequential (debugging)
 Controls how many prompts run in parallel **within each container**.
 
 ```bash
-bun run run -- --prompt-concurrency 4    # 4 prompts (moderate parallelism)
-bun run run -- --prompt-concurrency 1    # Sequential (default, safest)
-bun run run -- --prompt-concurrency 8    # 8 prompts (high memory, CI only)
+bun run trials -- --prompt-concurrency 4    # 4 prompts (moderate parallelism)
+bun run trials -- --prompt-concurrency 1    # Sequential (default, safest)
+bun run trials -- --prompt-concurrency 8    # 8 prompts (high memory, CI only)
 ```
 
 **How it works:**
 - Uses harness `-j` flag with `--workspace-dir` for isolation
-- Each prompt gets its own workspace directory: `/workspace/runs/{prompt-id}/`
-- Workspace cleanup happens automatically after container finishes
-
-**Performance impact:**
-- Web searches are **I/O-bound** (high network latency, low CPU usage)
-- Parallel prompts maximize network bandwidth utilization
-- **Example**: 151 prompts @ 3s avg → 7.5min sequential → **~1min with `-j 8`**
-
-### Combined Usage
-
-```bash
-# All containers, sequential prompts (default — safe for all agents)
-bun run run
-
-# Faster: add prompt parallelism (watch memory usage)
-bun run run -- --prompt-concurrency 4
-
-# Debugging: Single container, sequential prompts
-bun run run -- -j 1 --prompt-concurrency 1 --agent claude-code --mcp builtin
-```
+- Each prompt gets its own workspace directory
+- Web searches are **I/O-bound** — parallel prompts maximize network bandwidth
 
 **Performance comparison:**
 
-| Config | Containers | Prompts/Container | Test (5 prompts) | Full (151 prompts) |
-|--------|-----------|-------------------|------------------|-------------------|
-| **Default** | **unlimited** | **1** | **~9 min** | **~2.5 hrs** |
-| Faster | unlimited | 4 | ~4 min | ~40 min |
-| CI (high memory) | unlimited | 8 | ~3 min | ~20 min |
+| Config | Containers | Prompts/Container | Full (151 prompts, k=5) |
+|--------|-----------|-------------------|------------------------|
+| **Default** | **unlimited** | **1** | **~2.5 hrs** |
+| Faster | unlimited | 4 | ~40 min |
+| CI (high memory) | unlimited | 8 | ~20 min |
 
-**Scale up if resources allow:**
-- `--prompt-concurrency 4` for faster runs (needs ~2GB per container)
-- `--prompt-concurrency 8` for CI runners with 16GB+ RAM
-- **Warning:** Stream-mode agents (claude-code, droid) use ~400-500MB RSS per prompt process. With `-j 8` that's 3-4GB per container — OOM kills likely in Docker (see [issue #45](https://github.com/plaited/agent-eval-harness/issues/45))
+**Warning:** Stream-mode agents (claude-code, droid) use ~400-500MB RSS per prompt process. With `--prompt-concurrency 8` that's 3-4GB per container — OOM kills likely in Docker (see [issue #45](https://github.com/plaited/agent-eval-harness/issues/45))
 
 ## Prompts
 
-Prompts are organized by dataset type, with each in its own directory. The format differs by search provider:
+Prompts live in a flat `data/prompts/` directory. The format differs by search provider:
 - **Builtin mode**: Just the query (e.g., "What are the best free icon libraries...")
-- **MCP mode**: "Use {server-name} and answer\n{query}" (e.g., "Use ydc-server and answer\nWhat are...")
-
-Prompts are organized by dataset type, with each in its own directory:
+- **MCP mode**: `"Use {server-name} and answer\n{query}"` with MCP metadata
 
 | File | Prompts | Metadata | Use With |
-| ------ | --------- | ---------- | ---------- |
-| `full/prompts.jsonl` | 151 | No MCP | `SEARCH_PROVIDER=builtin` |
-| `full/prompts-you.jsonl` | 151 | `mcp_server="ydc-server"`, `expected_tool="you-search"` | `SEARCH_PROVIDER=you` |
-| `test/prompts.jsonl` | 5 | No MCP | `SEARCH_PROVIDER=builtin` |
-| `test/prompts-you.jsonl` | 5 | `mcp_server="ydc-server"`, `expected_tool="you-search"` | `SEARCH_PROVIDER=you` |
-| `trials/prompts.jsonl` | 30 | No MCP | `SEARCH_PROVIDER=builtin` |
-| `trials/prompts-you.jsonl` | 30 | `mcp_server="ydc-server"`, `expected_tool="you-search"` | `SEARCH_PROVIDER=you` |
+|------|---------|----------|----------|
+| `prompts.jsonl` | 151 | No MCP | `SEARCH_PROVIDER=builtin` |
+| `prompts-you.jsonl` | 151 | `mcpServer="ydc-server"`, `expectedTools=["you-search"]` | `SEARCH_PROVIDER=you` |
 
-**Key difference:**
-- **Builtin prompts** have no prefix - agents use their native web search capability
-- **MCP prompts** have "Use {server-name} and answer\n" prefix to explicitly invoke the MCP tool
-- **MCP metadata** in MCP variants tells the grader which tool to expect (e.g., `"mcpServer": "ydc-server"`, `"expectedTools": ["you-search"]`)
-
-The entrypoint automatically selects the correct prompt file based on `SEARCH_PROVIDER` and `DATASET` environment variables.
-
-### Refreshing Test Prompts
-
-Test and trials prompts are randomly sampled from the full dataset. Refresh them when:
-- Full dataset is updated with new prompts
-- Test prompts feel stale or unrepresentative
-- Debugging edge cases (re-sample until interesting prompts appear)
+The entrypoint automatically selects the correct prompt file based on `SEARCH_PROVIDER`. To run a random subset, pass `PROMPT_COUNT` (or `--count N` via CLI):
 
 ```bash
-bun run sample:test        # 5 prompts → test/
-bun run sample:trials      # 30 prompts → trials/
+bun run trials -- --count 5    # 5 random prompts from full dataset
 ```
-
-Or use the script directly:
-
-```bash
-bun scripts/sample.ts --dir test --count 5
-bun scripts/sample.ts --dir trials --count 30
-```
-
-**What it does:**
-1. Randomly samples prompts from `full/prompts.jsonl` (151 prompts) using Fisher-Yates shuffle
-2. Creates `<dir>/prompts.jsonl` with plain queries (builtin mode)
-3. Creates `<dir>/prompts-<key>.jsonl` for each MCP server with "Use {server-name} and answer\n" prefix and MCP metadata
-
-**Use cases:**
-- **After updating full dataset** - Get fresh test samples reflecting new prompts
-- **Before committing** - Ensure test set represents current full dataset
-- **Rapid iteration** - Test different scenarios without running full evaluation (~9 min vs ~2.5 hrs)
 
 ## Results
 
-### Test Results (Rapid Iteration)
-Written to `data/results/test-runs/<agent>/<searchProvider>.jsonl` for quick development cycles. Not versioned.
+All trial results are written to flat dated directories:
 
-### Full Run Results (Historical Archive)
-Stored in dated directories: `data/results/runs/YYYY-MM-DD/<agent>/<searchProvider>.jsonl`
+```
+data/results/YYYY-MM-DD/
+├── claude-code/
+│   ├── builtin.jsonl
+│   └── you.jsonl
+├── gemini/
+├── droid/
+└── codex/
+```
 
-**Versioning workflow:**
-1. Run full evaluation: `bun run run:full`
-2. Commit results: `git add data/results/ && git commit -m "feat: full evaluation run YYYY-MM-DD"`
+Each `.jsonl` line is a `TrialResult`:
+```jsonl
+{"id":"websearch-001","input":"...","k":5,"passRate":0.8,"passAtK":0.999,"passExpK":0.328,"trials":[...]}
+```
 
-**Directory structure:**
-- Test mode: `test-runs/<agent>/<searchProvider>.jsonl`
-- Full mode: `runs/YYYY-MM-DD/<agent>/<searchProvider>.jsonl`
+**Versioning:**
+```bash
+git add data/results/ && git commit -m "feat: trial run YYYY-MM-DD"
+```
 
 **Compare runs:**
 ```bash
-# Latest run (automatically detected from runs/ directory)
-bun scripts/compare.ts --mode full
-
-# Specific run
-bun scripts/compare.ts --mode full --run-date 2026-01-24
+bun run compare                             # Latest date auto-detected
+bun run compare -- --run-date 2026-02-18   # Specific date
 ```
 
 ## Adding a New Agent
@@ -442,8 +307,7 @@ Add to `docker-compose.yml`:
   env_file: .env
   environment:
     - AGENT=<agent>
-    - MCP_TOOL=${MCP_TOOL:-builtin}
-    - DATASET=${DATASET:-test}
+    - SEARCH_PROVIDER=${SEARCH_PROVIDER:-builtin}
 ```
 
 ### 4. Update TypeScript Entrypoint
@@ -454,10 +318,10 @@ Edit `docker/entrypoint` to add agent to `configureMcp()` function:
 const configureMcp = async (agent: string, tool: McpServerKey): Promise<void> => {
   const server = MCP_SERVERS[tool]
   const apiKey = server.auth ? process.env[server.auth.envVar] : undefined
-  
+
   switch (agent) {
     // ... existing cases ...
-    
+
     case '<agent>': {
       await $`<agent> mcp add ${server.name} ${server.url} --header "Authorization: Bearer ${apiKey}"`.quiet()
       console.log('✓ Agent MCP server added')
@@ -467,7 +331,7 @@ const configureMcp = async (agent: string, tool: McpServerKey): Promise<void> =>
 }
 ```
 
-Add timeout if needed in `buildCaptureCommand()`:
+Add timeout if needed in `buildTrialsCommand()`:
 
 ```typescript
 switch (AGENT) {
@@ -479,13 +343,13 @@ switch (AGENT) {
 
 ### 5. Update Scripts
 
-Edit `scripts/run.ts` to add agent to `ALL_AGENTS`:
+Edit `scripts/shared/shared.constants.ts` to add agent to `ALL_AGENTS`:
 
 ```typescript
-const ALL_AGENTS: Agent[] = ["claude-code", "gemini", "droid", "codex", "<agent>"]
+export const ALL_AGENTS: Agent[] = ["claude-code", "gemini", "droid", "codex", "<agent>"]
 ```
 
-Also update the `Agent` type:
+Also update the `Agent` type in `scripts/shared/shared.types.ts`:
 
 ```typescript
 type Agent = "claude-code" | "gemini" | "droid" | "codex" | "<agent>"
@@ -495,8 +359,8 @@ type Agent = "claude-code" | "gemini" | "droid" | "codex" | "<agent>"
 
 ```bash
 docker compose build <agent>
-docker compose run --rm -e MCP_TOOL=builtin <agent>
-docker compose run --rm -e MCP_TOOL=you <agent>
+docker compose run --rm -e SEARCH_PROVIDER=builtin <agent>
+docker compose run --rm -e SEARCH_PROVIDER=you <agent>
 ```
 
 ## Adding a New MCP Tool
@@ -504,26 +368,8 @@ docker compose run --rm -e MCP_TOOL=you <agent>
 ### 1. Add to mcp-servers.ts
 
 ```typescript
-export type McpServer = {
-  name: string
-  type: 'http'
-  url: string
-  auth?: {
-    type: 'bearer'
-    envVar: string
-  }
-}
-
 export const MCP_SERVERS = {
-  you: {
-    name: 'ydc-server',
-    type: 'http' as const,
-    url: 'https://api.you.com/mcp',
-    auth: {
-      type: 'bearer' as const,
-      envVar: 'YDC_API_KEY',
-    },
-  },
+  you: { /* ... existing */ },
   exa: {
     name: 'exa-server',
     type: 'http' as const,
@@ -578,52 +424,36 @@ Add to `.env` and `.env.example`:
 EXA_API_KEY=your_api_key_here
 ```
 
-### 4. Update Scripts
-
-Edit `scripts/run.ts` and `scripts/compare.ts`:
-
-```typescript
-type McpTool = "builtin" | "you" | "exa"
-```
-
-### 5. Generate MCP Prompt Sets
+### 4. Generate MCP Prompt Sets
 
 Use the generate-mcp-prompts script to create MCP variant files with proper metadata:
 
 ```bash
-# Generate variants for new MCP server (uses exa key from mcp-servers.ts)
+# Generate variants for new MCP server
 bun scripts/generate-mcp-prompts.ts --mcp-key exa
 
-# This creates MCP variants for all datasets:
-# - data/prompts/full/prompts-exa.jsonl
-# - data/prompts/test/prompts-exa.jsonl
-# - data/prompts/trials/prompts-exa.jsonl
+# Creates:
+# - data/prompts/prompts-exa.jsonl
 ```
 
-The script automatically reads server configuration from `mcp-servers.ts`, prepends "Use {server-name} and answer\n" to each query, and adds MCP metadata (server name and expected tools).
-
-Then regenerate test samples to include the new MCP variants:
-
-```bash
-bun run sample:test
-```
+The script prepends `"Use {server-name} and answer\n"` to each query and adds MCP metadata (server name and expected tools).
 
 The entrypoint automatically handles provider-specific prompt files:
 
 ```typescript
 const promptFile = SEARCH_PROVIDER === "builtin"
-  ? `/eval/data/prompts/${DATASET}/prompts.jsonl`
-  : `/eval/data/prompts/${DATASET}/prompts-${SEARCH_PROVIDER}.jsonl`  // e.g., test/prompts-exa.jsonl
+  ? `/eval/data/prompts/prompts.jsonl`
+  : `/eval/data/prompts/prompts-${SEARCH_PROVIDER}.jsonl`  // e.g., prompts-exa.jsonl
 ```
 
-**Note:** Scripts (`run.ts`, `run-trials.ts`, `sample.ts`) automatically pick up new MCP servers from `mcp-servers.ts`, so no manual updates needed.
+**Note:** `scripts/run-trials.ts` automatically picks up new MCP servers from `mcp-servers.ts`, so no manual updates needed.
 
-### 6. Test
+### 5. Test
 
 ```bash
 docker compose build
-docker compose run --rm -e MCP_TOOL=exa claude-code
-bun run run -- --mcp exa
+docker compose run --rm -e SEARCH_PROVIDER=exa claude-code
+bun run trials -- --search-provider exa --count 5 -k 1
 ```
 
 ## Schema Format Reference

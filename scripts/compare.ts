@@ -1,16 +1,16 @@
 #!/usr/bin/env bun
 
 /**
- * Statistical comparison tool for agent evaluation results
+ * Statistical comparison tool for trials results
  *
  * @remarks
- * Compares agent performance across different runs using statistical analysis or weighted scoring.
- * Generates comparison reports and visualizations to identify performance differences.
+ * Compares agent trial performance across different runs using statistical analysis or weighted scoring.
+ * Generates comparison reports to identify performance differences in pass@k and reliability metrics.
  *
  * ## Comparison Strategies
  *
- * - **weighted**: Score-based comparison using deterministic and LLM scores
- *   - Analyzes score distributions and pass rates
+ * - **weighted**: Score-based comparison using trial pass rates
+ *   - Analyzes passAtK (capability) and passExpK (reliability) distributions
  *   - Generates statistical summaries (mean, median, std dev)
  *   - Useful for overall performance assessment
  *
@@ -29,70 +29,69 @@
  * Examples:
  * - `claude-code-builtin` - Claude Code with builtin search
  * - `gemini-you` - Gemini with You.com MCP server
- * - `droid-builtin` - DROID with builtin search
  *
  * ## Output Paths
  *
  * Results are written to:
  * ```
- * data/comparisons/[mode]/comparison-[timestamp].json
+ * data/comparisons/[date]/[scope]-[strategy][-trial-type].json
  * ```
  *
- * For dated runs:
- * ```
- * data/comparisons/runs/[date]/comparison-[timestamp].json
- * ```
- *
- * For fixture-based comparisons:
- * ```
- * [fixture-dir]/comparison-[timestamp].json
- * ```
+ * Examples:
+ * - `data/comparisons/2026-01-29/all-weighted.json` (default, k=5)
+ * - `data/comparisons/2026-01-29/all-weighted-capability.json` (k=10)
+ * - `data/comparisons/2026-01-29/builtin-vs-you-statistical-regression.json` (k=3)
  *
  * ## Result Path Convention
  *
- * - **Test mode**: `data/results/test-runs/[agent]/[provider].jsonl`
- * - **Full mode**: `data/results/runs/[date]/[agent]/[provider].jsonl`
- * - **Fixtures**: `[fixture-dir]/results/runs/[date]/[agent]/[provider].jsonl`
+ * - `data/results/[date]/[agent]/[provider].jsonl`
+ * - `data/results/[date]/[agent]/[provider]-capability.jsonl` (with type suffix)
  *
  * Usage:
- *   bun scripts/compare.ts --mode test                              # Compare test results
- *   bun scripts/compare.ts --mode full --strategy statistical       # Statistical comparison
- *   bun scripts/compare.ts --agent claude-code --search-provider you  # Specific combo
- *   bun scripts/compare.ts --run-date 2026-01-15                    # Compare dated run
- *   bun scripts/compare.ts --fixture-dir ./test-fixtures            # Compare fixtures
- *   bun scripts/compare.ts --dry-run                                # Show what would run
+ *   bun scripts/compare.ts                           # Latest, all agents, weighted
+ *   bun scripts/compare.ts --run-date 2026-01-29    # Specific date
+ *   bun scripts/compare.ts --trial-type capability   # k=10 trials
+ *   bun scripts/compare.ts --strategy statistical    # Bootstrap sampling
+ *   bun scripts/compare.ts --agent claude-code       # Specific agent
+ *   bun scripts/compare.ts --search-provider you     # Specific provider
+ *   bun scripts/compare.ts --dry-run                 # Show plan without running
  *
  * @public
  */
 
-import { spawn } from "node:child_process";
 import { MCP_SERVERS, type McpServerKey } from "../mcp-servers.ts";
-
-import type { Agent, Mode, SearchProvider } from "./shared/shared.types.ts";
 import { ALL_AGENTS } from "./shared/shared.constants.ts";
+import type { Agent, SearchProvider } from "./shared/shared.types.ts";
 
+type TrialType = "default" | "capability" | "regression";
 type Strategy = "weighted" | "statistical";
 
 type CompareOptions = {
   agents: Agent[];
-  mode: Mode;
-  searchProvider?: SearchProvider;
+  searchProviders: SearchProvider[];
+  trialType: TrialType;
   strategy: Strategy;
-  dryRun?: boolean;
   runDate?: string;
-  fixtureDir?: string;
+  dryRun?: boolean;
 };
 
 const ALL_STRATEGIES: Strategy[] = ["weighted", "statistical"];
 
+/**
+ * Parse command-line arguments
+ *
+ * @param args - Command-line arguments
+ * @returns Parsed options
+ *
+ * @internal
+ */
 const parseArgs = (args: string[]): CompareOptions => {
   const agents: Agent[] = [];
-  let mode: Mode = "test";
-  let searchProvider: SearchProvider | undefined;
+  const searchProviders: SearchProvider[] = [];
+  let trialType: TrialType = "default";
   let strategy: Strategy = "weighted";
-  let dryRun = false;
   let runDate: string | undefined;
-  let fixtureDir: string | undefined;
+  let dryRun = false;
 
   const validProviders = ["builtin", ...Object.keys(MCP_SERVERS)];
 
@@ -104,19 +103,19 @@ const parseArgs = (args: string[]): CompareOptions => {
       }
       agents.push(agent as Agent);
       i++;
-    } else if (args[i] === "--mode" && i + 1 < args.length) {
-      const m = args[i + 1];
-      if (m !== "test" && m !== "full") {
-        throw new Error(`Invalid mode: ${m}. Must be "test" or "full"`);
+    } else if (args[i] === "--search-provider" && i + 1 < args.length) {
+      const provider = args[i + 1];
+      if (!validProviders.includes(provider as string)) {
+        throw new Error(`Invalid search provider: ${provider}. Must be one of: ${validProviders.join(", ")}`);
       }
-      mode = m;
+      searchProviders.push(provider as SearchProvider);
       i++;
-    } else if ((args[i] === "--search-provider" || args[i] === "--mcp") && i + 1 < args.length) {
-      const tool = args[i + 1];
-      if (!validProviders.includes(tool as string)) {
-        throw new Error(`Invalid search provider: ${tool}. Must be one of: ${validProviders.join(", ")}`);
+    } else if (args[i] === "--trial-type" && i + 1 < args.length) {
+      const type = args[i + 1];
+      if (type !== "default" && type !== "capability" && type !== "regression") {
+        throw new Error(`Invalid trial type: ${type}. Must be "default", "capability", or "regression"`);
       }
-      searchProvider = tool as SearchProvider;
+      trialType = type as TrialType;
       i++;
     } else if (args[i] === "--strategy" && i + 1 < args.length) {
       const s = args[i + 1];
@@ -128,206 +127,302 @@ const parseArgs = (args: string[]): CompareOptions => {
     } else if (args[i] === "--run-date" && i + 1 < args.length) {
       runDate = args[i + 1];
       i++;
-    } else if (args[i] === "--fixture-dir" && i + 1 < args.length) {
-      fixtureDir = args[i + 1];
-      i++;
     } else if (args[i] === "--dry-run") {
       dryRun = true;
     }
   }
 
+  // Defaults
+  const mcpProviders = Object.keys(MCP_SERVERS) as McpServerKey[];
+
   return {
     agents: agents.length > 0 ? agents : ALL_AGENTS,
-    mode,
-    searchProvider,
+    searchProviders: searchProviders.length > 0 ? searchProviders : ["builtin", ...mcpProviders],
+    trialType,
     strategy,
-    dryRun,
     runDate,
-    fixtureDir,
+    dryRun,
   };
 };
 
-const getLatestRunPath = async (fixtureDir?: string): Promise<string> => {
-  const dataDir = fixtureDir || "data";
-  const runsDir = `${dataDir}/results/runs`;
-
-  // Scan runs directory for dated folders
-  const entries = await Array.fromAsync(new Bun.Glob("*").scan({ cwd: runsDir, onlyFiles: false }));
-  const datedDirs = entries.filter((entry) => /^\d{4}-\d{2}-\d{2}$/.test(entry));
-
-  if (datedDirs.length === 0) {
-    throw new Error(`No dated runs found in ${runsDir}`);
+/**
+ * Discover latest results date from directory structure
+ *
+ * @param resultsBaseDir - Base results directory path
+ * @returns Latest date string in YYYY-MM-DD format
+ *
+ * @internal
+ */
+const discoverLatestDate = async (resultsBaseDir: string): Promise<string> => {
+  const dirs = await Array.fromAsync(new Bun.Glob("*").scan({ cwd: resultsBaseDir, onlyFiles: false }));
+  const dates = dirs.filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d)).sort();
+  if (dates.length === 0) {
+    throw new Error(`No dated runs found in ${resultsBaseDir}`);
   }
-
-  // Sort by date (YYYY-MM-DD format sorts lexicographically) and take the latest
-  const latestDate = datedDirs.sort().reverse()[0];
-  return `runs/${latestDate}`;
+  const latestDate = dates[dates.length - 1];
+  if (!latestDate) {
+    throw new Error(`Failed to get latest date from ${resultsBaseDir}`);
+  }
+  return latestDate;
 };
 
-const buildResultPath = async ({
-  agent,
-  searchProvider,
-  mode,
-  runDate,
-  fixtureDir,
-}: {
-  agent: Agent;
-  searchProvider: SearchProvider;
-  mode: Mode;
-  runDate?: string;
-  fixtureDir?: string;
-}): Promise<string> => {
-  const dataDir = fixtureDir || "data";
-
-  if (mode === "test") {
-    return `${dataDir}/results/test-runs/${agent}/${searchProvider}.jsonl`;
-  }
-
-  const runDir = runDate ? `runs/${runDate}` : await getLatestRunPath(fixtureDir);
-  return `${dataDir}/results/${runDir}/${agent}/${searchProvider}.jsonl`;
-};
-
+/**
+ * Build run label for comparison output
+ *
+ * @param agent - Agent name
+ * @param searchProvider - Search provider
+ * @returns Run label string
+ *
+ * @internal
+ */
 const buildRunLabel = (agent: Agent, searchProvider: SearchProvider): string => {
   return `${agent}-${searchProvider}`;
 };
 
-const buildOutputPath = async (options: CompareOptions): Promise<string> => {
-  const { agents, searchProvider, strategy, mode, runDate, fixtureDir } = options;
-  const dataDir = fixtureDir || "data";
-
-  let scope: string;
-  if (agents.length < ALL_AGENTS.length) {
-    // Specific agents: gemini-claude-code (include searchProvider if specified)
-    scope = searchProvider ? `${agents.join("-")}-${searchProvider}` : agents.join("-");
-  } else if (searchProvider) {
-    // All agents, specific search provider: builtin or you
-    scope = searchProvider;
-  } else {
-    // All agents, both search providers: all
-    scope = "all";
-  }
-
-  // Version comparison outputs by mode and date
-  if (mode === "test") {
-    // Test comparisons: test-runs directory
-    return `${dataDir}/comparisons/test-runs/${scope}-${strategy}.json`;
-  }
-
-  // Full comparisons: dated directory (use runDate or latest)
-  const dateDir = runDate || (await getLatestRunPath(fixtureDir)).replace("runs/", "");
-  return `${dataDir}/comparisons/runs/${dateDir}/${scope}-${strategy}.json`;
+/**
+ * Build results file path
+ *
+ * @param resultsDir - Base results directory for date
+ * @param agent - Agent name
+ * @param searchProvider - Search provider
+ * @param trialType - Trial type
+ * @returns Results file path
+ *
+ * @internal
+ */
+const buildResultsPath = (
+  resultsDir: string,
+  agent: Agent,
+  searchProvider: SearchProvider,
+  trialType: TrialType,
+): string => {
+  const typeSuffix = trialType === "default" ? "" : `-${trialType}`;
+  return `${resultsDir}/${agent}/${searchProvider}${typeSuffix}.jsonl`;
 };
 
-const runComparison = async (options: CompareOptions): Promise<void> => {
-  const { agents, mode, searchProvider, strategy, runDate, fixtureDir } = options;
+/**
+ * Generate comparison scope name
+ *
+ * @param scenarios - Array of agent-provider scenarios
+ * @param options - Comparison options
+ * @returns Scope name for output file
+ *
+ * @internal
+ */
+const getComparisonScope = (
+  scenarios: Array<{ agent: Agent; provider: SearchProvider }>,
+  options: CompareOptions,
+): string => {
+  const { agents, searchProviders } = options;
 
-  // Build scenario matrix
-  const mcpProviders = Object.keys(MCP_SERVERS) as McpServerKey[];
-  const searchProviders: SearchProvider[] = searchProvider ? [searchProvider] : ["builtin", ...mcpProviders];
-  const runs: Array<{ agent: Agent; searchProvider: SearchProvider }> = [];
-
-  for (const agent of agents) {
-    for (const provider of searchProviders) {
-      runs.push({ agent, searchProvider: provider });
-    }
+  // Check if all scenarios are builtin
+  const allBuiltin = scenarios.every((s) => s.provider === "builtin");
+  if (allBuiltin) {
+    return "all-builtin";
   }
+
+  // Check if all scenarios use a single non-builtin (MCP) provider
+  const hasBuiltin = scenarios.some((s) => s.provider === "builtin");
+  const nonBuiltinProviders = [...new Set(scenarios.map((s) => s.provider).filter((p) => p !== "builtin"))];
+  if (!hasBuiltin && nonBuiltinProviders.length === 1) {
+    return `all-${nonBuiltinProviders[0]}`;
+  }
+
+  // Check if we have both builtin and a single MCP provider
+  if (hasBuiltin && nonBuiltinProviders.length === 1) {
+    return `builtin-vs-${nonBuiltinProviders[0]}`;
+  }
+
+  // Custom scope: specific agents or providers
+  if (agents.length < ALL_AGENTS.length) {
+    return searchProviders.length === 1 ? `${agents.join("-")}-${searchProviders[0]}` : agents.join("-");
+  }
+
+  return "all";
+};
+
+/**
+ * Run comparison for a specific scope
+ *
+ * @param scenarios - Array of agent-provider scenarios
+ * @param options - Comparison options
+ * @returns Promise resolving when comparison completes
+ *
+ * @internal
+ */
+const runComparison = async (
+  scenarios: Array<{ agent: Agent; provider: SearchProvider }>,
+  options: CompareOptions,
+): Promise<void> => {
+  const { strategy, runDate, trialType, dryRun } = options;
+
+  // runDate is always resolved by main() before calling runComparison
+  const resultsBaseDir = "data/results";
+  if (!runDate) throw new Error("runDate must be resolved before calling runComparison");
+  const dateDir = runDate;
+  const resultsDir = `${resultsBaseDir}/${dateDir}`;
+
+  // Build output path
+  const scope = getComparisonScope(scenarios, options);
+  const outputDir = `data/comparisons/${dateDir}`;
+  await Bun.$`mkdir -p ${outputDir}`.quiet();
+
+  // Include trial type in filename if not default
+  const typeSuffix = trialType === "default" ? "" : `-${trialType}`;
+  const outputPath = `${outputDir}/${scope}-${strategy}${typeSuffix}.json`;
 
   // Build command arguments
   const args = ["@plaited/agent-eval-harness", "compare"];
 
-  for (const { agent, searchProvider: provider } of runs) {
+  for (const { agent, provider } of scenarios) {
     const label = buildRunLabel(agent, provider);
-    const path = await buildResultPath({
-      agent,
-      searchProvider: provider,
-      mode,
-      runDate,
-      fixtureDir,
-    });
+    const path = buildResultsPath(resultsDir, agent, provider, trialType);
+
+    // Check if file exists
+    const exists = await Bun.file(path).exists();
+    if (!exists) {
+      console.warn(`⚠️  Skipping ${label}: File not found at ${path}`);
+      continue;
+    }
+
     args.push("--run", `${label}:${path}`);
   }
 
   args.push("--strategy", strategy);
-
-  const outputPath = await buildOutputPath(options);
-
-  // Ensure output directory exists
-  const outputDir = outputPath.substring(0, outputPath.lastIndexOf("/"));
-  await Bun.$`mkdir -p ${outputDir}`.quiet();
-
   args.push("-o", outputPath);
 
+  if (dryRun) {
+    console.log(`\n[DRY RUN] Would run comparison:`);
+    console.log(`  Scope: ${scope}`);
+    console.log(`  Strategy: ${strategy}`);
+    console.log(`  Output: ${outputPath}`);
+    console.log(`  Command: bunx ${args.join(" ")}`);
+    return;
+  }
+
+  console.log(`\n🔄 ${scope} (${strategy})`);
+  console.log(`   Output: ${outputPath}`);
+
   // Execute
-  const proc = spawn("bunx", args, { stdio: "inherit" });
-
-  return new Promise((resolve, reject) => {
-    proc.on("close", (code) => {
-      if (code === 0) {
-        resolve();
-      } else {
-        reject(new Error(`Comparison failed with exit code ${code}`));
-      }
-    });
-
-    proc.on("error", (err) => {
-      reject(err);
-    });
-  });
+  const result = await Bun.$`bunx ${args}`.nothrow();
+  if (result.exitCode !== 0) {
+    throw new Error(`Comparison failed with exit code ${result.exitCode}`);
+  }
+  console.log(`   ✓ Complete\n`);
 };
 
+/**
+ * Main entry point
+ *
+ * @internal
+ */
 const main = async () => {
   try {
     const options = parseArgs(process.argv.slice(2));
 
-    if (options.dryRun) {
-      console.log("[DRY RUN] Comparison validation mode\n");
-      console.log("Configuration:");
-      console.log(`  Mode: ${options.mode}`);
-      console.log(`  Agents: ${options.agents.join(", ")}`);
-      console.log(`  Search Provider: ${options.searchProvider || "all"}`);
-      console.log(`  Strategy: ${options.strategy}`);
-      console.log(`\nOutput: ${await buildOutputPath(options)}\n`);
+    const resultsBaseDir = "data/results";
+    options.runDate = options.runDate ?? (await discoverLatestDate(resultsBaseDir));
+    const runDate = options.runDate;
+    const resultsDir = `${resultsBaseDir}/${runDate}`;
+    const typeSuffix = options.trialType === "default" ? "" : `-${options.trialType}`;
 
-      // Build scenario matrix for preview
-      const mcpProviders = Object.keys(MCP_SERVERS) as McpServerKey[];
-      const searchProviders: SearchProvider[] = options.searchProvider
-        ? [options.searchProvider]
-        : ["builtin", ...mcpProviders];
-      const runs: Array<{ agent: Agent; searchProvider: SearchProvider }> = [];
+    console.log(`📊 COMPARISON - ${runDate}`);
+    console.log(`Trial Type: ${options.trialType}`);
+    console.log(`Strategy: ${options.strategy}`);
+    console.log(`${options.dryRun ? "[DRY RUN] " : ""}`);
+    console.log();
 
-      for (const agent of options.agents) {
-        for (const provider of searchProviders) {
-          runs.push({ agent, searchProvider: provider });
+    // Discover available results files (skip file check in dry-run mode)
+    const scenarios: Array<{ agent: Agent; provider: SearchProvider }> = [];
+    for (const agent of options.agents) {
+      for (const provider of options.searchProviders) {
+        const resultsFile = `${resultsDir}/${agent}/${provider}${typeSuffix}.jsonl`;
+        if (options.dryRun || (await Bun.file(resultsFile).exists())) {
+          scenarios.push({ agent, provider });
         }
       }
-
-      console.log("Runs to compare:");
-      for (const { agent, searchProvider: provider } of runs) {
-        const label = buildRunLabel(agent, provider);
-        const path = await buildResultPath({
-          agent,
-          searchProvider: provider,
-          mode: options.mode,
-          runDate: options.runDate,
-          fixtureDir: options.fixtureDir,
-        });
-        console.log(`  ${label}: ${path}`);
-      }
-
-      process.exit(0);
     }
 
-    console.log("Comparison Configuration:");
-    console.log(`  Mode: ${options.mode}`);
-    console.log(`  Agents: ${options.agents.join(", ")}`);
-    console.log(`  Search Provider: ${options.searchProvider || "all"}`);
-    console.log(`  Strategy: ${options.strategy}`);
-    const outputPath = await buildOutputPath(options);
-    console.log(`  Output: ${outputPath}\n`);
+    if (scenarios.length === 0) {
+      throw new Error(`No results files found in ${resultsDir}`);
+    }
 
-    await runComparison(options);
+    console.log(`Found ${scenarios.length} scenarios:`);
+    for (const { agent, provider } of scenarios) {
+      console.log(`  - ${agent}-${provider}`);
+    }
+    console.log();
 
-    console.log(`\n✓ Comparison complete: ${outputPath}`);
+    // Generate comparisons based on available scenarios
+    const comparisons: Array<{
+      description: string;
+      scenarios: Array<{ agent: Agent; provider: SearchProvider }>;
+    }> = [];
+
+    // All builtin comparison
+    const builtinScenarios = scenarios.filter((s) => s.provider === "builtin");
+    if (builtinScenarios.length > 1) {
+      comparisons.push({
+        description: "All agents with builtin search",
+        scenarios: builtinScenarios,
+      });
+    }
+
+    // All MCP provider comparisons (one per provider key)
+    const mcpKeys = Object.keys(MCP_SERVERS) as McpServerKey[];
+    for (const mcpKey of mcpKeys) {
+      const mcpScenarios = scenarios.filter((s) => s.provider === mcpKey);
+      if (mcpScenarios.length > 1) {
+        comparisons.push({
+          description: `All agents with ${mcpKey} MCP`,
+          scenarios: mcpScenarios,
+        });
+      }
+    }
+
+    // Builtin vs each MCP provider (if we have data for both)
+    if (builtinScenarios.length > 0) {
+      for (const mcpKey of mcpKeys) {
+        const mcpScenarios = scenarios.filter((s) => s.provider === mcpKey);
+        if (mcpScenarios.length > 0 && builtinScenarios.length > 0) {
+          comparisons.push({
+            description: `Builtin vs ${mcpKey} across all agents`,
+            scenarios: [...builtinScenarios, ...mcpScenarios],
+          });
+        }
+      }
+    }
+
+    // If no multi-scenario comparisons, just run a single comparison with all scenarios
+    if (comparisons.length === 0 && scenarios.length > 1) {
+      comparisons.push({
+        description: "All available scenarios",
+        scenarios: scenarios,
+      });
+    }
+
+    if (comparisons.length === 0) {
+      console.log("⚠️  Not enough scenarios for comparison (need at least 2)");
+      process.exit(options.dryRun ? 0 : 1);
+    }
+
+    // Run all comparisons
+    let failureCount = 0;
+    for (const comparison of comparisons) {
+      try {
+        await runComparison(comparison.scenarios, options);
+      } catch (error) {
+        failureCount++;
+        console.error(`✗ Failed: ${comparison.description}`);
+        console.error(`  ${(error as Error).message}`);
+      }
+    }
+
+    if (failureCount > 0) {
+      console.error(`\n❌ ${failureCount} comparison(s) failed.`);
+      process.exit(1);
+    }
+    console.log("✅ All comparisons complete!");
   } catch (error) {
     console.error(`Error: ${(error as Error).message}`);
     process.exit(1);

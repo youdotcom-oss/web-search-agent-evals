@@ -57,20 +57,19 @@ describe("run-trials.ts", () => {
       expect(stdout).toContain("(k=3)");
     });
 
-    test("uses trials dataset by default", async () => {
+    test("uses full dataset by default", async () => {
       const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--dry-run"]);
 
       expect(exitCode).toBe(0);
-      expect(stdout).toContain("Dataset: trials (30 prompts)");
-      expect(stdout).toContain("Dataset: /eval/data/prompts/trials/prompts.jsonl");
+      expect(stdout).toContain("Dataset: full (151 prompts)");
+      expect(stdout).toContain("Dataset: /eval/data/prompts/prompts.jsonl");
     });
 
-    test("accepts --dataset full", async () => {
-      const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--dataset", "full", "--dry-run"]);
+    test("accepts --count for sampling", async () => {
+      const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--count", "5", "--dry-run"]);
 
       expect(exitCode).toBe(0);
-      expect(stdout).toContain("Dataset: full (151 prompts)");
-      expect(stdout).toContain("Dataset: /eval/data/prompts/full/prompts.jsonl");
+      expect(stdout).toContain("Sampling 5 from full dataset");
     });
 
     test("accepts --trial-type default", async () => {
@@ -135,12 +134,12 @@ describe("run-trials.ts", () => {
       expect(stderr).toContain("Must be");
     });
 
-    test("rejects invalid dataset", async () => {
-      const { stderr, exitCode } = await runScript(SCRIPT_PATH, ["--dataset", "invalid-dataset"]);
+    test("rejects invalid --count value (non-numeric)", async () => {
+      const { stderr, exitCode } = await runScript(SCRIPT_PATH, ["--count", "abc"]);
 
       expect(exitCode).toBe(1);
-      expect(stderr).toContain("Invalid dataset: invalid-dataset");
-      expect(stderr).toContain('Must be "trials" or "full"');
+      expect(stderr).toContain("Invalid count: abc");
+      expect(stderr).toContain("Must be a positive integer");
     });
 
     test("rejects invalid -k value (non-numeric)", async () => {
@@ -210,8 +209,8 @@ describe("run-trials.ts", () => {
       const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--trial-type", "default", "--dry-run"]);
 
       expect(exitCode).toBe(0);
-      // Check for dated path structure: trials/YYYY-MM-DD/agent/provider.jsonl
-      expect(stdout).toMatch(/trials\/\d{4}-\d{2}-\d{2}\/claude-code\/builtin\.jsonl/);
+      // Check for flat dated path structure: YYYY-MM-DD/agent/provider.jsonl
+      expect(stdout).toMatch(/results\/\d{4}-\d{2}-\d{2}\/claude-code\/builtin\.jsonl/);
       expect(stdout).not.toContain("builtin-default.jsonl");
     });
 
@@ -219,14 +218,14 @@ describe("run-trials.ts", () => {
       const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--trial-type", "capability", "--dry-run"]);
 
       expect(exitCode).toBe(0);
-      expect(stdout).toMatch(/trials\/\d{4}-\d{2}-\d{2}\/claude-code\/builtin-capability\.jsonl/);
+      expect(stdout).toMatch(/results\/\d{4}-\d{2}-\d{2}\/claude-code\/builtin-capability\.jsonl/);
     });
 
     test("regression type adds suffix", async () => {
       const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--trial-type", "regression", "--dry-run"]);
 
       expect(exitCode).toBe(0);
-      expect(stdout).toMatch(/trials\/\d{4}-\d{2}-\d{2}\/claude-code\/builtin-regression\.jsonl/);
+      expect(stdout).toMatch(/results\/\d{4}-\d{2}-\d{2}\/claude-code\/builtin-regression\.jsonl/);
     });
   });
 
@@ -257,16 +256,16 @@ describe("run-trials.ts", () => {
       const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--dry-run"]);
 
       expect(exitCode).toBe(0);
-      expect(stdout).toContain("Dataset: /eval/data/prompts/trials/prompts.jsonl");
-      expect(stdout).toContain("Dataset: /eval/data/prompts/trials/prompts-you.jsonl");
+      expect(stdout).toContain("Dataset: /eval/data/prompts/prompts.jsonl");
+      expect(stdout).toContain("Dataset: /eval/data/prompts/prompts-you.jsonl");
     });
 
     test("shows correct output paths with date", async () => {
       const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--dry-run"]);
 
       expect(exitCode).toBe(0);
-      expect(stdout).toContain("Output: /eval/data/results/trials/");
-      expect(stdout).toMatch(/trials\/\d{4}-\d{2}-\d{2}\//); // Verify date format
+      expect(stdout).toContain("Output: /eval/data/results/");
+      expect(stdout).toMatch(/results\/\d{4}-\d{2}-\d{2}\//); // Verify date format
       expect(stdout).toContain(".jsonl");
     });
   });

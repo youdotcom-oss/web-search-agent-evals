@@ -90,9 +90,7 @@ Examples:
   bun scripts/generate-mcp-prompts.ts --dry-run
 
 Output files:
-  data/prompts/full/prompts-<suffix>.jsonl
-  data/prompts/test/prompts-<suffix>.jsonl
-  data/prompts/trials/prompts-<suffix>.jsonl
+  data/prompts/prompts-<suffix>.jsonl
       `);
       process.exit(0);
     }
@@ -123,11 +121,15 @@ Output files:
 };
 
 const convertPrompt = (prompt: Prompt, config: McpConfig): Prompt => {
+  // Strip 'Use web search and answer\n' prefix if present
+  const prefix = "Use web search and answer\n";
+  const cleanedInput = prompt.input.startsWith(prefix) ? prompt.input.slice(prefix.length) : prompt.input;
+
   // Prefix input with rule to use the specified MCP tool
   // Add metadata to indicate MCP expectations for grader
   return {
     ...prompt,
-    input: `Use ${config.serverName} and answer\n${prompt.input}`,
+    input: `Use ${config.serverName} and answer\n${cleanedInput}`,
     metadata: {
       ...prompt.metadata,
       mcpServer: config.serverName,
@@ -178,16 +180,14 @@ const main = async () => {
     console.log(`   Tool Names: ${config.expectedTools.join(", ")}`);
     console.log(`   Suffix:     ${config.suffix}`);
 
-    const datasets = ["full", "test", "trials"];
+    const inputPath = `data/prompts/prompts.jsonl`;
+    const outputPath = `data/prompts/prompts-${config.suffix}.jsonl`;
     let totalConverted = 0;
 
-    for (const dataset of datasets) {
-      const inputPath = `data/prompts/${dataset}/prompts.jsonl`;
-      const outputPath = `data/prompts/${dataset}/prompts-${config.suffix}.jsonl`;
-
+    {
       const inputFile = Bun.file(inputPath);
       if (!(await inputFile.exists())) {
-        console.log(`  ⚠️  Skipping ${dataset}: ${inputPath} not found`);
+        console.log(`  ⚠️  Skipping: ${inputPath} not found`);
         continue;
       }
 

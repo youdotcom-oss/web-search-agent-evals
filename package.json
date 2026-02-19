@@ -6,7 +6,7 @@
     "check": "bun run format:check && bun run lint && bun run typecheck && bun run check:package",
     "check:package": "format-package --check",
     "check:write": "bun run format && bun run lint:fix && bun run format:package",
-    "clean": "rm -rf data/results/*/*.jsonl",
+    "clean": "rm -rf data/results/*/*/*.jsonl",
     "compare": "bun scripts/compare.ts",
     "compare:stat": "bun scripts/compare.ts --strategy statistical",
     "format": "biome format --write",

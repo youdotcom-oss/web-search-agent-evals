@@ -549,9 +549,9 @@ const generateToolCallSections = (analyses: FileAnalysis[]): string => {
     md.push(`### ${agent.toUpperCase()}\n\n`);
 
     const builtin = agentResults.find((r) => r.provider === "builtin");
-    const mcp = agentResults.find((r) => r.provider !== "builtin");
+    const mcpResults = agentResults.filter((r) => r.provider !== "builtin");
 
-    if (!builtin || !mcp) {
+    if (!builtin || mcpResults.length === 0) {
       // Single provider: just show stats
       for (const r of agentResults) {
         const { stats } = r;
@@ -562,8 +562,6 @@ const generateToolCallSections = (analyses: FileAnalysis[]): string => {
       continue;
     }
 
-    md.push(`| Metric | Builtin | ${mcp.provider} | Difference | % Change |\n`);
-    md.push(`|--------|---------|${"-".repeat(mcp.provider.length + 2)}|------------|----------|\n`);
     const metrics: Array<{ label: string; key: "median" | "p90" | "p99" | "mean" | "min" | "max" }> = [
       { label: "Median (P50)", key: "median" },
       { label: "P90", key: "p90" },
@@ -572,17 +570,21 @@ const generateToolCallSections = (analyses: FileAnalysis[]): string => {
       { label: "Min", key: "min" },
       { label: "Max", key: "max" },
     ];
-    for (const { label, key } of metrics) {
-      const bv = builtin.stats[key];
-      const mv = mcp.stats[key];
-      const diff = mv - bv;
-      const pctChange = bv > 0 ? (diff / bv) * 100 : 0;
-      const arrow = diff > 0 ? "↑" : diff < 0 ? "↓" : "→";
-      md.push(
-        `| ${label} | ${bv.toFixed(1)} | ${mv.toFixed(1)} | ${arrow} ${Math.abs(diff).toFixed(1)} | ${pctChange > 0 ? "+" : ""}${pctChange.toFixed(1)}% |\n`,
-      );
+    for (const mcp of mcpResults) {
+      md.push(`| Metric | Builtin | ${mcp.provider} | Difference | % Change |\n`);
+      md.push(`|--------|---------|${"-".repeat(mcp.provider.length + 2)}|------------|----------|\n`);
+      for (const { label, key } of metrics) {
+        const bv = builtin.stats[key];
+        const mv = mcp.stats[key];
+        const diff = mv - bv;
+        const pctChange = bv > 0 ? (diff / bv) * 100 : 0;
+        const arrow = diff > 0 ? "↑" : diff < 0 ? "↓" : "→";
+        md.push(
+          `| ${label} | ${bv.toFixed(1)} | ${mv.toFixed(1)} | ${arrow} ${Math.abs(diff).toFixed(1)} | ${pctChange > 0 ? "+" : ""}${pctChange.toFixed(1)}% |\n`,
+        );
+      }
+      md.push(`\n**Sample size:** ${builtin.stats.count} (builtin), ${mcp.stats.count} (${mcp.provider})\n\n`);
     }
-    md.push(`\n**Sample size:** ${builtin.stats.count} (builtin), ${mcp.stats.count} (${mcp.provider})\n\n`);
   }
 
   // Tool Call Distribution Histograms

@@ -382,7 +382,7 @@ const main = async () => {
     if (builtinScenarios.length > 0) {
       for (const mcpKey of mcpKeys) {
         const mcpScenarios = scenarios.filter((s) => s.provider === mcpKey);
-        if (mcpScenarios.length > 0 && builtinScenarios.length + mcpScenarios.length > 2) {
+        if (mcpScenarios.length > 0 && builtinScenarios.length > 0) {
           comparisons.push({
             description: `Builtin vs ${mcpKey} across all agents`,
             scenarios: [...builtinScenarios, ...mcpScenarios],

@@ -167,6 +167,10 @@ const buildTrialsCommand = async (): Promise<string[]> => {
   // Output path: flat dated structure
   const runDate = new Date().toISOString().split("T")[0];
   const trialType = process.env.TRIAL_TYPE || "default";
+  const VALID_TRIAL_TYPES = ["default", "capability", "regression"] as const;
+  if (!(VALID_TRIAL_TYPES as readonly string[]).includes(trialType)) {
+    throw new Error(`Invalid TRIAL_TYPE: ${trialType}. Must be one of: ${VALID_TRIAL_TYPES.join(", ")}`);
+  }
   const typeSuffix = trialType === "default" ? "" : `-${trialType}`;
   const outputDir = `/eval/data/results/${runDate}/${AGENT}`;
   await $`mkdir -p ${outputDir}`.quiet();

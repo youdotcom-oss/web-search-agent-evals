@@ -31,10 +31,13 @@ import { loadJsonFile } from "./schemas/common.ts";
 import { MCP_SERVERS } from "../mcp-servers.ts";
 import { ALL_AGENTS } from "./shared/shared.constants.ts";
 
+type TrialType = "default" | "capability" | "regression";
+
 type ReportOptions = {
   runDate?: string;
   output?: string;
   dryRun?: boolean;
+  trialType: TrialType;
 };
 
 type TrialResult = {
@@ -55,6 +58,7 @@ const parseArgs = (args: string[]): ReportOptions => {
   let runDate: string | undefined;
   let output: string | undefined;
   let dryRun = false;
+  let trialType: TrialType = "default";
 
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--run-date" && i + 1 < args.length) {
@@ -63,6 +67,12 @@ const parseArgs = (args: string[]): ReportOptions => {
       output = args[++i];
     } else if (args[i] === "--dry-run") {
       dryRun = true;
+    } else if (args[i] === "--trial-type" && i + 1 < args.length) {
+      const t = args[++i];
+      if (t !== "default" && t !== "capability" && t !== "regression") {
+        throw new Error(`Invalid trial type: ${t}. Must be "default", "capability", or "regression"`);
+      }
+      trialType = t;
     } else if (args[i] === "--help" || args[i] === "-h") {
       console.log(`
 Generate comprehensive REPORT.md from comparison results and trial data
@@ -72,6 +82,7 @@ Usage:
 
 Options:
   --run-date <YYYY-MM-DD>   Specific run date (default: latest)
+  --trial-type <type>       Trial type: default | capability | regression (default: default)
   --output, -o <file>       Output file path (default: data/comparisons/{date}/REPORT.md)
   --dry-run                 Show configuration without generating report
   --help, -h                Show this help message
@@ -80,7 +91,7 @@ Options:
     }
   }
 
-  return { runDate, output, dryRun };
+  return { runDate, output, dryRun, trialType };
 };
 
 // ─── Discovery ───────────────────────────────────────────────────────────────
@@ -101,15 +112,17 @@ export const findLatestDate = async (baseDir: string): Promise<string> => {
 
 const loadComparison = async (
   comparisonsDir: string,
-  type: "weighted" | "statistical",
+  strategy: "weighted" | "statistical",
+  trialType: TrialType = "default",
 ): Promise<WeightedComparison | null> => {
   // Try files in priority order, deriving MCP provider names dynamically
+  const typeSuffix = trialType === "default" ? "" : `-${trialType}`;
   const mcpKeys = Object.keys(MCP_SERVERS);
   const candidates = [
-    ...mcpKeys.map((k) => `${comparisonsDir}/builtin-vs-${k}-${type}.json`),
-    `${comparisonsDir}/all-${type}.json`,
-    `${comparisonsDir}/all-builtin-${type}.json`,
-    ...mcpKeys.map((k) => `${comparisonsDir}/all-${k}-${type}.json`),
+    ...mcpKeys.map((k) => `${comparisonsDir}/builtin-vs-${k}-${strategy}${typeSuffix}.json`),
+    `${comparisonsDir}/all-${strategy}${typeSuffix}.json`,
+    `${comparisonsDir}/all-builtin-${strategy}${typeSuffix}.json`,
+    ...mcpKeys.map((k) => `${comparisonsDir}/all-${k}-${strategy}${typeSuffix}.json`),
   ];
 
   for (const path of candidates) {
@@ -206,7 +219,8 @@ type FileAnalysis = {
 
 const analyzeFile = async (filePath: string): Promise<FileAnalysis> => {
   const parts = filePath.split("/");
-  const provider = parts[parts.length - 1]?.replace(".jsonl", "") ?? "unknown";
+  const rawProvider = parts[parts.length - 1]?.replace(".jsonl", "") ?? "unknown";
+  const provider = rawProvider.replace(/-(capability|regression)$/, "");
   const agent = parts[parts.length - 2] ?? "unknown";
 
   const text = await Bun.file(filePath).text();
@@ -460,8 +474,8 @@ const generateSummarySections = (weighted: WeightedComparison, statistical: Weig
             const mp = performance[mcpRun];
             if (!bq || !mq || !bp || !mp) return;
 
-            const qualityDiff = ((mq.avgScore - bq.avgScore) / bq.avgScore) * 100;
-            const speedDiff = ((mp.latency.p50 - bp.latency.p50) / bp.latency.p50) * 100;
+            const qualityDiff = bq.avgScore > 0 ? ((mq.avgScore - bq.avgScore) / bq.avgScore) * 100 : 0;
+            const speedDiff = bp.latency.p50 > 0 ? ((mp.latency.p50 - bp.latency.p50) / bp.latency.p50) * 100 : 0;
 
             let reliabilityDiff = 0;
             if (reliability?.[builtinRun] && reliability[mcpRun] && !isRegularRunReliability(reliability[builtinRun])) {
@@ -675,8 +689,12 @@ const main = async () => {
   const resultsDir = `${resultsBase}/${runDate}`;
   const outputPath = options.output ?? `${comparisonsDir}/REPORT.md`;
 
+  const { trialType } = options;
+  const typeSuffix = trialType === "default" ? "" : `-${trialType}`;
+
   console.log("Report Configuration:");
   console.log(`  Run date:   ${runDate}`);
+  console.log(`  Trial type: ${trialType}`);
   console.log(`  Comparisons: ${comparisonsDir}`);
   console.log(`  Results:    ${resultsDir}`);
   console.log(`  Output:     ${outputPath}`);
@@ -688,15 +706,21 @@ const main = async () => {
   }
 
   // Load comparison data
-  const weighted = await loadComparison(comparisonsDir, "weighted");
+  const weighted = await loadComparison(comparisonsDir, "weighted", trialType);
   if (!weighted) {
     throw new Error(`No comparison data found in ${comparisonsDir}`);
   }
-  const statistical = await loadComparison(comparisonsDir, "statistical");
+  const statistical = await loadComparison(comparisonsDir, "statistical", trialType);
 
-  // Load raw trial data for tool call analysis
+  // Load raw trial data for tool call analysis, filtered by trial type
   const glob = new Bun.Glob("**/*.jsonl");
-  const jsonlFiles = await Array.fromAsync(glob.scan({ cwd: resultsDir }));
+  const allJsonlFiles = await Array.fromAsync(glob.scan({ cwd: resultsDir }));
+  const jsonlFiles = allJsonlFiles.filter((f) => {
+    if (trialType === "default") {
+      return !f.match(/-(capability|regression)\.jsonl$/);
+    }
+    return f.endsWith(`${typeSuffix}.jsonl`);
+  });
   const analyses: FileAnalysis[] = await Promise.all(jsonlFiles.map((f) => analyzeFile(`${resultsDir}/${f}`)));
 
   // Generate report sections

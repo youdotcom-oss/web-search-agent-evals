@@ -19,11 +19,12 @@ jobs:
     steps:
       - name: Get PR author
         id: get_pr
-        run: |
-          PR_AUTHOR=$(gh pr view ${{ inputs.pr_number }} --json author --jq '.author.login')
-          echo "pr_author=${PR_AUTHOR}" >> $GITHUB_OUTPUT
         env:
           GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+        run: |
+          PR_AUTHOR=$(gh pr view "$PR_NUMBER" --json author --jq '.author.login')
+          echo "pr_author=${PR_AUTHOR}" >> $GITHUB_OUTPUT
 
       - name: Check if external contributor
         id: check_external

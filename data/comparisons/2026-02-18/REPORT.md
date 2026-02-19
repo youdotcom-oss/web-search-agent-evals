@@ -1,5 +1,5 @@
 # Web Search Agent Evaluation Report
-**Generated:** Thursday, February 19, 2026 at 5:37 AM
+**Generated:** Thursday, February 19, 2026 at 6:41 AM
 **Prompts:** 151
 **Trials per prompt:** 10
 
@@ -69,7 +69,7 @@
 
 ### DROID
 
-| Metric | Builtin | You.com | Difference | % Change |
+| Metric | Builtin | you | Difference | % Change |
 |--------|---------|---------|------------|----------|
 | Median (P50) | 4.0 | 4.0 | → 0.0 | 0.0% |
 | P90 | 10.0 | 10.0 | → 0.0 | 0.0% |
@@ -130,8 +130,8 @@
 ```
 **Key Observations:**
 
-- Zero tool calls: Builtin=1 (0.1%), You=4 (0.3%)
-- Heavy users (5+ calls): Builtin=736 (48.7%), You=753 (49.9%)
+- Zero tool calls: Builtin=1 (0.1%), you=4 (0.3%)
+- Heavy users (5+ calls): Builtin=736 (48.7%), you=753 (49.9%)
 
 
 ## Failing Prompts (pass@k = 0)

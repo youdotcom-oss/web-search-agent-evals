@@ -271,8 +271,10 @@ const main = async () => {
         console.log(`    Trials per prompt: ${k}`);
         console.log(`    Prompt concurrency: ${options.promptConcurrency}`);
         const countEnv = options.count ? ` -e PROMPT_COUNT=${options.count}` : "";
+        const concurrencyFlags =
+          options.promptConcurrency > 1 ? ` -j ${options.promptConcurrency} --workspace-dir /workspace/runs` : "";
         console.log(
-          `    Docker: docker compose run --rm -e SEARCH_PROVIDER=${run.searchProvider} -e PROMPT_CONCURRENCY=${options.promptConcurrency}${options.trialType !== "default" ? ` -e TRIAL_TYPE=${options.trialType}` : ""}${countEnv} ${run.agent} bunx @plaited/agent-eval-harness trials ... -j ${options.promptConcurrency} -o ${outputPath}\n`,
+          `    Docker: docker compose run --rm -e SEARCH_PROVIDER=${run.searchProvider} -e PROMPT_CONCURRENCY=${options.promptConcurrency}${options.trialType !== "default" ? ` -e TRIAL_TYPE=${options.trialType}` : ""}${countEnv} ${run.agent} bunx @plaited/agent-eval-harness trials ...${concurrencyFlags} -o ${outputPath}\n`,
         );
       }
       console.log("[DRY RUN] No trials were executed.");

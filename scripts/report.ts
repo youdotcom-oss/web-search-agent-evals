@@ -43,7 +43,7 @@ type TrialResult = {
   passAtK: number;
   passExpK: number;
   trials: Array<{
-    passed: boolean;
+    pass: boolean;
     score: number;
     trajectory?: Array<{ type: string; name?: string }>;
   }>;

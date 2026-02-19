@@ -101,8 +101,8 @@ describe("report.ts", () => {
     test("returns most recent date when multiple exist", async () => {
       const baseDir = join(import.meta.dir, "../../data/comparisons");
       const date = await findLatestDate(baseDir);
-      // data/comparisons has 2026-02-18; it should be the latest
-      expect(date).toBe("2026-02-18");
+      // Should be >= the known baseline run; won't break when newer dates are added
+      expect(date >= "2026-02-18").toBe(true);
     });
 
     test("throws when directory has no dated subdirectories", async () => {

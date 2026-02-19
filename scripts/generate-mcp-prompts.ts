@@ -123,11 +123,15 @@ Output files:
 };
 
 const convertPrompt = (prompt: Prompt, config: McpConfig): Prompt => {
+  // Strip 'Use web search and answer\n' prefix if present
+  const prefix = "Use web search and answer\n";
+  const cleanedInput = prompt.input.startsWith(prefix) ? prompt.input.slice(prefix.length) : prompt.input;
+
   // Prefix input with rule to use the specified MCP tool
   // Add metadata to indicate MCP expectations for grader
   return {
     ...prompt,
-    input: `Use ${config.serverName} and answer\n${prompt.input}`,
+    input: `Use ${config.serverName} and answer\n${cleanedInput}`,
     metadata: {
       ...prompt.metadata,
       mcpServer: config.serverName,

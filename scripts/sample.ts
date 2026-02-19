@@ -133,9 +133,13 @@ Output:
 const convertToMcpVariant = (prompt: Prompt, serverKey: McpServerKey): Prompt => {
   const server = MCP_SERVERS[serverKey];
 
+  // Strip 'Use web search and answer\n' prefix if present
+  const prefix = "Use web search and answer\n";
+  const cleanedInput = prompt.input.startsWith(prefix) ? prompt.input.slice(prefix.length) : prompt.input;
+
   return {
     ...prompt,
-    input: `Use ${server.name} and answer\n${prompt.input}`,
+    input: `Use ${server.name} and answer\n${cleanedInput}`,
     metadata: {
       ...prompt.metadata,
       mcpServer: server.name,

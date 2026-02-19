@@ -1,6 +1,6 @@
 {
   "meta": {
-    "generatedAt": "2026-02-19T04:15:44.991Z",
+    "generatedAt": "2026-02-19T05:37:28.369Z",
     "runs": ["droid-builtin", "droid-you"],
     "promptCount": 151,
     "trialsPerPrompt": 10,
@@ -13,7 +13,7 @@
       "p25PassAtK": 0.9990234375,
       "p75PassAtK": 1,
       "confidenceIntervals": {
-        "avgPassAtK": [0.8739907181847684, 0.9471947116768217]
+        "avgPassAtK": [0.873665670637086, 0.9486940483675503]
       }
     },
     "droid-you": {
@@ -22,7 +22,7 @@
       "p25PassAtK": 0.9999998976,
       "p75PassAtK": 1,
       "confidenceIntervals": {
-        "avgPassAtK": [0.9578599621860928, 0.9887046486589405]
+        "avgPassAtK": [0.9552586134331126, 0.9895459000331133]
       }
     }
   },
@@ -34,7 +34,7 @@
       "p25PassExpK": 0.0009765625,
       "p75PassExpK": 1,
       "confidenceIntervals": {
-        "avgPassExpK": [0.4093985161377486, 0.5576669314523182]
+        "avgPassExpK": [0.40910972037947063, 0.5582796372715235]
       }
     },
     "droid-you": {
@@ -44,7 +44,7 @@
       "p25PassExpK": 0.10737418240000011,
       "p75PassExpK": 1,
       "confidenceIntervals": {
-        "avgPassExpK": [0.5809882686894039, 0.7207235055582781]
+        "avgPassExpK": [0.5769825002556288, 0.7203875301920529]
       }
     }
   },
@@ -151,7 +151,7 @@
       "p25Score": 0.5,
       "p75Score": 0.95,
       "confidenceIntervals": {
-        "avgScore": [0.7696688741721921, 0.7897748344370924]
+        "avgScore": [0.7689801324503379, 0.7900794701986835]
       }
     },
     "droid-you": {
@@ -160,7 +160,7 @@
       "p25Score": 0.81,
       "p75Score": 0.98,
       "confidenceIntervals": {
-        "avgScore": [0.8391125827814605, 0.857589403973513]
+        "avgScore": [0.8396291390728511, 0.8565894039735151]
       }
     }
   },
@@ -176,7 +176,7 @@
       },
       "totalDuration": 64225123,
       "confidenceIntervals": {
-        "latencyMean": [41709.58410596027, 43291.037086092714]
+        "latencyMean": [41828.92913907285, 43264.33178807947]
       }
     },
     "droid-you": {
@@ -190,7 +190,7 @@
       },
       "totalDuration": 57191939,
       "confidenceIntervals": {
-        "latencyMean": [37117.021192052984, 38624.18476821192]
+        "latencyMean": [37135.37152317881, 38531.37880794702]
       }
     }
   },

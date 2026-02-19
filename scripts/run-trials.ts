@@ -24,10 +24,10 @@
  *
  * ## Output Format
  *
- * Results written to `data/results/trials/YYYY-MM-DD/{agent}/{provider}.jsonl`:
+ * Results written to `data/results/YYYY-MM-DD/{agent}/{provider}.jsonl`:
  * ```
- * trials/2026-01-29/claude-code/builtin.jsonl
- * trials/2026-01-29/gemini/you.jsonl
+ * 2026-02-18/claude-code/builtin.jsonl
+ * 2026-02-18/gemini/you.jsonl
  * ```
  *
  * Each record contains:
@@ -44,12 +44,13 @@
  * - **Flakiness**: pass@k - pass^k (high = inconsistent)
  *
  * Usage:
- *   bun scripts/run-trials.ts                              # All agents/providers, k=5, trials dataset (30 prompts)
- *   bun scripts/run-trials.ts --dataset full               # All agents/providers, k=5, full dataset (151 prompts)
+ *   bun scripts/run-trials.ts                              # All agents/providers, k=5, full dataset (151 prompts)
+ *   bun scripts/run-trials.ts --count 5                    # 5 random prompts, k=5 (quick smoke test)
  *   bun scripts/run-trials.ts --trial-type capability      # All agents, k=10
+ *   bun scripts/run-trials.ts --trial-type regression      # All agents, k=3
+ *   bun scripts/run-trials.ts -k 1                         # Single-run equivalent (full dataset)
  *   bun scripts/run-trials.ts --agent gemini               # Single agent, all providers
  *   bun scripts/run-trials.ts --search-provider you        # All agents, MCP only
- *   bun scripts/run-trials.ts -k 7                         # Custom k value
  *   bun scripts/run-trials.ts -j 4                         # 4 containers in parallel
  *   bun scripts/run-trials.ts --prompt-concurrency 8       # 8 prompts per container
  *   bun scripts/run-trials.ts -j 2 --prompt-concurrency 4  # Custom both levels
@@ -70,10 +71,10 @@ type TrialsOptions = {
   agents: Agent[];
   trialType: TrialType;
   searchProviders: SearchProvider[];
-  dataset: "trials" | "full";
+  count?: number;
   k?: number;
-  concurrency?: number;
-  promptConcurrency?: number;
+  concurrency: number;
+  promptConcurrency: number;
   dryRun?: boolean;
 };
 
@@ -89,7 +90,7 @@ const parseArgs = (args: string[]): TrialsOptions => {
   const agents: Agent[] = [];
   const searchProviders: SearchProvider[] = [];
   let trialType: TrialType = "default";
-  let dataset: "trials" | "full" = "trials";
+  let count: number | undefined;
   let k: number | undefined;
   let concurrency: number | undefined;
   let promptConcurrency: number | undefined;
@@ -119,12 +120,15 @@ const parseArgs = (args: string[]): TrialsOptions => {
       }
       trialType = typeArg as TrialType;
       i++;
-    } else if (args[i] === "--dataset" && i + 1 < args.length) {
-      const datasetArg = args[i + 1];
-      if (datasetArg !== "trials" && datasetArg !== "full") {
-        throw new Error(`Invalid dataset: ${datasetArg}. Must be "trials" or "full"`);
+    } else if (args[i] === "--count" && i + 1 < args.length) {
+      const countArg = args[i + 1];
+      if (!countArg) {
+        throw new Error("Missing value for --count flag");
       }
-      dataset = datasetArg as "trials" | "full";
+      count = Number.parseInt(countArg, 10);
+      if (Number.isNaN(count) || count < 1) {
+        throw new Error(`Invalid count: ${countArg}. Must be a positive integer`);
+      }
       i++;
     } else if (args[i] === "-k" && i + 1 < args.length) {
       const kArg = args[i + 1];
@@ -137,7 +141,7 @@ const parseArgs = (args: string[]): TrialsOptions => {
       }
       i++;
     } else if ((args[i] === "-j" || args[i] === "--concurrency") && i + 1 < args.length) {
-      const arg = args[i + 1]!;
+      const arg = args[i + 1] as string;
       const value = Number.parseInt(arg, 10);
       if (Number.isNaN(value) || value < 0) {
         throw new Error(`Invalid concurrency: ${arg}. Must be a non-negative integer (0 for unlimited)`);
@@ -145,7 +149,7 @@ const parseArgs = (args: string[]): TrialsOptions => {
       concurrency = value === 0 ? Infinity : value;
       i++;
     } else if (args[i] === "--prompt-concurrency" && i + 1 < args.length) {
-      const arg = args[i + 1]!;
+      const arg = args[i + 1] as string;
       const value = Number.parseInt(arg, 10);
       if (Number.isNaN(value) || value < 1) {
         throw new Error(`Invalid prompt-concurrency: ${arg}. Must be a positive integer`);
@@ -163,7 +167,7 @@ const parseArgs = (args: string[]): TrialsOptions => {
   return {
     agents: agents.length > 0 ? agents : ALL_AGENTS,
     trialType,
-    dataset,
+    count,
     searchProviders: searchProviders.length > 0 ? searchProviders : ["builtin", ...mcpProviders],
     k,
     concurrency: concurrency ?? Infinity, // Default unlimited (I/O-bound workload)
@@ -198,15 +202,14 @@ const getKValue = (trialType: TrialType, override?: number): number => {
  * Get prompt dataset path for trials
  *
  * @param searchProvider - Search provider (builtin or MCP server key)
- * @param dataset - Dataset to use (trials or full)
- * @returns Prompt dataset path
+ * @returns Prompt dataset path (always uses full dataset)
  *
  * @internal
  */
-const getPromptPath = (searchProvider: SearchProvider, dataset: "trials" | "full"): string => {
+const getPromptPath = (searchProvider: SearchProvider): string => {
   return searchProvider === "builtin"
-    ? `/eval/data/prompts/${dataset}/prompts.jsonl`
-    : `/eval/data/prompts/${dataset}/prompts-${searchProvider}.jsonl`;
+    ? `/eval/data/prompts/prompts.jsonl`
+    : `/eval/data/prompts/prompts-${searchProvider}.jsonl`;
 };
 
 /** Stdout filter for trials — includes "Running" lines for trial progress */
@@ -230,11 +233,11 @@ const main = async () => {
     const k = getKValue(options.trialType, options.k);
 
     const concurrencyLabel = options.concurrency === Infinity ? "unlimited" : options.concurrency;
-    const promptCount = options.dataset === "trials" ? 30 : 151;
+    const datasetLabel = options.count ? `Sampling ${options.count} from full dataset` : "full (151 prompts)";
     console.log(`${options.dryRun ? "[DRY RUN] " : ""}Pass@k Trials Configuration`);
     console.log(`${"=".repeat(80)}`);
     console.log(`Trial type: ${options.trialType} (k=${k})`);
-    console.log(`Dataset: ${options.dataset} (${promptCount} prompts)`);
+    console.log(`Dataset: ${datasetLabel}`);
     console.log(`Agents: ${options.agents.join(", ")}`);
     console.log(`Search providers: ${options.searchProviders.join(", ")}`);
     console.log(`Container concurrency: ${concurrencyLabel}, Prompt concurrency: ${options.promptConcurrency}`);
@@ -259,16 +262,17 @@ const main = async () => {
       for (let i = 0; i < runs.length; i++) {
         const run = runs[i];
         if (!run) continue;
-        const datasetPath = getPromptPath(run.searchProvider, options.dataset);
+        const datasetPath = getPromptPath(run.searchProvider);
         const typeSuffix = options.trialType === "default" ? "" : `-${options.trialType}`;
-        const outputPath = `/eval/data/results/trials/${runDate}/${run.agent}/${run.searchProvider}${typeSuffix}.jsonl`;
+        const outputPath = `/eval/data/results/${runDate}/${run.agent}/${run.searchProvider}${typeSuffix}.jsonl`;
         console.log(`  [${i + 1}/${runs.length}] ${run.agent}-${run.searchProvider}:`);
         console.log(`    Dataset: ${datasetPath}`);
         console.log(`    Output: ${outputPath}`);
         console.log(`    Trials per prompt: ${k}`);
         console.log(`    Prompt concurrency: ${options.promptConcurrency}`);
+        const countEnv = options.count ? ` -e PROMPT_COUNT=${options.count}` : "";
         console.log(
-          `    Docker: docker compose run --rm -e SEARCH_PROVIDER=${run.searchProvider} -e PROMPT_CONCURRENCY=${options.promptConcurrency}${options.trialType !== "default" ? ` -e TRIAL_TYPE=${options.trialType}` : ""} ${run.agent} bunx @plaited/agent-eval-harness trials ... -j ${options.promptConcurrency} -o ${outputPath}\n`,
+          `    Docker: docker compose run --rm -e SEARCH_PROVIDER=${run.searchProvider} -e PROMPT_CONCURRENCY=${options.promptConcurrency}${options.trialType !== "default" ? ` -e TRIAL_TYPE=${options.trialType}` : ""}${countEnv} ${run.agent} bunx @plaited/agent-eval-harness trials ... -j ${options.promptConcurrency} -o ${outputPath}\n`,
         );
       }
       console.log("[DRY RUN] No trials were executed.");
@@ -282,7 +286,7 @@ const main = async () => {
     const statusInterval = createStatusHeartbeat({
       runs,
       completed,
-      concurrency: options.concurrency!,
+      concurrency: options.concurrency,
       intervalMs: 60000,
       startTime,
     });
@@ -291,11 +295,11 @@ const main = async () => {
     const results = await limitConcurrency(
       runs.map(({ agent, searchProvider }, index) => () => {
         const runDate = new Date().toISOString().split("T")[0];
-        const datasetPath = getPromptPath(searchProvider, options.dataset);
+        const datasetPath = getPromptPath(searchProvider);
         const schema = `/eval/agent-schemas/${agent}.json`;
         const grader = "/eval/scripts/inline-grader.ts";
         const typeSuffix = options.trialType === "default" ? "" : `-${options.trialType}`;
-        const outputPath = `/eval/data/results/trials/${runDate}/${agent}/${searchProvider}${typeSuffix}.jsonl`;
+        const outputPath = `/eval/data/results/${runDate}/${agent}/${searchProvider}${typeSuffix}.jsonl`;
 
         const trialsCmd = [
           "bunx",
@@ -307,7 +311,7 @@ const main = async () => {
           "-k",
           k.toString(),
           "-j",
-          options.promptConcurrency!.toString(),
+          options.promptConcurrency.toString(),
           "--grader",
           grader,
           "-o",
@@ -328,6 +332,9 @@ const main = async () => {
         if (options.trialType !== "default") {
           envVars.push("-e", `TRIAL_TYPE=${options.trialType}`);
         }
+        if (options.count) {
+          envVars.push("-e", `PROMPT_COUNT=${options.count}`);
+        }
 
         return runDockerScenario({
           agent,
@@ -342,7 +349,7 @@ const main = async () => {
           return result.exitCode;
         });
       }),
-      options.concurrency!,
+      options.concurrency,
     );
 
     clearInterval(statusInterval);

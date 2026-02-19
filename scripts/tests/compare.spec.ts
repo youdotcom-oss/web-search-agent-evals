@@ -3,67 +3,15 @@ import { join } from "node:path";
 import { runScript } from "./test-utils.ts";
 
 const SCRIPT_PATH = join(import.meta.dir, "..", "compare.ts");
-const FIXTURE_DIR = join(import.meta.dir, "fixtures", "data");
 
 describe("compare.ts", () => {
   describe("parseArgs - valid inputs", () => {
-    test("uses defaults when no args provided", async () => {
+    test("uses defaults: all agents, all providers, default type, weighted", async () => {
       const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--dry-run"]);
 
       expect(exitCode).toBe(0);
       expect(stdout).toContain("[DRY RUN]");
-      expect(stdout).toContain("Mode: test");
-      expect(stdout).toContain("Agents: claude-code, gemini, droid, codex");
-      expect(stdout).toContain("Search Provider: all");
-      expect(stdout).toContain("Strategy: weighted");
-    });
-
-    test("accepts single --agent flag", async () => {
-      const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--agent", "gemini", "--dry-run"]);
-
-      expect(exitCode).toBe(0);
-      expect(stdout).toContain("Agents: gemini");
-    });
-
-    test("accepts multiple --agent flags", async () => {
-      const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--agent", "gemini", "--agent", "droid", "--dry-run"]);
-
-      expect(exitCode).toBe(0);
-      expect(stdout).toContain("Agents: gemini, droid");
-    });
-
-    test("accepts --mode full", async () => {
-      const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--mode", "full", "--dry-run"]);
-
-      expect(exitCode).toBe(0);
-      expect(stdout).toContain("Mode: full");
-    });
-
-    test("accepts --mode test", async () => {
-      const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--mode", "test", "--dry-run"]);
-
-      expect(exitCode).toBe(0);
-      expect(stdout).toContain("Mode: test");
-    });
-
-    test("accepts --mcp builtin", async () => {
-      const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--mcp", "builtin", "--dry-run"]);
-
-      expect(exitCode).toBe(0);
-      expect(stdout).toContain("Search Provider: builtin");
-    });
-
-    test("accepts --mcp you", async () => {
-      const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--mcp", "you", "--dry-run"]);
-
-      expect(exitCode).toBe(0);
-      expect(stdout).toContain("Search Provider: you");
-    });
-
-    test("accepts --strategy weighted", async () => {
-      const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--strategy", "weighted", "--dry-run"]);
-
-      expect(exitCode).toBe(0);
+      expect(stdout).toContain("Trial Type: default");
       expect(stdout).toContain("Strategy: weighted");
     });
 
@@ -74,24 +22,64 @@ describe("compare.ts", () => {
       expect(stdout).toContain("Strategy: statistical");
     });
 
+    test("accepts --strategy weighted", async () => {
+      const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--strategy", "weighted", "--dry-run"]);
+
+      expect(exitCode).toBe(0);
+      expect(stdout).toContain("Strategy: weighted");
+    });
+
+    test("accepts --trial-type capability", async () => {
+      const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--trial-type", "capability", "--dry-run"]);
+
+      expect(exitCode).toBe(0);
+      expect(stdout).toContain("Trial Type: capability");
+    });
+
+    test("accepts --trial-type regression", async () => {
+      const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--trial-type", "regression", "--dry-run"]);
+
+      expect(exitCode).toBe(0);
+      expect(stdout).toContain("Trial Type: regression");
+    });
+
+    test("accepts --agent flag", async () => {
+      const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--agent", "droid", "--dry-run"]);
+
+      expect(exitCode).toBe(0);
+      expect(stdout).toContain("droid-");
+    });
+
+    test("accepts --search-provider builtin", async () => {
+      const { exitCode } = await runScript(SCRIPT_PATH, ["--search-provider", "builtin", "--dry-run"]);
+
+      expect(exitCode).toBe(0);
+    });
+
+    test("accepts --run-date flag", async () => {
+      const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--run-date", "2026-02-18", "--dry-run"]);
+
+      expect(exitCode).toBe(0);
+      expect(stdout).toContain("2026-02-18");
+    });
+
     test("accepts all flags combined", async () => {
       const { stdout, exitCode } = await runScript(SCRIPT_PATH, [
         "--agent",
-        "gemini",
-        "--mode",
-        "full",
-        "--mcp",
+        "droid",
+        "--search-provider",
         "builtin",
+        "--trial-type",
+        "default",
         "--strategy",
         "statistical",
         "--dry-run",
       ]);
 
       expect(exitCode).toBe(0);
-      expect(stdout).toContain("Mode: full");
-      expect(stdout).toContain("Agents: gemini");
-      expect(stdout).toContain("Search Provider: builtin");
+      expect(stdout).toContain("Trial Type: default");
       expect(stdout).toContain("Strategy: statistical");
+      expect(stdout).toContain("droid");
     });
   });
 
@@ -104,20 +92,12 @@ describe("compare.ts", () => {
       expect(stderr).toContain("Must be one of:");
     });
 
-    test("rejects invalid mode", async () => {
-      const { stderr, exitCode } = await runScript(SCRIPT_PATH, ["--mode", "invalid"]);
-
-      expect(exitCode).toBe(1);
-      expect(stderr).toContain("Invalid mode: invalid");
-      expect(stderr).toContain('Must be "test" or "full"');
-    });
-
-    test("rejects invalid MCP tool", async () => {
-      const { stderr, exitCode } = await runScript(SCRIPT_PATH, ["--mcp", "invalid"]);
+    test("rejects invalid search provider", async () => {
+      const { stderr, exitCode } = await runScript(SCRIPT_PATH, ["--search-provider", "invalid"]);
 
       expect(exitCode).toBe(1);
       expect(stderr).toContain("Invalid search provider: invalid");
-      expect(stderr).toContain("Must be one of: builtin, you");
+      expect(stderr).toContain("Must be one of:");
     });
 
     test("rejects invalid strategy", async () => {
@@ -127,283 +107,83 @@ describe("compare.ts", () => {
       expect(stderr).toContain("Invalid strategy: invalid");
       expect(stderr).toContain("Must be one of:");
     });
-  });
 
-  describe("buildResultPath - path generation", () => {
-    test("generates path for claude-code builtin test", async () => {
-      const { stdout, exitCode } = await runScript(SCRIPT_PATH, [
-        "--agent",
-        "claude-code",
-        "--mcp",
-        "builtin",
-        "--mode",
-        "test",
-        "--dry-run",
-      ]);
+    test("rejects invalid trial type", async () => {
+      const { stderr, exitCode } = await runScript(SCRIPT_PATH, ["--trial-type", "invalid"]);
 
-      expect(exitCode).toBe(0);
-      expect(stdout).toContain("data/results/test-runs/claude-code/builtin.jsonl");
-    });
-
-    test("generates path for gemini you test", async () => {
-      const { stdout, exitCode } = await runScript(SCRIPT_PATH, [
-        "--agent",
-        "gemini",
-        "--mcp",
-        "you",
-        "--mode",
-        "test",
-        "--dry-run",
-      ]);
-
-      expect(exitCode).toBe(0);
-      expect(stdout).toContain("data/results/test-runs/gemini/you.jsonl");
-    });
-
-    test("generates path for droid builtin full", async () => {
-      const { stdout, exitCode } = await runScript(SCRIPT_PATH, [
-        "--agent",
-        "droid",
-        "--mcp",
-        "builtin",
-        "--mode",
-        "full",
-        "--fixture-dir",
-        FIXTURE_DIR,
-        "--dry-run",
-      ]);
-
-      expect(exitCode).toBe(0);
-      expect(stdout).toContain("droid/builtin.jsonl");
-      expect(stdout).toContain("runs/2026-01-24");
-    });
-
-    test("generates path for codex you full", async () => {
-      const { stdout, exitCode } = await runScript(SCRIPT_PATH, [
-        "--agent",
-        "codex",
-        "--mcp",
-        "you",
-        "--mode",
-        "full",
-        "--fixture-dir",
-        FIXTURE_DIR,
-        "--dry-run",
-      ]);
-
-      expect(exitCode).toBe(0);
-      expect(stdout).toContain("codex/you.jsonl");
-      expect(stdout).toContain("runs/2026-01-24");
+      expect(exitCode).toBe(1);
+      expect(stderr).toContain("Invalid trial type: invalid");
+      expect(stderr).toContain("Must be");
     });
   });
 
-  describe("buildRunLabel - label generation", () => {
-    test("generates label for claude-code builtin", async () => {
+  describe("output path generation", () => {
+    test("dry-run output path includes date and strategy", async () => {
+      const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--run-date", "2026-02-18", "--dry-run"]);
+
+      expect(exitCode).toBe(0);
+      expect(stdout).toContain("data/comparisons/2026-02-18/");
+      expect(stdout).toContain("-weighted.json");
+    });
+
+    test("statistical strategy suffix in output path", async () => {
       const { stdout, exitCode } = await runScript(SCRIPT_PATH, [
-        "--agent",
-        "claude-code",
-        "--mcp",
-        "builtin",
-        "--dry-run",
-      ]);
-
-      expect(exitCode).toBe(0);
-      expect(stdout).toContain("claude-code-builtin:");
-    });
-
-    test("generates label for gemini you", async () => {
-      const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--agent", "gemini", "--mcp", "you", "--dry-run"]);
-
-      expect(exitCode).toBe(0);
-      expect(stdout).toContain("gemini-you:");
-    });
-
-    test("generates label for droid builtin", async () => {
-      const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--agent", "droid", "--mcp", "builtin", "--dry-run"]);
-
-      expect(exitCode).toBe(0);
-      expect(stdout).toContain("droid-builtin:");
-    });
-
-    test("generates label for codex you", async () => {
-      const { stdout, exitCode } = await runScript(SCRIPT_PATH, ["--agent", "codex", "--mcp", "you", "--dry-run"]);
-
-      expect(exitCode).toBe(0);
-      expect(stdout).toContain("codex-you:");
-    });
-  });
-
-  describe("buildOutputPath - output path logic", () => {
-    test("all agents, no MCP filter, weighted, test mode", async () => {
-      const { stdout, exitCode } = await runScript(SCRIPT_PATH, [
-        "--strategy",
-        "weighted",
-        "--mode",
-        "test",
-        "--dry-run",
-      ]);
-
-      expect(exitCode).toBe(0);
-      expect(stdout).toContain("data/comparisons/test-runs/all-weighted.json");
-    });
-
-    test("all agents, no MCP filter, statistical, test mode", async () => {
-      const { stdout, exitCode } = await runScript(SCRIPT_PATH, [
+        "--run-date",
+        "2026-02-18",
         "--strategy",
         "statistical",
-        "--mode",
-        "test",
         "--dry-run",
       ]);
 
       expect(exitCode).toBe(0);
-      expect(stdout).toContain("data/comparisons/test-runs/all-statistical.json");
+      expect(stdout).toContain("-statistical.json");
     });
 
-    test("all agents, builtin only, weighted, test mode", async () => {
+    test("capability type adds suffix to output path", async () => {
       const { stdout, exitCode } = await runScript(SCRIPT_PATH, [
-        "--mcp",
-        "builtin",
-        "--strategy",
-        "weighted",
-        "--mode",
-        "test",
+        "--run-date",
+        "2026-02-18",
+        "--trial-type",
+        "capability",
         "--dry-run",
       ]);
 
       expect(exitCode).toBe(0);
-      expect(stdout).toContain("data/comparisons/test-runs/builtin-weighted.json");
-    });
-
-    test("all agents, you only, statistical, test mode", async () => {
-      const { stdout, exitCode } = await runScript(SCRIPT_PATH, [
-        "--mcp",
-        "you",
-        "--strategy",
-        "statistical",
-        "--mode",
-        "test",
-        "--dry-run",
-      ]);
-
-      expect(exitCode).toBe(0);
-      expect(stdout).toContain("data/comparisons/test-runs/you-statistical.json");
-    });
-
-    test("specific agents (gemini + droid), no MCP filter, weighted, test mode", async () => {
-      const { stdout, exitCode } = await runScript(SCRIPT_PATH, [
-        "--agent",
-        "gemini",
-        "--agent",
-        "droid",
-        "--strategy",
-        "weighted",
-        "--mode",
-        "test",
-        "--dry-run",
-      ]);
-
-      expect(exitCode).toBe(0);
-      expect(stdout).toContain("data/comparisons/test-runs/gemini-droid-weighted.json");
-    });
-
-    test("full mode output path", async () => {
-      const { stdout, exitCode } = await runScript(SCRIPT_PATH, [
-        "--mode",
-        "full",
-        "--strategy",
-        "weighted",
-        "--fixture-dir",
-        FIXTURE_DIR,
-        "--dry-run",
-      ]);
-
-      expect(exitCode).toBe(0);
-      expect(stdout).toContain("comparisons/runs/2026-01-24/all-weighted.json");
+      expect(stdout).toContain("-capability.json");
     });
   });
 
-  describe("--dry-run mode", () => {
-    test("exits successfully with code 0", async () => {
+  describe("dry-run mode", () => {
+    test("exits with code 0", async () => {
       const { exitCode } = await runScript(SCRIPT_PATH, ["--dry-run"]);
-
       expect(exitCode).toBe(0);
     });
 
-    test('outputs "[DRY RUN]" prefix', async () => {
+    test("outputs [DRY RUN] prefix", async () => {
       const { stdout } = await runScript(SCRIPT_PATH, ["--dry-run"]);
-
       expect(stdout).toContain("[DRY RUN]");
     });
 
-    test("shows configuration summary", async () => {
-      const { stdout } = await runScript(SCRIPT_PATH, ["--dry-run"]);
+    test("shows comparison header with date", async () => {
+      const { stdout } = await runScript(SCRIPT_PATH, ["--run-date", "2026-02-18", "--dry-run"]);
+      expect(stdout).toContain("COMPARISON - 2026-02-18");
+    });
 
-      expect(stdout).toContain("Configuration:");
-      expect(stdout).toContain("Mode:");
-      expect(stdout).toContain("Agents:");
-      expect(stdout).toContain("Search Provider:");
-      expect(stdout).toContain("Strategy:");
+    test("shows found scenarios", async () => {
+      const { stdout } = await runScript(SCRIPT_PATH, ["--run-date", "2026-02-18", "--dry-run"]);
+      expect(stdout).toContain("Found");
+      expect(stdout).toContain("scenarios:");
     });
 
     test("shows output path", async () => {
       const { stdout } = await runScript(SCRIPT_PATH, ["--dry-run"]);
-
       expect(stdout).toContain("Output:");
       expect(stdout).toContain("data/comparisons/");
     });
 
-    test("lists runs to compare", async () => {
+    test("shows command", async () => {
       const { stdout } = await runScript(SCRIPT_PATH, ["--dry-run"]);
-
-      expect(stdout).toContain("Runs to compare:");
-    });
-
-    test("shows all scenarios for default (all agents, both MCP tools)", async () => {
-      const { stdout } = await runScript(SCRIPT_PATH, ["--dry-run"]);
-
-      // Should show 8 runs: 4 agents × 2 MCP tools
-      expect(stdout).toContain("claude-code-builtin:");
-      expect(stdout).toContain("claude-code-you:");
-      expect(stdout).toContain("gemini-builtin:");
-      expect(stdout).toContain("gemini-you:");
-      expect(stdout).toContain("droid-builtin:");
-      expect(stdout).toContain("droid-you:");
-      expect(stdout).toContain("codex-builtin:");
-      expect(stdout).toContain("codex-you:");
-    });
-
-    test("shows scenarios for specific agent and MCP tool", async () => {
-      const { stdout } = await runScript(SCRIPT_PATH, ["--agent", "gemini", "--mcp", "builtin", "--dry-run"]);
-
-      // Should show only 1 run: gemini × builtin
-      expect(stdout).toContain("gemini-builtin:");
-      expect(stdout).not.toContain("gemini-you:");
-    });
-
-    test("full configuration with all flags", async () => {
-      const { stdout, exitCode } = await runScript(SCRIPT_PATH, [
-        "--agent",
-        "gemini",
-        "--mode",
-        "full",
-        "--mcp",
-        "you",
-        "--strategy",
-        "statistical",
-        "--fixture-dir",
-        FIXTURE_DIR,
-        "--dry-run",
-      ]);
-
-      expect(exitCode).toBe(0);
-      expect(stdout).toContain("[DRY RUN]");
-      expect(stdout).toContain("Mode: full");
-      expect(stdout).toContain("Agents: gemini");
-      expect(stdout).toContain("Search Provider: you");
-      expect(stdout).toContain("Strategy: statistical");
-      expect(stdout).toContain("gemini-you:");
-      expect(stdout).toContain("comparisons/runs/2026-01-24/gemini-you-statistical.json");
+      expect(stdout).toContain("Command: bunx @plaited/agent-eval-harness compare");
     });
   });
 });

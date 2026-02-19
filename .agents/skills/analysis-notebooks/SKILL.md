@@ -16,7 +16,7 @@ Visualizes pre-computed comparison metrics from weighted and statistical analysi
 - Search provider comparison (builtin vs MCP)
 - Pass rate analysis
 
-**Data source:** `data/comparisons/{mode}-runs/*.json` or `data/comparisons/runs/YYYY-MM-DD/*.json`
+**Data source:** `data/comparisons/YYYY-MM-DD/*.json`
 
 **View on GitHub:**
 Navigate to [`notebooks/comparison.ipynb`](../../notebooks/comparison.ipynb) - GitHub renders automatically
@@ -41,7 +41,7 @@ Deep dive into multi-trial evaluation results to measure agent reliability.
 - Per-prompt trial heatmap (visual pattern inspection)
 - Pass rate distributions
 
-**Data source:** `data/results/trials/YYYY-MM-DD/{agent}/{provider}.jsonl`
+**Data source:** `data/results/YYYY-MM-DD/{agent}/{provider}.jsonl`
 
 **View/Run:** Same options as comparison.ipynb
 
@@ -85,8 +85,7 @@ Both notebooks have **USER CONFIGURATION** cells where you can set:
 
 **comparison.ipynb:**
 ```python
-MODE = 'test'        # Options: 'test' or 'full'
-RUN_DATE = None      # For full mode: '2026-01-24' or None for latest
+RUN_DATE = None      # '2026-02-18' for specific run, or None for latest
 ```
 
 **trials.ipynb:**
@@ -103,13 +102,12 @@ TRIAL_TYPE = 'default'  # Options: 'default', 'capability', 'regression'
 Requires comparison results to exist:
 
 ```bash
-# Generate comparison results first
-bun run compare --mode test                    # → data/comparisons/test-runs/
-bun run compare --mode test --strategy statistical
+# Generate comparison results first (latest date auto-detected)
+bun run compare                                # → data/comparisons/YYYY-MM-DD/
+bun run compare:stat                           # Statistical analysis
 
-# For full runs
-bun run compare:full                            # → data/comparisons/runs/YYYY-MM-DD/
-bun run compare:full-statistical
+# Specific date
+bun run compare -- --run-date 2026-02-18
 ```
 
 ### For trials.ipynb
@@ -119,14 +117,14 @@ Requires trials data to exist:
 ```bash
 # Run trials first (all agents × all providers)
 bun run trials                                  # All agents/providers, k=5
-bun run trials:capability                       # All agents/providers, k=10
+bun run trials -- --trial-type capability       # k=10
 
 # Or filter to specific combinations
 bun run trials -- --agent gemini                # Single agent, all providers
 bun run trials -- --search-provider you         # All agents, MCP only
 
-# Output: data/results/trials/YYYY-MM-DD/{agent}/{provider}.jsonl
-# e.g., trials/2026-01-29/droid/builtin.jsonl, trials/2026-01-29/gemini/you.jsonl
+# Output: data/results/YYYY-MM-DD/{agent}/{provider}.jsonl
+# e.g., 2026-02-18/droid/builtin.jsonl, 2026-02-18/gemini/you.jsonl
 ```
 
 ## Creating Custom Notebooks
@@ -211,10 +209,19 @@ Description of what this analyzes...
 
 **For comparison analysis:**
 ```python
-MODE = 'test'
-comp_dir = DATA_DIR / 'comparisons' / (f'{MODE}-runs' if MODE == 'test' else f'runs/{RUN_DATE}')
+RUN_DATE = None  # None for latest, or '2026-02-18' for specific
 
-with open(comp_dir / 'all-weighted.json') as f:
+# Find latest date if not specified
+comp_base = DATA_DIR / 'comparisons'
+if RUN_DATE is None:
+    dirs = sorted([d.name for d in comp_base.iterdir() if d.is_dir() and d.name[0].isdigit()])
+    if not dirs:
+        raise FileNotFoundError(f"No comparison runs found in: {comp_base}")
+    RUN_DATE = dirs[-1]
+
+comp_dir = comp_base / RUN_DATE
+
+with open(comp_dir / 'all-builtin-weighted.json') as f:
     weighted = json.load(f)
 ```
 
@@ -222,10 +229,14 @@ with open(comp_dir / 'all-weighted.json') as f:
 ```python
 AGENT = 'claude-code'
 PROVIDER = 'builtin'
-MODE = 'test'
+RUN_DATE = None  # None for latest, or '2026-02-18' for specific
 
-results_dir = DATA_DIR / 'results' / (f'{MODE}-runs' if MODE == 'test' else f'runs/{RUN_DATE}')
-results_file = results_dir / AGENT / f'{PROVIDER}.jsonl'
+results_base = DATA_DIR / 'results'
+if RUN_DATE is None:
+    dirs = sorted([d.name for d in results_base.iterdir() if d.is_dir() and d.name[0].isdigit()])
+    RUN_DATE = dirs[-1]
+
+results_file = results_base / RUN_DATE / AGENT / f'{PROVIDER}.jsonl'
 
 with open(results_file) as f:
     results = [json.loads(line) for line in f]
@@ -238,19 +249,19 @@ df = pd.DataFrame(results)
 AGENT = 'droid'
 PROVIDER = 'builtin'
 TRIAL_TYPE = 'default'  # or 'capability', 'regression'
-RUN_DATE = None  # None for latest, or '2026-01-29' for specific date
+RUN_DATE = None  # None for latest, or '2026-02-18' for specific date
 
 # Find latest date if not specified
-trials_dir = DATA_DIR / 'results' / 'trials'
+results_base = DATA_DIR / 'results'
 if RUN_DATE is None:
-    dirs = sorted([d.name for d in trials_dir.iterdir() if d.is_dir() and d.name[0].isdigit()])
+    dirs = sorted([d.name for d in results_base.iterdir() if d.is_dir() and d.name[0].isdigit()])
     if not dirs:
-        raise FileNotFoundError(f"No trial runs found in: {trials_dir}")
+        raise FileNotFoundError(f"No trial runs found in: {results_base}")
     RUN_DATE = dirs[-1]
 
-# Build filename based on trial type (same structure as runs)
+# Build filename based on trial type
 suffix = '' if TRIAL_TYPE == 'default' else f'-{TRIAL_TYPE}'
-trials_file = trials_dir / RUN_DATE / AGENT / f'{PROVIDER}{suffix}.jsonl'
+trials_file = results_base / RUN_DATE / AGENT / f'{PROVIDER}{suffix}.jsonl'
 
 with open(trials_file) as f:
     trials = [json.loads(line) for line in f]

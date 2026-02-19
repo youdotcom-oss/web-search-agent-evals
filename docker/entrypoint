@@ -14,6 +14,7 @@ import type { McpServerKey } from "/eval/mcp-servers.ts";
  * - `AGENT` - Agent name (claude-code, gemini, droid, codex)
  * - `SEARCH_PROVIDER` - Search provider to use (builtin, you, exa, etc.)
  * - `PROMPT_CONCURRENCY` - Number of prompts to run in parallel (optional, enables workspace isolation)
+ * - `PROMPT_COUNT` - If set, sample this many prompts randomly from the full dataset
  * - `YDC_API_KEY` - API key for You.com MCP server
  * - `OPENAI_API_KEY` - API key for Codex agent
  *
@@ -26,8 +27,8 @@ import type { McpServerKey } from "/eval/mcp-servers.ts";
 
 const AGENT = process.env.AGENT;
 const SEARCH_PROVIDER = (process.env.SEARCH_PROVIDER || "builtin") as McpServerKey | "builtin";
-const DATASET = process.env.DATASET || "test"; // test | full
 const PROMPT_CONCURRENCY = process.env.PROMPT_CONCURRENCY ? Number.parseInt(process.env.PROMPT_CONCURRENCY, 10) : undefined;
+const PROMPT_COUNT = process.env.PROMPT_COUNT ? Number.parseInt(process.env.PROMPT_COUNT, 10) : undefined;
 
 /**
  * Configure Codex CLI with API key
@@ -118,84 +119,73 @@ bearer_token_env_var = "${server.auth?.envVar}"
 };
 
 /**
- * Detect if running in trials mode
- *
- * @remarks
- * Checks if 'trials' command is present in Bun.argv to determine execution mode.
- * Trials mode outputs to dated folders: data/results/trials/YYYY-MM-DD/{agent}/
- *
- * @returns True if trials mode detected
- */
-const isTrialsMode = (): boolean => {
-  return Bun.argv.some(arg => arg.includes('trials'));
-};
-
-/**
- * Build capture command arguments based on environment
+ * Build trials command arguments based on environment
  *
  * @remarks
  * Derives:
- * - Prompt file based on DATASET and SEARCH_PROVIDER (e.g., test.jsonl, full-mcp.jsonl)
+ * - Prompt file based on SEARCH_PROVIDER (always uses full dataset)
  * - Schema file (always base schema, no -mcp suffix)
- * - Output file (versioned: test-runs/, runs/YYYY-MM-DD/, or trials/YYYY-MM-DD/)
- * - Grader flag (only for non-builtin modes)
- * - Timeout flag (agent-specific: claude-code 90s, codex 180s)
+ * - Output file: /eval/data/results/YYYY-MM-DD/{agent}/{provider}.jsonl
+ * - Applies PROMPT_COUNT sampling if set (shuffles full prompts, takes N)
  *
  * @returns Command arguments array
  */
-const buildCaptureCommand = async (): Promise<string[]> => {
+const buildTrialsCommand = async (): Promise<string[]> => {
   if (!AGENT) {
     throw new Error("AGENT environment variable is required");
   }
 
-  // Derive prompt file based on DATASET and search provider mode
-  const promptFile = SEARCH_PROVIDER === "builtin"
-    ? `/eval/data/prompts/${DATASET}/prompts.jsonl`
-    : `/eval/data/prompts/${DATASET}/prompts-${SEARCH_PROVIDER}.jsonl`;
+  // Derive prompt file based on search provider (always full dataset)
+  let promptFile = SEARCH_PROVIDER === "builtin"
+    ? `/eval/data/prompts/prompts.jsonl`
+    : `/eval/data/prompts/prompts-${SEARCH_PROVIDER}.jsonl`;
+
+  // If PROMPT_COUNT is set, shuffle and sample N prompts into a temp file
+  if (PROMPT_COUNT) {
+    const fullText = await Bun.file(promptFile).text();
+    const prompts = fullText.trim().split("\n").map((l) => JSON.parse(l));
+
+    // Fisher-Yates shuffle: O(n), every permutation equally likely.
+    // Works backwards — at each i, swaps with a random j in [0, i].
+    for (let i = prompts.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      ;[prompts[i], prompts[j]] = [prompts[j]!, prompts[i]!];
+    }
+
+    const sampled = prompts.slice(0, PROMPT_COUNT);
+    const tmpFile = `/tmp/sampled-${SEARCH_PROVIDER}-${Date.now()}.jsonl`;
+    await Bun.write(tmpFile, sampled.map((p) => JSON.stringify(p)).join("\n"));
+    promptFile = tmpFile;
+    console.log(`🎲 Sampling ${PROMPT_COUNT} prompts from full dataset → ${tmpFile}`);
+  }
 
   // Schema file: Always use base schema (no -mcp suffix)
   const schemaFile = `/eval/agent-schemas/${AGENT}.json`;
 
-  // Output file path based on execution mode
-  let outputFile: string;
+  // Output path: flat dated structure
+  const runDate = new Date().toISOString().split("T")[0];
+  const trialType = process.env.TRIAL_TYPE || "default";
+  const typeSuffix = trialType === "default" ? "" : `-${trialType}`;
+  const outputDir = `/eval/data/results/${runDate}/${AGENT}`;
+  await $`mkdir -p ${outputDir}`.quiet();
+  const outputFile = `${outputDir}/${SEARCH_PROVIDER}${typeSuffix}.jsonl`;
 
-  if (isTrialsMode()) {
-    // Trials mode: output to trials/YYYY-MM-DD/{agent}/ (same structure as runs)
-    const runDate = new Date().toISOString().split('T')[0];
-    const outputDir = `/eval/data/results/trials/${runDate}/${AGENT}`;
-    await $`mkdir -p ${outputDir}`.quiet();
+  console.log(`📊 Trials mode`);
+  console.log(`   Trial type: ${trialType}`);
+  console.log(`   Output: ${outputFile}`);
 
-    // Extract trial type from environment variable (default/capability/regression)
-    const trialType = process.env.TRIAL_TYPE || 'default';
-    const typeSuffix = trialType === 'default' ? '' : `-${trialType}`;
-
-    outputFile = `${outputDir}/${SEARCH_PROVIDER}${typeSuffix}.jsonl`;
-    console.log(`📊 Trials mode detected`);
-    console.log(`   Trial type: ${trialType}`);
-    console.log(`   Output: ${outputFile}`);
-  } else if (DATASET === "test") {
-    // Test results: test-runs directory
-    const outputDir = `/eval/data/results/test-runs/${AGENT}`;
-    await $`mkdir -p ${outputDir}`.quiet();
-    outputFile = `${outputDir}/${SEARCH_PROVIDER}.jsonl`;
-  } else {
-    // Full results: dated directory (use current date)
-    const runDate = new Date().toISOString().split('T')[0];
-    const outputDir = `/eval/data/results/runs/${runDate}/${AGENT}`;
-    await $`mkdir -p ${outputDir}`.quiet();
-    outputFile = `${outputDir}/${SEARCH_PROVIDER}.jsonl`;
-  }
-
-  // Build command array
-  const cmd = ["bunx", "@plaited/agent-eval-harness", "capture", promptFile, "--schema", schemaFile];
+  // Build command array using harness 'trials' command
+  const cmd = ["bunx", "@plaited/agent-eval-harness", "trials", promptFile, "--schema", schemaFile];
 
   // Add grader for all evaluations (both builtin and MCP)
   cmd.push("--grader", "/eval/scripts/inline-grader.ts");
 
   cmd.push("--cwd", "/workspace");
 
-  // Add timeout (500 seconds for all agents)
-  cmd.push("--timeout", "500000");
+  // Extract k value from TRIAL_TYPE preset or use default (5)
+  const kValues: Record<string, number> = { default: 5, capability: 10, regression: 3 };
+  const k = kValues[trialType] ?? 5;
+  cmd.push("-k", k.toString());
 
   // Add prompt concurrency and workspace isolation if specified
   if (PROMPT_CONCURRENCY && PROMPT_CONCURRENCY > 1) {
@@ -216,7 +206,7 @@ const buildCaptureCommand = async (): Promise<string[]> => {
  * 1. Configure Codex if needed
  * 2. Configure MCP if SEARCH_PROVIDER is set and not "builtin"
  * 3. If args provided: execute them directly
- * 4. If no args: build and execute capture command
+ * 4. If no args: build and execute trials command
  */
 const main = async (): Promise<void> => {
   // Configure Codex CLI
@@ -234,10 +224,10 @@ const main = async (): Promise<void> => {
     process.exit(0);
   }
 
-  // Build and execute capture command
-  const cmd = await buildCaptureCommand();
+  // Build and execute trials command
+  const cmd = await buildTrialsCommand();
 
-  console.log("Running: bunx @plaited/agent-eval-harness capture", cmd[3]);
+  console.log("Running: bunx @plaited/agent-eval-harness trials", cmd[3]);
   console.log(`  Schema: ${cmd[5]}`);
   console.log(`  Output: ${cmd[cmd.length - 2]}`);
   console.log(`  Search Provider: ${SEARCH_PROVIDER}`);

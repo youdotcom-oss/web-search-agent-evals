@@ -1,5 +1,5 @@
 # Web Search Agent Evaluation Report
-**Generated:** Thursday, February 19, 2026 at 7:14 AM
+**Generated:** Thursday, February 19, 2026 at 7:33 AM
 **Prompts:** 151
 **Trials per prompt:** 10
 
@@ -70,7 +70,7 @@
 ### DROID
 
 | Metric | Builtin | you | Difference | % Change |
-|--------|---------|---------|------------|----------|
+|--------|---------|-----|------------|----------|
 | Median (P50) | 4.0 | 4.0 | → 0.0 | 0.0% |
 | P90 | 10.0 | 10.0 | → 0.0 | 0.0% |
 | P99 | 14.0 | 15.0 | ↑ 1.0 | +7.1% |

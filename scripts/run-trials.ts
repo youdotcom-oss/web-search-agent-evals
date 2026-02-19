@@ -319,9 +319,10 @@ const main = async () => {
           "--progress",
           "--cwd",
           "/workspace",
-          "--workspace-dir",
-          "/workspace/runs",
         ];
+        if (options.promptConcurrency > 1) {
+          trialsCmd.push("--workspace-dir", "/workspace/runs");
+        }
 
         const envVars = [
           "-e",

@@ -59,7 +59,6 @@
  * @public
  */
 
-import { spawn } from "node:child_process";
 import { MCP_SERVERS, type McpServerKey } from "../mcp-servers.ts";
 
 import type { Agent, SearchProvider } from "./shared/shared.types.ts";
@@ -223,17 +222,16 @@ const getComparisonScope = (
     return "all-builtin";
   }
 
-  // Check if all scenarios are you
-  const allYou = scenarios.every((s) => s.provider === "you");
-  if (allYou) {
-    return "all-you";
+  // Check if all scenarios use a single non-builtin (MCP) provider
+  const hasBuiltin = scenarios.some((s) => s.provider === "builtin");
+  const nonBuiltinProviders = [...new Set(scenarios.map((s) => s.provider).filter((p) => p !== "builtin"))];
+  if (!hasBuiltin && nonBuiltinProviders.length === 1) {
+    return `all-${nonBuiltinProviders[0]}`;
   }
 
-  // Check if we have both builtin and you
-  const hasBuiltin = scenarios.some((s) => s.provider === "builtin");
-  const hasYou = scenarios.some((s) => s.provider === "you");
-  if (hasBuiltin && hasYou && agents.length === ALL_AGENTS.length) {
-    return "builtin-vs-you";
+  // Check if we have both builtin and a single MCP provider across all agents
+  if (hasBuiltin && nonBuiltinProviders.length === 1 && agents.length === ALL_AGENTS.length) {
+    return `builtin-vs-${nonBuiltinProviders[0]}`;
   }
 
   // Custom scope: specific agents or providers
@@ -306,22 +304,11 @@ const runComparison = async (
   console.log(`   Output: ${outputPath}`);
 
   // Execute
-  const proc = spawn("bunx", args, { stdio: "inherit" });
-
-  return new Promise((resolve, reject) => {
-    proc.on("close", (code) => {
-      if (code === 0) {
-        console.log(`   ✓ Complete\n`);
-        resolve();
-      } else {
-        reject(new Error(`Comparison failed with exit code ${code}`));
-      }
-    });
-
-    proc.on("error", (err) => {
-      reject(err);
-    });
-  });
+  const result = await Bun.$`bunx ${args}`.nothrow();
+  if (result.exitCode !== 0) {
+    throw new Error(`Comparison failed with exit code ${result.exitCode}`);
+  }
+  console.log(`   ✓ Complete\n`);
 };
 
 /**
@@ -380,21 +367,29 @@ const main = async () => {
       });
     }
 
-    // All You.com comparison
-    const youScenarios = scenarios.filter((s) => s.provider === "you");
-    if (youScenarios.length > 1) {
-      comparisons.push({
-        description: "All agents with You.com MCP",
-        scenarios: youScenarios,
-      });
+    // All MCP provider comparisons (one per provider key)
+    const mcpKeys = Object.keys(MCP_SERVERS) as McpServerKey[];
+    for (const mcpKey of mcpKeys) {
+      const mcpScenarios = scenarios.filter((s) => s.provider === mcpKey);
+      if (mcpScenarios.length > 1) {
+        comparisons.push({
+          description: `All agents with ${mcpKey} MCP`,
+          scenarios: mcpScenarios,
+        });
+      }
     }
 
-    // Builtin vs You comparison (if we have both for multiple agents)
-    if (builtinScenarios.length > 0 && youScenarios.length > 0 && scenarios.length > 2) {
-      comparisons.push({
-        description: "Builtin vs You.com across all agents",
-        scenarios: scenarios,
-      });
+    // Builtin vs each MCP provider (if we have data for both)
+    if (builtinScenarios.length > 0) {
+      for (const mcpKey of mcpKeys) {
+        const mcpScenarios = scenarios.filter((s) => s.provider === mcpKey);
+        if (mcpScenarios.length > 0 && builtinScenarios.length + mcpScenarios.length > 2) {
+          comparisons.push({
+            description: `Builtin vs ${mcpKey} across all agents`,
+            scenarios: [...builtinScenarios, ...mcpScenarios],
+          });
+        }
+      }
     }
 
     // If no multi-scenario comparisons, just run a single comparison with all scenarios

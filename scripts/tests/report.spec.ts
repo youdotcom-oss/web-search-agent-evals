@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { join } from "node:path";
+import { parseRunLabel } from "../report.ts";
 import { runScript } from "./test-utils.ts";
 
 const SCRIPT_PATH = join(import.meta.dir, "..", "report.ts");
@@ -87,6 +88,29 @@ describe("report.ts", () => {
       const { exitCode } = await runScript(SCRIPT_PATH, ["--run-date", "1999-01-01"]);
 
       expect(exitCode).toBe(1);
+    });
+  });
+
+  describe("parseRunLabel", () => {
+    test("parses simple agent-provider label", () => {
+      expect(parseRunLabel("gemini-you")).toEqual({ agent: "gemini", provider: "you" });
+    });
+
+    test("parses agent with hyphen (claude-code)", () => {
+      expect(parseRunLabel("claude-code-builtin")).toEqual({ agent: "claude-code", provider: "builtin" });
+    });
+
+    test("parses claude-code with MCP provider", () => {
+      expect(parseRunLabel("claude-code-you")).toEqual({ agent: "claude-code", provider: "you" });
+    });
+
+    test("parses provider containing a hyphen", () => {
+      // A future MCP key like "some-provider" should not break parsing
+      expect(parseRunLabel("gemini-some-provider")).toEqual({ agent: "gemini", provider: "some-provider" });
+    });
+
+    test("throws for unknown agent prefix", () => {
+      expect(() => parseRunLabel("unknown-agent-builtin")).toThrow("Invalid run label format");
     });
   });
 

@@ -98,7 +98,9 @@ const configureMcp = async (agent: string, tool: McpServerKey): Promise<void> =>
 
       case "codex": {
         // Codex uses config file instead of CLI
-        const configDir = `${process.env.HOME}/.codex`;
+        const home = process.env.HOME;
+        if (!home) throw new Error("HOME environment variable is not set");
+        const configDir = `${home}/.codex`;
         await $`mkdir -p ${configDir}`.quiet();
 
         const config = `[mcp_servers.${server.name}]

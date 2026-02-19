@@ -22,8 +22,6 @@
  * @public
  */
 
-import { spawn } from "node:child_process";
-import { readdir, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { MCP_SERVERS, type McpServerKey } from "../mcp-servers.ts";
 
@@ -61,12 +59,11 @@ const prompt = async (question: string): Promise<string> => {
  * @internal
  */
 const getRunDates = async (): Promise<string[]> => {
-  const runsDir = join(process.cwd(), "data", "results");
+  const runsDir = join(import.meta.dir, "..", "data", "results");
   try {
-    const entries = await readdir(runsDir, { withFileTypes: true });
+    const entries = await Array.fromAsync(new Bun.Glob("*").scan({ cwd: runsDir, onlyFiles: false }));
     return entries
-      .filter((entry) => entry.isDirectory() && /^\d{4}-\d{2}-\d{2}$/.test(entry.name))
-      .map((entry) => entry.name)
+      .filter((name) => /^\d{4}-\d{2}-\d{2}$/.test(name))
       .sort()
       .reverse(); // Most recent first
   } catch {
@@ -83,15 +80,12 @@ const getRunDates = async (): Promise<string[]> => {
  * @internal
  */
 const cleanCalibrationDir = async (): Promise<void> => {
-  const calibrationDir = join(process.cwd(), "data", "calibration");
+  const calibrationDir = join(import.meta.dir, "..", "data", "calibration");
   try {
-    const files = await readdir(calibrationDir);
-    const mdFiles = files.filter((f) => f.endsWith(".md"));
-
+    const mdFiles = await Array.fromAsync(new Bun.Glob("*.md").scan({ cwd: calibrationDir }));
     for (const file of mdFiles) {
-      await rm(join(calibrationDir, file));
+      await Bun.$`rm ${join(calibrationDir, file)}`.quiet();
     }
-
     if (mdFiles.length > 0) {
       console.log(`🧹 Cleaned ${mdFiles.length} files from calibration directory\n`);
     }
@@ -110,28 +104,15 @@ const cleanCalibrationDir = async (): Promise<void> => {
  *
  * @internal
  */
-const runCalibrate = (inputFile: string, outputFile: string, sampleCount: number): Promise<number> => {
-  return new Promise((resolve) => {
-    console.log(`\n📊 Running calibration...`);
-    console.log(`   Input:  ${inputFile}`);
-    console.log(`   Output: ${outputFile}`);
-    console.log(`   Samples: ${sampleCount}\n`);
+const runCalibrate = async (inputFile: string, outputFile: string, sampleCount: number): Promise<number> => {
+  console.log(`\n📊 Running calibration...`);
+  console.log(`   Input:  ${inputFile}`);
+  console.log(`   Output: ${outputFile}`);
+  console.log(`   Samples: ${sampleCount}\n`);
 
-    const proc = spawn(
-      "bunx",
-      ["@plaited/agent-eval-harness", "calibrate", inputFile, "--sample", sampleCount.toString(), "-o", outputFile],
-      { stdio: "inherit" },
-    );
-
-    proc.on("close", (code) => {
-      resolve(code ?? 1);
-    });
-
-    proc.on("error", (err) => {
-      console.error(`Error running calibration: ${err.message}`);
-      resolve(1);
-    });
-  });
+  const result =
+    await Bun.$`bunx @plaited/agent-eval-harness calibrate ${inputFile} --sample ${sampleCount.toString()} -o ${outputFile}`.nothrow();
+  return result.exitCode;
 };
 
 /**
@@ -264,8 +245,8 @@ const main = async () => {
   let failCount = 0;
 
   for (const { agent, provider } of combinations) {
-    const inputFile = join(process.cwd(), baseDir, agent, `${provider}.jsonl`);
-    const outputFile = join(process.cwd(), "data", "calibration", `${prefix}-${agent}-${provider}.md`);
+    const inputFile = join(import.meta.dir, "..", baseDir, agent, `${provider}.jsonl`);
+    const outputFile = join(import.meta.dir, "..", "data", "calibration", `${prefix}-${agent}-${provider}.md`);
 
     // Check if input file exists
     if (!(await Bun.file(inputFile).exists())) {

@@ -28,6 +28,7 @@
 import type { QualityMetrics, ReliabilityMetrics, WeightedComparison } from "./schemas/comparisons.ts";
 import { WeightedComparisonSchema } from "./schemas/comparisons.ts";
 import { loadJsonFile } from "./schemas/common.ts";
+import { ALL_AGENTS } from "./shared/shared.constants.ts";
 
 type ReportOptions = {
   runDate?: string;
@@ -125,13 +126,24 @@ const fmt = (n: number, decimals = 2): string => n.toFixed(decimals);
 const pct = (n: number, decimals = 1): string => `${(n * 100).toFixed(decimals)}%`;
 const ms = (n: number): string => (n < 1000 ? `${Math.round(n)}ms` : `${(n / 1000).toFixed(1)}s`);
 
-const parseRunLabel = (label: string): { agent: string; provider: string } => {
-  const parts = label.split("-");
-  if (parts.length === 3 && parts[0] === "claude" && parts[1] === "code") {
-    return { agent: "claude-code", provider: parts[2] ?? "" };
-  }
-  if (parts.length === 2) {
-    return { agent: parts[0] ?? "", provider: parts[1] ?? "" };
+/**
+ * Parse a run label like "claude-code-builtin" into agent and provider.
+ *
+ * @remarks
+ * Matches against ALL_AGENTS so agent names containing hyphens (e.g. "claude-code")
+ * are handled correctly. The provider is whatever follows the matched agent prefix.
+ *
+ * @param label - Run label in the form `{agent}-{provider}`
+ * @returns Parsed agent and provider names
+ *
+ * @internal
+ */
+export const parseRunLabel = (label: string): { agent: string; provider: string } => {
+  for (const agent of ALL_AGENTS) {
+    const prefix = `${agent}-`;
+    if (label.startsWith(prefix)) {
+      return { agent, provider: label.slice(prefix.length) };
+    }
   }
   throw new Error(`Invalid run label format: ${label}`);
 };
@@ -700,7 +712,9 @@ const main = async () => {
   console.log(`✓ Report written to: ${outputPath}`);
 };
 
-main().catch((error) => {
-  console.error("Error generating report:", error);
-  process.exit(1);
-});
+if (import.meta.main) {
+  main().catch((error) => {
+    console.error("Error generating report:", error);
+    process.exit(1);
+  });
+}

@@ -180,14 +180,14 @@ bun run trials -- --prompt-concurrency 8    # 8 prompts (high memory, CI only)
 
 ## Prompts
 
-Prompts live in a single `full/` directory. The format differs by search provider:
+Prompts live in a flat `data/prompts/` directory. The format differs by search provider:
 - **Builtin mode**: Just the query (e.g., "What are the best free icon libraries...")
 - **MCP mode**: `"Use {server-name} and answer\n{query}"` with MCP metadata
 
 | File | Prompts | Metadata | Use With |
 |------|---------|----------|----------|
-| `full/prompts.jsonl` | 151 | No MCP | `SEARCH_PROVIDER=builtin` |
-| `full/prompts-you.jsonl` | 151 | `mcpServer="ydc-server"`, `expectedTools=["you-search"]` | `SEARCH_PROVIDER=you` |
+| `prompts.jsonl` | 151 | No MCP | `SEARCH_PROVIDER=builtin` |
+| `prompts-you.jsonl` | 151 | `mcpServer="ydc-server"`, `expectedTools=["you-search"]` | `SEARCH_PROVIDER=you` |
 
 The entrypoint automatically selects the correct prompt file based on `SEARCH_PROVIDER`. To run a random subset, pass `PROMPT_COUNT` (or `--count N` via CLI):
 
@@ -433,7 +433,7 @@ Use the generate-mcp-prompts script to create MCP variant files with proper meta
 bun scripts/generate-mcp-prompts.ts --mcp-key exa
 
 # Creates:
-# - data/prompts/full/prompts-exa.jsonl
+# - data/prompts/prompts-exa.jsonl
 ```
 
 The script prepends `"Use {server-name} and answer\n"` to each query and adds MCP metadata (server name and expected tools).
@@ -442,8 +442,8 @@ The entrypoint automatically handles provider-specific prompt files:
 
 ```typescript
 const promptFile = SEARCH_PROVIDER === "builtin"
-  ? `/eval/data/prompts/full/prompts.jsonl`
-  : `/eval/data/prompts/full/prompts-${SEARCH_PROVIDER}.jsonl`  // e.g., full/prompts-exa.jsonl
+  ? `/eval/data/prompts/prompts.jsonl`
+  : `/eval/data/prompts/prompts-${SEARCH_PROVIDER}.jsonl`  // e.g., prompts-exa.jsonl
 ```
 
 **Note:** `scripts/run-trials.ts` automatically picks up new MCP servers from `mcp-servers.ts`, so no manual updates needed.

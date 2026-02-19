@@ -228,8 +228,8 @@ const getComparisonScope = (
     return `all-${nonBuiltinProviders[0]}`;
   }
 
-  // Check if we have both builtin and a single MCP provider across all agents
-  if (hasBuiltin && nonBuiltinProviders.length === 1 && agents.length === ALL_AGENTS.length) {
+  // Check if we have both builtin and a single MCP provider
+  if (hasBuiltin && nonBuiltinProviders.length === 1) {
     return `builtin-vs-${nonBuiltinProviders[0]}`;
   }
 
@@ -320,7 +320,8 @@ const main = async () => {
     const options = parseArgs(process.argv.slice(2));
 
     const resultsBaseDir = "data/results";
-    const runDate = options.runDate || (await discoverLatestDate(resultsBaseDir));
+    options.runDate = options.runDate ?? (await discoverLatestDate(resultsBaseDir));
+    const runDate = options.runDate;
     const resultsDir = `${resultsBaseDir}/${runDate}`;
     const typeSuffix = options.trialType === "default" ? "" : `-${options.trialType}`;
 

@@ -310,8 +310,6 @@ const main = async () => {
           schema,
           "-k",
           k.toString(),
-          "-j",
-          options.promptConcurrency.toString(),
           "--grader",
           grader,
           "-o",
@@ -321,6 +319,7 @@ const main = async () => {
           "/workspace",
         ];
         if (options.promptConcurrency > 1) {
+          trialsCmd.push("-j", options.promptConcurrency.toString());
           trialsCmd.push("--workspace-dir", "/workspace/runs");
         }
 

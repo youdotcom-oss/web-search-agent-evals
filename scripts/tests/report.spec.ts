@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { join } from "node:path";
-import { parseRunLabel } from "../report.ts";
+import { findLatestDate, parseRunLabel } from "../report.ts";
 import { runScript } from "./test-utils.ts";
 
 const SCRIPT_PATH = join(import.meta.dir, "..", "report.ts");
@@ -88,6 +88,26 @@ describe("report.ts", () => {
       const { exitCode } = await runScript(SCRIPT_PATH, ["--run-date", "1999-01-01"]);
 
       expect(exitCode).toBe(1);
+    });
+  });
+
+  describe("findLatestDate", () => {
+    test("returns a YYYY-MM-DD formatted date from data/comparisons", async () => {
+      const baseDir = join(import.meta.dir, "../../data/comparisons");
+      const date = await findLatestDate(baseDir);
+      expect(date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    });
+
+    test("returns most recent date when multiple exist", async () => {
+      const baseDir = join(import.meta.dir, "../../data/comparisons");
+      const date = await findLatestDate(baseDir);
+      // data/comparisons has 2026-02-18; it should be the latest
+      expect(date).toBe("2026-02-18");
+    });
+
+    test("throws when directory has no dated subdirectories", async () => {
+      // scripts/tests/ has no YYYY-MM-DD subdirs, so it should throw
+      await expect(findLatestDate(import.meta.dir)).rejects.toThrow("No dated runs found");
     });
   });
 

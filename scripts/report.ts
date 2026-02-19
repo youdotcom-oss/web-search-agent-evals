@@ -28,6 +28,7 @@
 import type { QualityMetrics, ReliabilityMetrics, WeightedComparison } from "./schemas/comparisons.ts";
 import { WeightedComparisonSchema } from "./schemas/comparisons.ts";
 import { loadJsonFile } from "./schemas/common.ts";
+import { MCP_SERVERS } from "../mcp-servers.ts";
 import { ALL_AGENTS } from "./shared/shared.constants.ts";
 
 type ReportOptions = {
@@ -84,7 +85,7 @@ Options:
 
 // ─── Discovery ───────────────────────────────────────────────────────────────
 
-const findLatestDate = async (baseDir: string): Promise<string> => {
+export const findLatestDate = async (baseDir: string): Promise<string> => {
   const dirs = await Array.fromAsync(new Bun.Glob("*").scan({ cwd: baseDir, onlyFiles: false }));
   const dates = dirs
     .filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d))
@@ -102,12 +103,13 @@ const loadComparison = async (
   comparisonsDir: string,
   type: "weighted" | "statistical",
 ): Promise<WeightedComparison | null> => {
-  // Try files in priority order
+  // Try files in priority order, deriving MCP provider names dynamically
+  const mcpKeys = Object.keys(MCP_SERVERS);
   const candidates = [
-    `${comparisonsDir}/builtin-vs-you-${type}.json`,
+    ...mcpKeys.map((k) => `${comparisonsDir}/builtin-vs-${k}-${type}.json`),
     `${comparisonsDir}/all-${type}.json`,
     `${comparisonsDir}/all-builtin-${type}.json`,
-    `${comparisonsDir}/all-you-${type}.json`,
+    ...mcpKeys.map((k) => `${comparisonsDir}/all-${k}-${type}.json`),
   ];
 
   for (const path of candidates) {
@@ -579,20 +581,20 @@ const generateToolCallSections = (analyses: FileAnalysis[]): string => {
       }
     }
 
-    // Key observations for builtin vs you
+    // Key observations for builtin vs MCP provider
     const builtin = agentResults.find((r) => r.provider === "builtin");
-    const you = agentResults.find((r) => r.provider === "you");
-    if (builtin && you && builtin.toolCalls.length > 0 && you.toolCalls.length > 0) {
+    const mcp = agentResults.find((r) => r.provider !== "builtin");
+    if (builtin && mcp && builtin.toolCalls.length > 0 && mcp.toolCalls.length > 0) {
       const b0 = builtin.toolCalls.filter((c) => c === 0).length;
-      const y0 = you.toolCalls.filter((c) => c === 0).length;
+      const m0 = mcp.toolCalls.filter((c) => c === 0).length;
       const b5 = builtin.toolCalls.filter((c) => c >= 5).length;
-      const y5 = you.toolCalls.filter((c) => c >= 5).length;
+      const m5 = mcp.toolCalls.filter((c) => c >= 5).length;
       md.push("**Key Observations:**\n\n");
       md.push(
-        `- Zero tool calls: Builtin=${b0} (${((b0 / builtin.toolCalls.length) * 100).toFixed(1)}%), You=${y0} (${((y0 / you.toolCalls.length) * 100).toFixed(1)}%)\n`,
+        `- Zero tool calls: Builtin=${b0} (${((b0 / builtin.toolCalls.length) * 100).toFixed(1)}%), ${mcp.provider}=${m0} (${((m0 / mcp.toolCalls.length) * 100).toFixed(1)}%)\n`,
       );
       md.push(
-        `- Heavy users (5+ calls): Builtin=${b5} (${((b5 / builtin.toolCalls.length) * 100).toFixed(1)}%), You=${y5} (${((y5 / you.toolCalls.length) * 100).toFixed(1)}%)\n\n`,
+        `- Heavy users (5+ calls): Builtin=${b5} (${((b5 / builtin.toolCalls.length) * 100).toFixed(1)}%), ${mcp.provider}=${m5} (${((m5 / mcp.toolCalls.length) * 100).toFixed(1)}%)\n\n`,
       );
     }
   }

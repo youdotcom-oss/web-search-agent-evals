@@ -40,7 +40,7 @@
  * Examples:
  * - `data/comparisons/2026-01-29/all-weighted.json` (default, k=5)
  * - `data/comparisons/2026-01-29/all-weighted-capability.json` (k=10)
- * - `data/comparisons/2026-01-29/builtin-statistical-regression.json` (k=3)
+ * - `data/comparisons/2026-01-29/builtin-vs-you-statistical-regression.json` (k=3)
  *
  * ## Result Path Convention
  *
@@ -256,9 +256,10 @@ const runComparison = async (
 ): Promise<void> => {
   const { strategy, runDate, trialType, dryRun } = options;
 
-  // Discover run date if not provided
+  // runDate is always resolved by main() before calling runComparison
   const resultsBaseDir = "data/results";
-  const dateDir = runDate || (await discoverLatestDate(resultsBaseDir));
+  if (!runDate) throw new Error("runDate must be resolved before calling runComparison");
+  const dateDir = runDate;
   const resultsDir = `${resultsBaseDir}/${dateDir}`;
 
   // Build output path

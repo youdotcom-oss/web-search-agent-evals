@@ -406,15 +406,21 @@ const main = async () => {
     }
 
     // Run all comparisons
+    let failureCount = 0;
     for (const comparison of comparisons) {
       try {
         await runComparison(comparison.scenarios, options);
       } catch (error) {
+        failureCount++;
         console.error(`✗ Failed: ${comparison.description}`);
         console.error(`  ${(error as Error).message}`);
       }
     }
 
+    if (failureCount > 0) {
+      console.error(`\n❌ ${failureCount} comparison(s) failed.`);
+      process.exit(1);
+    }
     console.log("✅ All comparisons complete!");
   } catch (error) {
     console.error(`Error: ${(error as Error).message}`);

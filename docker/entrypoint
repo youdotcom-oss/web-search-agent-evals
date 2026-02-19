@@ -229,9 +229,12 @@ const main = async (): Promise<void> => {
   // Build and execute trials command
   const cmd = await buildTrialsCommand();
 
-  console.log("Running: bunx @plaited/agent-eval-harness trials", cmd[3]);
-  console.log(`  Schema: ${cmd[5]}`);
-  console.log(`  Output: ${cmd[cmd.length - 2]}`);
+  const trialsCmdIdx = cmd.indexOf("trials");
+  const schemaIdx = cmd.indexOf("--schema");
+  const outputIdx = cmd.indexOf("-o");
+  console.log("Running: bunx @plaited/agent-eval-harness trials", trialsCmdIdx !== -1 ? cmd[trialsCmdIdx + 1] : "?");
+  console.log(`  Schema: ${schemaIdx !== -1 ? cmd[schemaIdx + 1] : "?"}`);
+  console.log(`  Output: ${outputIdx !== -1 ? cmd[outputIdx + 1] : "?"}`);
   console.log(`  Search Provider: ${SEARCH_PROVIDER}`);
   console.log("");
   console.log("Executing command:");

@@ -502,11 +502,11 @@ const generateSummarySections = (weighted: WeightedComparison, statistical: Weig
               const sbq = statistical.quality[builtinRun];
               const smp = statistical.performance[mcpRun];
               const sbp = statistical.performance[builtinRun];
-              if (smq?.confidenceIntervals?.avgScore && sbq) {
+              if (smq?.confidenceIntervals?.avgScore && sbq && sbq.avgScore > 0) {
                 const [lo, hi] = smq.confidenceIntervals.avgScore;
                 qm = ` ± ${fmt(((hi - lo) / 2 / sbq.avgScore) * 100, 1)}%`;
               }
-              if (smp?.confidenceIntervals?.latencyMean && sbp) {
+              if (smp?.confidenceIntervals?.latencyMean && sbp && sbp.latency.mean > 0) {
                 const [lo, hi] = smp.confidenceIntervals.latencyMean;
                 sm = ` ± ${fmt(((hi - lo) / 2 / sbp.latency.mean) * 100, 1)}%`;
               }
@@ -563,7 +563,7 @@ const generateToolCallSections = (analyses: FileAnalysis[]): string => {
     }
 
     md.push(`| Metric | Builtin | ${mcp.provider} | Difference | % Change |\n`);
-    md.push("|--------|---------|---------|------------|----------|\n");
+    md.push(`|--------|---------|${"-".repeat(mcp.provider.length + 2)}|------------|----------|\n`);
     const metrics: Array<{ label: string; key: "median" | "p90" | "p99" | "mean" | "min" | "max" }> = [
       { label: "Median (P50)", key: "median" },
       { label: "P90", key: "p90" },

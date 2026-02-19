@@ -153,11 +153,8 @@ const main = async () => {
     process.exit(1);
   }
 
-  let baseDir: string;
-  let prefix: string;
-
-  baseDir = `data/results/${selectedDate}`;
-  prefix = selectedDate;
+  const baseDir = `data/results/${selectedDate}`;
+  const prefix = selectedDate;
 
   // Step 2: Choose agents (multi-select)
   console.log("\nSelect agents (space-separated numbers, or 'all'):");

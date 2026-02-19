@@ -533,9 +533,9 @@ const generateToolCallSections = (analyses: FileAnalysis[]): string => {
     md.push(`### ${agent.toUpperCase()}\n\n`);
 
     const builtin = agentResults.find((r) => r.provider === "builtin");
-    const you = agentResults.find((r) => r.provider === "you");
+    const mcp = agentResults.find((r) => r.provider !== "builtin");
 
-    if (!builtin || !you) {
+    if (!builtin || !mcp) {
       // Single provider: just show stats
       for (const r of agentResults) {
         const { stats } = r;
@@ -546,7 +546,7 @@ const generateToolCallSections = (analyses: FileAnalysis[]): string => {
       continue;
     }
 
-    md.push("| Metric | Builtin | You.com | Difference | % Change |\n");
+    md.push(`| Metric | Builtin | ${mcp.provider} | Difference | % Change |\n`);
     md.push("|--------|---------|---------|------------|----------|\n");
     const metrics: Array<{ label: string; key: "median" | "p90" | "p99" | "mean" | "min" | "max" }> = [
       { label: "Median (P50)", key: "median" },
@@ -558,15 +558,15 @@ const generateToolCallSections = (analyses: FileAnalysis[]): string => {
     ];
     for (const { label, key } of metrics) {
       const bv = builtin.stats[key];
-      const yv = you.stats[key];
-      const diff = yv - bv;
+      const mv = mcp.stats[key];
+      const diff = mv - bv;
       const pctChange = bv > 0 ? (diff / bv) * 100 : 0;
       const arrow = diff > 0 ? "↑" : diff < 0 ? "↓" : "→";
       md.push(
-        `| ${label} | ${bv.toFixed(1)} | ${yv.toFixed(1)} | ${arrow} ${Math.abs(diff).toFixed(1)} | ${pctChange > 0 ? "+" : ""}${pctChange.toFixed(1)}% |\n`,
+        `| ${label} | ${bv.toFixed(1)} | ${mv.toFixed(1)} | ${arrow} ${Math.abs(diff).toFixed(1)} | ${pctChange > 0 ? "+" : ""}${pctChange.toFixed(1)}% |\n`,
       );
     }
-    md.push(`\n**Sample size:** ${builtin.stats.count} (builtin), ${you.stats.count} (you)\n\n`);
+    md.push(`\n**Sample size:** ${builtin.stats.count} (builtin), ${mcp.stats.count} (${mcp.provider})\n\n`);
   }
 
   // Tool Call Distribution Histograms

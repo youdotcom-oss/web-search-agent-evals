@@ -310,7 +310,11 @@ const analyzePassAtK = async (filePath: string): Promise<PassAtKAnalysis | null>
   const mean = passAtKValues.reduce((sum, v) => sum + v, 0) / passAtKValues.length;
   const mean = passAtKValues.reduce((sum, v) => sum + v, 0) / passAtKValues.length;
   const std = Math.sqrt(
-    passAtKValues.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / (passAtKValues.length - 1)
+  const std = passAtKValues.length > 1
+    ? Math.sqrt(
+        passAtKValues.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / (passAtKValues.length - 1)
+      )
+    : 0;
   );
   const median = calculatePercentile(passAtKValues, 50);
   const p25 = calculatePercentile(passAtKValues, 25);

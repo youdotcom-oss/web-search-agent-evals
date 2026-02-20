@@ -252,6 +252,93 @@ const analyzeFile = async (filePath: string): Promise<FileAnalysis> => {
   return { agent, provider, toolCalls, stats, results };
 };
 
+type PassAtKAnalysis = {
+  agent: string;
+  provider: string;
+  passAtKValues: number[];
+  stats: {
+    mean: number;
+    median: number;
+    p25: number;
+    p75: number;
+    std: number;
+    ci95Lower: number;
+    ci95Upper: number;
+  };
+};
+
+// Approximate t-critical values (for df < 30, use lookup; for df >= 30, use 1.96)
+const getTCritical = (df: number): number => {
+  // Simplified: for df >= 30, use 1.96 (normal approximation)
+  if (df >= 30) return 1.96;
+  // For smaller df, use approximate values
+  const tTable: Record<number, number> = {
+    1: 12.706, 2: 4.303, 3: 3.182, 4: 2.776, 5: 2.571,
+    6: 2.447, 7: 2.365, 8: 2.306, 9: 2.262, 10: 2.228,
+    15: 2.131, 20: 2.086, 25: 2.060, 29: 2.045,
+  };
+  // Find closest df
+  const keys = Object.keys(tTable).map(Number).sort((a, b) => a - b);
+  for (let i = keys.length - 1; i >= 0; i--) {
+    if (df >= keys[i]!) return tTable[keys[i]!]!;
+  }
+  return 2.0; // fallback
+};
+
+const analyzePassAtK = async (filePath: string): Promise<PassAtKAnalysis | null> => {
+  const parts = filePath.split("/");
+  const rawProvider = parts[parts.length - 1]?.replace(".jsonl", "") ?? "unknown";
+  const provider = rawProvider.replace(/-(capability|regression)$/, "");
+  const agent = parts[parts.length - 2] ?? "unknown";
+
+  const text = await Bun.file(filePath).text();
+  const lines = text.trim().split("\n").filter(Boolean);
+
+  const passAtKValues: number[] = [];
+
+  for (const line of lines) {
+    const result = JSON.parse(line) as { passAtK?: number };
+    if (result.passAtK !== undefined && result.passAtK !== null) {
+      passAtKValues.push(result.passAtK);
+    }
+  }
+
+  if (passAtKValues.length === 0) return null;
+
+  // Calculate statistics
+  const sorted = passAtKValues.slice().sort((a, b) => a - b);
+  const mean = passAtKValues.reduce((sum, v) => sum + v, 0) / passAtKValues.length;
+  const std = Math.sqrt(
+    passAtKValues.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / (passAtKValues.length - 1)
+  );
+  const median = calculatePercentile(passAtKValues, 50);
+  const p25 = calculatePercentile(passAtKValues, 25);
+  const p75 = calculatePercentile(passAtKValues, 75);
+
+  // Calculate 95% confidence interval for mean
+  const n = passAtKValues.length;
+  const se = std / Math.sqrt(n);
+  // t-critical for 95% CI, df = n-1 (approximate with normal for large n)
+  const tCritical = n > 30 ? 1.96 : getTCritical(n - 1);
+  const ci95Lower = mean - tCritical * se;
+  const ci95Upper = mean + tCritical * se;
+
+  return {
+    agent,
+    provider,
+    passAtKValues,
+    stats: {
+      mean,
+      median,
+      p25,
+      p75,
+      std,
+      ci95Lower,
+      ci95Upper,
+    },
+  };
+};
+
 const renderHistogram = (values: number[], label: string): string => {
   const freq = new Map<number, number>();
   for (const v of values) {
@@ -274,9 +361,63 @@ const renderHistogram = (values: number[], label: string): string => {
   return lines.join("\n");
 };
 
+const generatePassAtKChart = (analyses: PassAtKAnalysis[]): string => {
+  if (analyses.length === 0) return "";
+  
+  // Sort by mean passAtK
+  const sorted = analyses.slice().sort((a, b) => b.stats.mean - a.stats.mean);
+  
+  // Scale to 0-100 for display
+  const maxValue = 1.0;
+  const scale = 60; // width of chart in characters
+  
+  const lines: string[] = ["```"];
+  
+  // Y-axis labels and bars
+  for (const analysis of sorted) {
+    const label = `${analysis.agent}-${analysis.provider}`.padEnd(25);
+    const mean = analysis.stats.mean;
+    const ciLower = analysis.stats.ci95Lower;
+    const ciUpper = analysis.stats.ci95Upper;
+    
+    const meanBar = Math.round((mean / maxValue) * scale);
+    const ciLowerBar = Math.round((ciLower / maxValue) * scale);
+    const ciUpperBar = Math.round((ciUpper / maxValue) * scale);
+    
+    // Mean bar
+    const meanBarStr = "█".repeat(meanBar);
+    
+    // CI error bars (show range)
+    const ciStart = Math.max(0, ciLowerBar);
+    const ciEnd = Math.min(scale, ciUpperBar);
+    
+    // Build the line: label, mean bar, CI indicator
+    const meanLine = `${label} │${meanBarStr.padEnd(scale)}│ ${pct(mean)}`;
+    lines.push(meanLine);
+    
+    // CI line with error bars
+    const ciRange = Math.max(1, ciEnd - ciStart);
+    const ciBar = " ".repeat(ciStart) + "│" + "─".repeat(Math.max(0, ciRange - 2)) + "│" + " ".repeat(scale - ciEnd);
+    const ciLine = `${" ".repeat(25)} ${ciBar} [${pct(ciLower)}, ${pct(ciUpper)}]`;
+    lines.push(ciLine);
+    lines.push(""); // blank line between entries
+  }
+  
+  // X-axis
+  lines.push(`${" ".repeat(27)}└${"─".repeat(scale)}┘`);
+  lines.push(`${" ".repeat(27)}0%${" ".repeat(scale - 4)}100%`);
+  lines.push("```\n");
+  
+  return lines.join("\n");
+};
+
 // ─── Section Generators ───────────────────────────────────────────────────────
 
-const generateSummarySections = (weighted: WeightedComparison, statistical: WeightedComparison | null): string => {
+const generateSummarySections = (
+  weighted: WeightedComparison,
+  statistical: WeightedComparison | null,
+  passAtKAnalyses: PassAtKAnalysis[] = [],
+): string => {
   const { meta, quality, performance, reliability, capability, flakiness } = weighted;
   const md: string[] = [];
 
@@ -406,16 +547,29 @@ const generateSummarySections = (weighted: WeightedComparison, statistical: Weig
   // Capability Metrics
   if (capability && Object.keys(capability).length > 0) {
     md.push("## Capability Metrics (Pass@k)\n\n");
-    md.push("| Agent + Search | Avg Pass@k | Median Pass@k | P25 Pass@k | P75 Pass@k |\n");
-    md.push("|----------------|------------|---------------|------------|------------|\n");
+    md.push("| Agent + Search | Avg Pass@k | 95% CI | Median Pass@k | P25 Pass@k | P75 Pass@k | Std Dev |\n");
+    md.push("|----------------|------------|--------|---------------|------------|------------|----------|\n");
+    
     Object.entries(capability)
       .sort((a, b) => b[1].avgPassAtK - a[1].avgPassAtK)
       .forEach(([run, m]) => {
+        const analysis = passAtKAnalyses.find((a) => `${a.agent}-${a.provider}` === run);
+        const ciStr = analysis
+          ? `[${pct(analysis.stats.ci95Lower)}, ${pct(analysis.stats.ci95Upper)}]`
+          : "—";
+        const stdStr = analysis ? fmt(analysis.stats.std, 4) : "—";
         md.push(
-          `| ${run} | ${pct(m.avgPassAtK)} | ${pct(m.medianPassAtK)} | ${pct(m.p25PassAtK)} | ${pct(m.p75PassAtK)} |\n`,
+          `| ${run} | ${pct(m.avgPassAtK)} | ${ciStr} | ${pct(m.medianPassAtK)} | ${pct(m.p25PassAtK)} | ${pct(m.p75PassAtK)} | ${stdStr} |\n`,
         );
       });
     md.push("\n");
+    
+    // Generate graph
+    if (passAtKAnalyses.length > 0) {
+      md.push("### Pass@k Comparison Chart\n\n");
+      md.push(generatePassAtKChart(passAtKAnalyses));
+      md.push("\n");
+    }
   }
 
   // Flakiness Analysis
@@ -725,8 +879,17 @@ const main = async () => {
   });
   const analyses: FileAnalysis[] = await Promise.all(jsonlFiles.map((f) => analyzeFile(`${resultsDir}/${f}`)));
 
+  // Load passAtK analyses
+  const passAtKAnalyses: PassAtKAnalysis[] = [];
+  for (const f of jsonlFiles) {
+    const analysis = await analyzePassAtK(`${resultsDir}/${f}`);
+    if (analysis) {
+      passAtKAnalyses.push(analysis);
+    }
+  }
+
   // Generate report sections
-  const summarySections = generateSummarySections(weighted, statistical);
+  const summarySections = generateSummarySections(weighted, statistical, passAtKAnalyses);
   const toolCallSections = analyses.length > 0 ? generateToolCallSections(analyses) : "";
   const failingPromptsSection = analyses.length > 0 ? await generateFailingPromptsSection(analyses) : "";
 

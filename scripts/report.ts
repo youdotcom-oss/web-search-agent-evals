@@ -306,7 +306,8 @@ const analyzePassAtK = async (filePath: string): Promise<PassAtKAnalysis | null>
   if (passAtKValues.length === 0) return null;
 
   // Calculate statistics
-  const sorted = passAtKValues.slice().sort((a, b) => a - b);
+  // Calculate statistics
+  const mean = passAtKValues.reduce((sum, v) => sum + v, 0) / passAtKValues.length;
   const mean = passAtKValues.reduce((sum, v) => sum + v, 0) / passAtKValues.length;
   const std = Math.sqrt(
     passAtKValues.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / (passAtKValues.length - 1)

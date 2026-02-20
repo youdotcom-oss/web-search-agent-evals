@@ -125,7 +125,8 @@ def calculate_percentile(values, percentile):
     return sorted_values[lower] * (1 - weight) + sorted_values[upper] * weight
 
 
-def calculate_stats(values, label):
+def calculate_stats(values):
+    """Calculate statistics for passAtK values"""
     """Calculate and print statistics for passAtK values"""
     if not values:
         return None

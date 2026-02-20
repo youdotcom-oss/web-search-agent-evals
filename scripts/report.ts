@@ -40,6 +40,15 @@ type ReportOptions = {
   trialType: TrialType;
 };
 
+type TrajectoryStep = {
+  type: string;
+  name?: string;
+  status?: string;
+  content?: string;
+  timestamp?: number;
+  duration?: number;
+};
+
 type TrialResult = {
   id: string;
   passRate: number;
@@ -48,7 +57,7 @@ type TrialResult = {
   trials: Array<{
     pass: boolean;
     score: number;
-    trajectory?: Array<{ type: string; name?: string }>;
+    trajectory?: TrajectoryStep[];
   }>;
 };
 
@@ -194,6 +203,17 @@ const isTrialQuality = (
 
 // ─── Tool Call Analysis ───────────────────────────────────────────────────────
 
+const FALLBACK_PHRASE = "Let me try with the WebSearch tool instead:";
+
+type ToolLatencies = Map<string, number[]>;
+
+type FallbackStats = {
+  promptsWithFallback: number;
+  trialsWithFallback: number;
+  totalTrials: number;
+  topAffectedPrompts: Array<{ id: string; trialsHit: number; totalTrials: number }>;
+};
+
 const calculatePercentile = (values: number[], percentile: number): number => {
   if (values.length === 0) return 0;
   const sorted = values.slice().sort((a, b) => a - b);
@@ -204,9 +224,79 @@ const calculatePercentile = (values: number[], percentile: number): number => {
   return (sorted[lower] ?? 0) * (1 - (index - lower)) + (sorted[upper] ?? 0) * (index - lower);
 };
 
-const countToolCalls = (trajectory?: Array<{ type: string }>): number => {
+const countToolCalls = (trajectory?: TrajectoryStep[]): number => {
   if (!trajectory) return 0;
   return trajectory.filter((step) => step.type === "tool_call").length;
+};
+
+const extractToolLatencies = (trajectory?: TrajectoryStep[]): ToolLatencies => {
+  if (!trajectory) return new Map();
+  const latencies: ToolLatencies = new Map();
+  const queue: Array<{ name: string; timestamp: number }> = [];
+
+  for (const step of trajectory) {
+    if (step.type !== "tool_call") continue;
+
+    if (step.duration != null && step.duration > 0) {
+      // Explicit duration field (future harness versions)
+      const name = step.name ?? "unknown";
+      const existing = latencies.get(name) ?? [];
+      existing.push(step.duration);
+      latencies.set(name, existing);
+    } else if (step.status === "pending" && step.timestamp != null) {
+      queue.push({ name: step.name ?? "unknown", timestamp: step.timestamp });
+    } else if (step.status === "completed" && step.timestamp != null && queue.length > 0) {
+      const pending = queue.shift();
+      if (pending == null) continue;
+      const dur = step.timestamp - pending.timestamp;
+      if (dur > 0) {
+        const existing = latencies.get(pending.name) ?? [];
+        existing.push(dur);
+        latencies.set(pending.name, existing);
+      }
+    }
+  }
+
+  return latencies;
+};
+
+const mergeLatencies = (into: ToolLatencies, from: ToolLatencies): void => {
+  for (const [name, durs] of from.entries()) {
+    const existing = into.get(name) ?? [];
+    into.set(name, existing.concat(durs));
+  }
+};
+
+const detectFallbacks = (results: TrialResult[]): FallbackStats => {
+  let promptsWithFallback = 0;
+  let trialsWithFallback = 0;
+  let totalTrials = 0;
+  const promptHits: Array<{ id: string; trialsHit: number; totalTrials: number }> = [];
+
+  for (const result of results) {
+    let promptTrialHits = 0;
+    const promptTrialCount = result.trials.length;
+    totalTrials += promptTrialCount;
+
+    for (const trial of result.trials) {
+      const trialHit = (trial.trajectory ?? []).some((step) => step.content?.includes(FALLBACK_PHRASE));
+      if (trialHit) {
+        promptTrialHits++;
+        trialsWithFallback++;
+      }
+    }
+
+    if (promptTrialHits > 0) {
+      promptsWithFallback++;
+      promptHits.push({ id: result.id, trialsHit: promptTrialHits, totalTrials: promptTrialCount });
+    }
+  }
+
+  const topAffectedPrompts = promptHits
+    .sort((a, b) => b.trialsHit / b.totalTrials - a.trialsHit / a.totalTrials)
+    .slice(0, 10);
+
+  return { promptsWithFallback, trialsWithFallback, totalTrials, topAffectedPrompts };
 };
 
 type FileAnalysis = {
@@ -215,6 +305,8 @@ type FileAnalysis = {
   toolCalls: number[];
   stats: { count: number; min: number; max: number; mean: number; median: number; p90: number; p99: number };
   results: TrialResult[];
+  toolLatencies: ToolLatencies;
+  fallbackStats: FallbackStats;
 };
 
 const analyzeFile = async (filePath: string): Promise<FileAnalysis> => {
@@ -228,12 +320,14 @@ const analyzeFile = async (filePath: string): Promise<FileAnalysis> => {
 
   const toolCalls: number[] = [];
   const results: TrialResult[] = [];
+  const allLatencies: ToolLatencies = new Map();
 
   for (const line of lines) {
     const result: TrialResult = JSON.parse(line);
     results.push(result);
     for (const trial of result.trials) {
       toolCalls.push(countToolCalls(trial.trajectory));
+      mergeLatencies(allLatencies, extractToolLatencies(trial.trajectory));
     }
   }
 
@@ -249,7 +343,9 @@ const analyzeFile = async (filePath: string): Promise<FileAnalysis> => {
     p99: calculatePercentile(toolCalls, 99),
   };
 
-  return { agent, provider, toolCalls, stats, results };
+  const fallbackStats = detectFallbacks(results);
+
+  return { agent, provider, toolCalls, stats, results, toolLatencies: allLatencies, fallbackStats };
 };
 
 const renderHistogram = (values: number[], label: string): string => {
@@ -618,6 +714,81 @@ const generateToolCallSections = (analyses: FileAnalysis[]): string => {
   return md.join("");
 };
 
+const generateToolLatencySection = (analyses: FileAnalysis[]): string => {
+  const byAgent = new Map<string, FileAnalysis[]>();
+  for (const a of analyses) {
+    const existing = byAgent.get(a.agent) ?? [];
+    existing.push(a);
+    byAgent.set(a.agent, existing);
+  }
+
+  const sections: string[] = [];
+
+  for (const agentResults of byAgent.values()) {
+    for (const r of agentResults) {
+      const qualifying = Array.from(r.toolLatencies.entries()).filter(([, durs]) => durs.length >= 5);
+      if (qualifying.length === 0) continue;
+
+      const rows = qualifying
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .map(([tool, durs]) => {
+          const p50 = calculatePercentile(durs, 50);
+          const p90 = calculatePercentile(durs, 90);
+          const p99 = calculatePercentile(durs, 99);
+          const mean = durs.reduce((s, v) => s + v, 0) / durs.length;
+          return `| ${tool} | ${durs.length} | ${ms(p50)} | ${ms(p90)} | ${ms(p99)} | ${ms(mean)} |`;
+        });
+
+      sections.push(
+        `### ${r.agent} — ${r.provider}\n\n` +
+          "| Tool | n | P50 | P90 | P99 | Mean |\n" +
+          "|------|---|-----|-----|-----|------|\n" +
+          rows.join("\n") +
+          "\n",
+      );
+    }
+  }
+
+  if (sections.length === 0) return "";
+  return `## Individual Tool Call Latency\n\n${sections.join("\n")}\n`;
+};
+
+const generateFallbackSection = (analyses: FileAnalysis[]): string => {
+  const relevant = analyses.filter((a) => a.provider !== "builtin" && a.fallbackStats.trialsWithFallback > 0);
+  if (relevant.length === 0) return "";
+
+  const md: string[] = [];
+  md.push("## MCP Fallback Analysis\n\n");
+  md.push(`_Detected phrase: "${FALLBACK_PHRASE}"_\n\n`);
+  md.push("| Agent + Provider | Prompts Affected | Trial Hit Rate |\n");
+  md.push("|-----------------|------------------|----------------|\n");
+
+  for (const r of relevant) {
+    const { fallbackStats: fs } = r;
+    const label = `${r.agent}-${r.provider}`;
+    const promptsTotal = r.results.length;
+    md.push(
+      `| ${label} | ${fs.promptsWithFallback}/${promptsTotal} (${pct(fs.promptsWithFallback / promptsTotal)}) | ${fs.trialsWithFallback}/${fs.totalTrials} (${pct(fs.trialsWithFallback / fs.totalTrials)}) |\n`,
+    );
+  }
+  md.push("\n");
+
+  for (const r of relevant) {
+    const { fallbackStats: fs } = r;
+    if (fs.topAffectedPrompts.length === 0) continue;
+    const label = `${r.agent}-${r.provider}`;
+    md.push(`### ${label} — Most Affected Prompts\n\n`);
+    md.push("| Prompt ID | Trials with Fallback | Total Trials | Rate |\n");
+    md.push("|-----------|---------------------|--------------|------|\n");
+    for (const p of fs.topAffectedPrompts) {
+      md.push(`| ${p.id} | ${p.trialsHit} | ${p.totalTrials} | ${pct(p.trialsHit / p.totalTrials)} |\n`);
+    }
+    md.push("\n");
+  }
+
+  return md.join("");
+};
+
 const generateFailingPromptsSection = async (analyses: FileAnalysis[]): Promise<string> => {
   const md: string[] = [];
 
@@ -728,11 +899,15 @@ const main = async () => {
   // Generate report sections
   const summarySections = generateSummarySections(weighted, statistical);
   const toolCallSections = analyses.length > 0 ? generateToolCallSections(analyses) : "";
+  const toolLatencySection = analyses.length > 0 ? generateToolLatencySection(analyses) : "";
+  const fallbackSection = analyses.length > 0 ? generateFallbackSection(analyses) : "";
   const failingPromptsSection = analyses.length > 0 ? await generateFailingPromptsSection(analyses) : "";
 
   const footer = "\n---\n\n*Generated by `bun scripts/report.ts`*\n";
 
-  const report = [summarySections, toolCallSections, failingPromptsSection, footer].filter(Boolean).join("\n");
+  const report = [summarySections, toolCallSections, toolLatencySection, fallbackSection, failingPromptsSection, footer]
+    .filter(Boolean)
+    .join("\n");
 
   await Bun.$`mkdir -p ${comparisonsDir}`.quiet();
   await Bun.write(outputPath, report);

@@ -134,6 +134,39 @@
 - Heavy users (5+ calls): Builtin=736 (48.7%), you=753 (49.9%)
 
 
+## Individual Tool Call Latency
+
+### droid — builtin
+
+| Tool | n | P50 | P90 | P99 | Mean |
+|------|---|-----|-----|-----|------|
+| WebSearch | 10 | 1ms | 1ms | 1ms | 1ms |
+
+
+## MCP Fallback Analysis
+
+_Detected phrase: "Let me try with the WebSearch tool instead:"_
+
+| Agent + Provider | Prompts Affected | Trial Hit Rate |
+|-----------------|------------------|----------------|
+| droid-you | 10/151 (6.6%) | 18/1510 (1.2%) |
+
+### droid-you — Most Affected Prompts
+
+| Prompt ID | Trials with Fallback | Total Trials | Rate |
+|-----------|---------------------|--------------|------|
+| websearch-2011 | 4 | 10 | 40.0% |
+| websearch-2001 | 2 | 10 | 20.0% |
+| websearch-2004 | 2 | 10 | 20.0% |
+| websearch-2002 | 2 | 10 | 20.0% |
+| websearch-2008 | 2 | 10 | 20.0% |
+| websearch-2013 | 2 | 10 | 20.0% |
+| websearch-2000 | 1 | 10 | 10.0% |
+| websearch-2003 | 1 | 10 | 10.0% |
+| websearch-2009 | 1 | 10 | 10.0% |
+| websearch-2014 | 1 | 10 | 10.0% |
+
+
 ## Failing Prompts (pass@k = 0)
 
 ### droid-you

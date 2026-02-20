@@ -271,10 +271,9 @@ const main = async () => {
         console.log(`    Trials per prompt: ${k}`);
         console.log(`    Prompt concurrency: ${options.promptConcurrency}`);
         const countEnv = options.count ? ` -e PROMPT_COUNT=${options.count}` : "";
-        const concurrencyFlags =
-          options.promptConcurrency > 1 ? ` -j ${options.promptConcurrency} --workspace-dir /workspace/runs` : "";
+        const trialTypeEnv = options.trialType !== "default" ? ` -e TRIAL_TYPE=${options.trialType}` : "";
         console.log(
-          `    Docker: docker compose run --rm -e SEARCH_PROVIDER=${run.searchProvider} -e PROMPT_CONCURRENCY=${options.promptConcurrency}${options.trialType !== "default" ? ` -e TRIAL_TYPE=${options.trialType}` : ""}${countEnv} ${run.agent} bunx @plaited/agent-eval-harness trials ...${concurrencyFlags} -o ${outputPath}\n`,
+          `    Docker: docker compose run --rm -e SEARCH_PROVIDER=${run.searchProvider} -e PROMPT_CONCURRENCY=${options.promptConcurrency} -e K=${k}${trialTypeEnv}${countEnv} ${run.agent}\n`,
         );
       }
       console.log("[DRY RUN] No trials were executed.");
@@ -296,40 +295,13 @@ const main = async () => {
     // Run all scenarios with controlled concurrency
     const results = await limitConcurrency(
       runs.map(({ agent, searchProvider }, index) => () => {
-        const runDate = new Date().toISOString().split("T")[0];
-        const datasetPath = getPromptPath(searchProvider);
-        const schema = `/eval/agent-schemas/${agent}.json`;
-        const grader = "/eval/scripts/inline-grader.ts";
-        const typeSuffix = options.trialType === "default" ? "" : `-${options.trialType}`;
-        const outputPath = `/eval/data/results/${runDate}/${agent}/${searchProvider}${typeSuffix}.jsonl`;
-
-        const trialsCmd = [
-          "bunx",
-          "@plaited/agent-eval-harness",
-          "trials",
-          datasetPath,
-          "--schema",
-          schema,
-          "-k",
-          k.toString(),
-          "--grader",
-          grader,
-          "-o",
-          outputPath,
-          "--progress",
-          "--cwd",
-          "/workspace",
-        ];
-        if (options.promptConcurrency > 1) {
-          trialsCmd.push("-j", options.promptConcurrency.toString());
-          trialsCmd.push("--workspace-dir", "/workspace/runs");
-        }
-
         const envVars = [
           "-e",
           `SEARCH_PROVIDER=${searchProvider}`,
           "-e",
           `PROMPT_CONCURRENCY=${options.promptConcurrency}`,
+          "-e",
+          `K=${k}`,
         ];
         if (options.trialType !== "default") {
           envVars.push("-e", `TRIAL_TYPE=${options.trialType}`);
@@ -342,7 +314,6 @@ const main = async () => {
           agent,
           searchProvider,
           envVars,
-          command: trialsCmd,
           label: `[${index + 1}/${runs.length}] ${agent}-${searchProvider}`,
           startBanner: `(k=${k}, prompt-concurrency=${options.promptConcurrency})`,
           stdoutFilter: trialsStdoutFilter,

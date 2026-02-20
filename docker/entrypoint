@@ -29,6 +29,7 @@ const AGENT = process.env.AGENT;
 const SEARCH_PROVIDER = (process.env.SEARCH_PROVIDER || "builtin") as McpServerKey | "builtin";
 const PROMPT_CONCURRENCY = process.env.PROMPT_CONCURRENCY ? Number.parseInt(process.env.PROMPT_CONCURRENCY, 10) : undefined;
 const PROMPT_COUNT = process.env.PROMPT_COUNT ? Number.parseInt(process.env.PROMPT_COUNT, 10) : undefined;
+const K_OVERRIDE = process.env.K ? Number.parseInt(process.env.K, 10) : undefined;
 
 /**
  * Configure Codex CLI with API key
@@ -188,9 +189,9 @@ const buildTrialsCommand = async (): Promise<string[]> => {
 
   cmd.push("--cwd", "/workspace");
 
-  // Extract k value from TRIAL_TYPE preset or use default (5)
+  // Extract k value: CLI override → TRIAL_TYPE preset → default (5)
   const kValues: Record<string, number> = { default: 5, capability: 10, regression: 3 };
-  const k = kValues[trialType] ?? 5;
+  const k = K_OVERRIDE ?? kValues[trialType] ?? 5;
   cmd.push("-k", k.toString());
 
   // Add prompt concurrency and workspace isolation if specified

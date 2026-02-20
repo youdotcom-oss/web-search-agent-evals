@@ -321,7 +321,8 @@ const analyzePassAtK = async (filePath: string): Promise<PassAtKAnalysis | null>
   const se = std / Math.sqrt(n);
   // t-critical for 95% CI, df = n-1 (approximate with normal for large n)
   const tCritical = n > 30 ? 1.96 : getTCritical(n - 1);
-  const ci95Lower = mean - tCritical * se;
+  const ci95Lower = Math.max(0, mean - tCritical * se);
+  const ci95Upper = Math.min(1, mean + tCritical * se);
   const ci95Upper = mean + tCritical * se;
 
   return {

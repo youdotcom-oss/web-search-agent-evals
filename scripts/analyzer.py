@@ -268,7 +268,16 @@ def main():
     you_better = []
     you_passAtK_values = []
     builtin_passAtK_values = []
-    
+    for record_id in matching_ids:
+        you_record = you_by_id[record_id]
+        builtin_record = builtin_by_id[record_id]
+        
+        you_passAtK = you_record.get("passAtK")
+        builtin_passAtK = builtin_record.get("passAtK")
+        
+        if you_passAtK is not None and builtin_passAtK is not None:
+            you_passAtK_values.append(you_passAtK)
+            builtin_passAtK_values.append(builtin_passAtK)
     for record_id in matching_ids:
         you_record = you_by_id[record_id]
         builtin_record = builtin_by_id[record_id]

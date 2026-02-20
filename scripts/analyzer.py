@@ -345,7 +345,9 @@ def main():
         print(f"{'95% CI':<25} [{you_ci_lower:.4f}, {you_ci_upper:.4f}]  [{builtin_ci_lower:.4f}, {builtin_ci_upper:.4f}]")
         print(f"{'Std Deviation':<25} {you_std:<20.4f} {builtin_std:<20.4f}")
         print(f"{'Variance':<25} {you_var:<20.4f} {builtin_var:<20.4f}")
-        print(f"{'Coefficient of Variation':<25} {(you_std/you_mean)*100:<20.2f}%  {(builtin_std/builtin_mean)*100:<20.2f}%")
+        you_cv = (you_std / you_mean * 100) if you_mean != 0 else float('inf')
+        builtin_cv = (builtin_std / builtin_mean * 100) if builtin_mean != 0 else float('inf')
+        print(f"{'Coefficient of Variation':<25} {you_cv:<20.2f}%  {builtin_cv:<20.2f}%")
         
         # Consistency comparison
         print(f"\nConsistency Analysis:")

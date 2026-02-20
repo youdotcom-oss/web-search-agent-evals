@@ -223,7 +223,13 @@ def interpret_effect_size(d):
 def main():
     # Default file paths
     default_you_path = "data/results/2026-02-18/droid/you.jsonl"
-    default_builtin_path = "data/results/2026-02-18/droid/builtin.jsonl"
+    parser = argparse.ArgumentParser(description="Analyze JSONL result files")
+    parser.add_argument("you_path", nargs="?", default="data/results/2026-02-18/droid/you.jsonl")
+    parser.add_argument("builtin_path", nargs="?", default="data/results/2026-02-18/droid/builtin.jsonl")
+    args = parser.parse_args()
+
+    you_path = Path(args.you_path)
+    builtin_path = Path(args.builtin_path)
     
     # Read both files
     you_path = Path(default_you_path)

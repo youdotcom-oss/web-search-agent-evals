@@ -273,14 +273,28 @@ const getTCritical = (df: number): number => {
   if (df >= 30) return 1.96;
   // For smaller df, use approximate values
   const tTable: Record<number, number> = {
-    1: 12.706, 2: 4.303, 3: 3.182, 4: 2.776, 5: 2.571,
-    6: 2.447, 7: 2.365, 8: 2.306, 9: 2.262, 10: 2.228,
-    15: 2.131, 20: 2.086, 25: 2.060, 29: 2.045,
+    1: 12.706,
+    2: 4.303,
+    3: 3.182,
+    4: 2.776,
+    5: 2.571,
+    6: 2.447,
+    7: 2.365,
+    8: 2.306,
+    9: 2.262,
+    10: 2.228,
+    15: 2.131,
+    20: 2.086,
+    25: 2.06,
+    29: 2.045,
   };
   // Find closest df
-  const keys = Object.keys(tTable).map(Number).sort((a, b) => a - b);
+  const keys = Object.keys(tTable)
+    .map(Number)
+    .sort((a, b) => a - b);
   for (let i = keys.length - 1; i >= 0; i--) {
-    if (df >= keys[i]!) return tTable[keys[i]!]!;
+    const key = keys[i];
+    if (key !== undefined && df >= key) return tTable[key] ?? 2.0;
   }
   return 2.0; // fallback
 };
@@ -306,16 +320,11 @@ const analyzePassAtK = async (filePath: string): Promise<PassAtKAnalysis | null>
   if (passAtKValues.length === 0) return null;
 
   // Calculate statistics
-  // Calculate statistics
   const mean = passAtKValues.reduce((sum, v) => sum + v, 0) / passAtKValues.length;
-  const mean = passAtKValues.reduce((sum, v) => sum + v, 0) / passAtKValues.length;
-  const std = Math.sqrt(
-  const std = passAtKValues.length > 1
-    ? Math.sqrt(
-        passAtKValues.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / (passAtKValues.length - 1)
-      )
-    : 0;
-  );
+  const std =
+    passAtKValues.length > 1
+      ? Math.sqrt(passAtKValues.reduce((sum, v) => sum + (v - mean) ** 2, 0) / (passAtKValues.length - 1))
+      : 0;
   const median = calculatePercentile(passAtKValues, 50);
   const p25 = calculatePercentile(passAtKValues, 25);
   const p75 = calculatePercentile(passAtKValues, 75);
@@ -327,7 +336,6 @@ const analyzePassAtK = async (filePath: string): Promise<PassAtKAnalysis | null>
   const tCritical = n > 30 ? 1.96 : getTCritical(n - 1);
   const ci95Lower = Math.max(0, mean - tCritical * se);
   const ci95Upper = Math.min(1, mean + tCritical * se);
-  const ci95Upper = mean + tCritical * se;
 
   return {
     agent,
@@ -369,51 +377,51 @@ const renderHistogram = (values: number[], label: string): string => {
 
 const generatePassAtKChart = (analyses: PassAtKAnalysis[]): string => {
   if (analyses.length === 0) return "";
-  
+
   // Sort by mean passAtK
   const sorted = analyses.slice().sort((a, b) => b.stats.mean - a.stats.mean);
-  
+
   // Scale to 0-100 for display
   const maxValue = 1.0;
   const scale = 60; // width of chart in characters
-  
+
   const lines: string[] = ["```"];
-  
+
   // Y-axis labels and bars
   for (const analysis of sorted) {
     const label = `${analysis.agent}-${analysis.provider}`.padEnd(25);
     const mean = analysis.stats.mean;
     const ciLower = analysis.stats.ci95Lower;
     const ciUpper = analysis.stats.ci95Upper;
-    
+
     const meanBar = Math.round((mean / maxValue) * scale);
     const ciLowerBar = Math.round((ciLower / maxValue) * scale);
     const ciUpperBar = Math.round((ciUpper / maxValue) * scale);
-    
+
     // Mean bar
     const meanBarStr = "█".repeat(meanBar);
-    
+
     // CI error bars (show range)
     const ciStart = Math.max(0, ciLowerBar);
     const ciEnd = Math.min(scale, ciUpperBar);
-    
+
     // Build the line: label, mean bar, CI indicator
     const meanLine = `${label} │${meanBarStr.padEnd(scale)}│ ${pct(mean)}`;
     lines.push(meanLine);
-    
+
     // CI line with error bars
     const ciRange = Math.max(1, ciEnd - ciStart);
-    const ciBar = " ".repeat(ciStart) + "│" + "─".repeat(Math.max(0, ciRange - 2)) + "│" + " ".repeat(scale - ciEnd);
+    const ciBar = `${" ".repeat(ciStart)}│${"─".repeat(Math.max(0, ciRange - 2))}│${" ".repeat(scale - ciEnd)}`;
     const ciLine = `${" ".repeat(25)} ${ciBar} [${pct(ciLower)}, ${pct(ciUpper)}]`;
     lines.push(ciLine);
     lines.push(""); // blank line between entries
   }
-  
+
   // X-axis
   lines.push(`${" ".repeat(27)}└${"─".repeat(scale)}┘`);
   lines.push(`${" ".repeat(27)}0%${" ".repeat(scale - 4)}100%`);
   lines.push("```\n");
-  
+
   return lines.join("\n");
 };
 
@@ -555,21 +563,19 @@ const generateSummarySections = (
     md.push("## Capability Metrics (Pass@k)\n\n");
     md.push("| Agent + Search | Avg Pass@k | 95% CI | Median Pass@k | P25 Pass@k | P75 Pass@k | Std Dev |\n");
     md.push("|----------------|------------|--------|---------------|------------|------------|----------|\n");
-    
+
     Object.entries(capability)
       .sort((a, b) => b[1].avgPassAtK - a[1].avgPassAtK)
       .forEach(([run, m]) => {
         const analysis = passAtKAnalyses.find((a) => `${a.agent}-${a.provider}` === run);
-        const ciStr = analysis
-          ? `[${pct(analysis.stats.ci95Lower)}, ${pct(analysis.stats.ci95Upper)}]`
-          : "—";
+        const ciStr = analysis ? `[${pct(analysis.stats.ci95Lower)}, ${pct(analysis.stats.ci95Upper)}]` : "—";
         const stdStr = analysis ? fmt(analysis.stats.std, 4) : "—";
         md.push(
           `| ${run} | ${pct(m.avgPassAtK)} | ${ciStr} | ${pct(m.medianPassAtK)} | ${pct(m.p25PassAtK)} | ${pct(m.p75PassAtK)} | ${stdStr} |\n`,
         );
       });
     md.push("\n");
-    
+
     // Generate graph
     if (passAtKAnalyses.length > 0) {
       md.push("### Pass@k Comparison Chart\n\n");

@@ -397,7 +397,7 @@ export const grade = async ({
   const quality = await assessQuality({
     input: inputStr,
     output,
-    hint: hint!, // All prompts in our dataset include hints
+    hint: hint as string, // All prompts in our dataset include hints
     trajectory,
     metadata,
   });

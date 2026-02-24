@@ -172,10 +172,9 @@ const buildTrialsCommand = async (): Promise<string[]> => {
   if (!(VALID_TRIAL_TYPES as readonly string[]).includes(trialType)) {
     throw new Error(`Invalid TRIAL_TYPE: ${trialType}. Must be one of: ${VALID_TRIAL_TYPES.join(", ")}`);
   }
-  const typeSuffix = trialType === "default" ? "" : `-${trialType}`;
   const outputDir = `/eval/data/results/${runDate}/${AGENT}`;
   await $`mkdir -p ${outputDir}`.quiet();
-  const outputFile = `${outputDir}/${SEARCH_PROVIDER}${typeSuffix}.jsonl`;
+  const outputFile = `${outputDir}/${SEARCH_PROVIDER}.jsonl`;
 
   console.log(`📊 Trials mode`);
   console.log(`   Trial type: ${trialType}`);

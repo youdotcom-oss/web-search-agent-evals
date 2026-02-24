@@ -263,8 +263,7 @@ const main = async () => {
         const run = runs[i];
         if (!run) continue;
         const datasetPath = getPromptPath(run.searchProvider);
-        const typeSuffix = options.trialType === "default" ? "" : `-${options.trialType}`;
-        const outputPath = `/eval/data/results/${runDate}/${run.agent}/${run.searchProvider}${typeSuffix}.jsonl`;
+        const outputPath = `/eval/data/results/${runDate}/${run.agent}/${run.searchProvider}.jsonl`;
         console.log(`  [${i + 1}/${runs.length}] ${run.agent}-${run.searchProvider}:`);
         console.log(`    Dataset: ${datasetPath}`);
         console.log(`    Output: ${outputPath}`);

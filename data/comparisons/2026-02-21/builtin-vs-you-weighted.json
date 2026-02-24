@@ -1,0 +1,2773 @@
+{
+  "meta": {
+    "generatedAt": "2026-02-24T21:04:56.033Z",
+    "runs": ["droid-builtin", "droid-you"],
+    "promptCount": 151,
+    "trialsPerPrompt": 10,
+    "inputFormat": "trials"
+  },
+  "capability": {
+    "droid-builtin": {
+      "avgPassAtK": 0.5101163640033111,
+      "medianPassAtK": 0.6513215598999998,
+      "p25PassAtK": 0,
+      "p75PassAtK": 0.9999998976
+    },
+    "droid-you": {
+      "avgPassAtK": 0.7664346949794704,
+      "medianPassAtK": 0.9999940951,
+      "p25PassAtK": 0.6513215598999998,
+      "p75PassAtK": 1
+    }
+  },
+  "reliability": {
+    "droid-builtin": {
+      "type": "trial",
+      "avgPassExpK": 0.18609811917549662,
+      "medianPassExpK": 1.0000000000000011e-10,
+      "p25PassExpK": 0,
+      "p75PassExpK": 0.10737418240000011
+    },
+    "droid-you": {
+      "type": "trial",
+      "avgPassExpK": 0.40471642382847706,
+      "medianPassExpK": 0.02824752489999998,
+      "p25PassExpK": 1.0000000000000011e-10,
+      "p75PassExpK": 1
+    }
+  },
+  "flakiness": {
+    "droid-builtin": {
+      "avgFlakiness": 0.32401824482781455,
+      "medianFlakiness": 0,
+      "flakyPromptCount": 59,
+      "topFlakyPrompts": [
+        {
+          "id": "websearch-2019",
+          "flakiness": 0.998046875
+        },
+        {
+          "id": "websearch-2059",
+          "flakiness": 0.998046875
+        },
+        {
+          "id": "websearch-2020",
+          "flakiness": 0.9938485248
+        },
+        {
+          "id": "websearch-2031",
+          "flakiness": 0.9938485248
+        },
+        {
+          "id": "websearch-2054",
+          "flakiness": 0.9938485248
+        },
+        {
+          "id": "websearch-2073",
+          "flakiness": 0.9938485248
+        },
+        {
+          "id": "websearch-2096",
+          "flakiness": 0.9938485248
+        },
+        {
+          "id": "websearch-2113",
+          "flakiness": 0.9938485248
+        },
+        {
+          "id": "websearch-2116",
+          "flakiness": 0.9938485248
+        },
+        {
+          "id": "websearch-2148",
+          "flakiness": 0.9938485248
+        }
+      ]
+    },
+    "droid-you": {
+      "avgFlakiness": 0.3617182711509934,
+      "medianFlakiness": 0,
+      "flakyPromptCount": 63,
+      "topFlakyPrompts": [
+        {
+          "id": "websearch-2085",
+          "flakiness": 0.998046875
+        },
+        {
+          "id": "websearch-2018",
+          "flakiness": 0.9938485248
+        },
+        {
+          "id": "websearch-2021",
+          "flakiness": 0.9938485248
+        },
+        {
+          "id": "websearch-2022",
+          "flakiness": 0.9938485248
+        },
+        {
+          "id": "websearch-2028",
+          "flakiness": 0.9938485248
+        },
+        {
+          "id": "websearch-2034",
+          "flakiness": 0.9938485248
+        },
+        {
+          "id": "websearch-2041",
+          "flakiness": 0.9938485248
+        },
+        {
+          "id": "websearch-2050",
+          "flakiness": 0.9938485248
+        },
+        {
+          "id": "websearch-2051",
+          "flakiness": 0.9938485248
+        },
+        {
+          "id": "websearch-2059",
+          "flakiness": 0.9938485248
+        }
+      ]
+    }
+  },
+  "quality": {
+    "droid-builtin": {
+      "type": "trial",
+      "avgScore": 0.6267615894039853,
+      "medianScore": 0.47,
+      "p25Score": 0.47,
+      "p75Score": 0.9
+    },
+    "droid-you": {
+      "type": "trial",
+      "avgScore": 0.7427019867549753,
+      "medianScore": 0.84,
+      "p25Score": 0.47,
+      "p75Score": 0.99
+    }
+  },
+  "performance": {
+    "droid-builtin": {
+      "latency": {
+        "p50": 60017,
+        "p90": 60026,
+        "p99": 60035,
+        "mean": 53817.860264900664,
+        "min": 12388,
+        "max": 60080
+      },
+      "totalDuration": 81264969
+    },
+    "droid-you": {
+      "latency": {
+        "p50": 56281,
+        "p90": 60025,
+        "p99": 60034,
+        "mean": 50278.25298013245,
+        "min": 14218,
+        "max": 60084
+      },
+      "totalDuration": 75920162
+    }
+  },
+  "headToHead": {
+    "capability": [
+      {
+        "runA": "droid-builtin",
+        "runB": "droid-you",
+        "aWins": 8,
+        "bWins": 89,
+        "ties": 54
+      }
+    ],
+    "reliability": [
+      {
+        "runA": "droid-builtin",
+        "runB": "droid-you",
+        "aWins": 8,
+        "bWins": 89,
+        "ties": 54
+      }
+    ],
+    "overall": [
+      {
+        "runA": "droid-builtin",
+        "runB": "droid-you",
+        "aWins": 62,
+        "bWins": 89,
+        "ties": 0
+      }
+    ]
+  },
+  "perPrompt": [
+    {
+      "id": "websearch-2000",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 1,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 1,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2001",
+      "capabilityWinner": "droid-builtin",
+      "reliabilityWinner": "droid-builtin",
+      "passAtK": {
+        "droid-builtin": 0.9717524751000001,
+        "droid-you": 0.8926258175999999
+      },
+      "passExpK": {
+        "droid-builtin": 0.000005904899999999999,
+        "droid-you": 1.0240000000000011e-7
+      },
+      "flakiness": {
+        "droid-builtin": 0.9717465702000001,
+        "droid-you": 0.8926257151999999
+      }
+    },
+    {
+      "id": "websearch-2002",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0.6513215598999998,
+        "droid-you": 0.8926258175999999
+      },
+      "passExpK": {
+        "droid-builtin": 1.0000000000000011e-10,
+        "droid-you": 1.0240000000000011e-7
+      },
+      "flakiness": {
+        "droid-builtin": 0.6513215597999998,
+        "droid-you": 0.8926257151999999
+      }
+    },
+    {
+      "id": "websearch-2004",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 0.6513215598999998,
+        "droid-you": 0.6513215598999998
+      },
+      "passExpK": {
+        "droid-builtin": 1.0000000000000011e-10,
+        "droid-you": 1.0000000000000011e-10
+      },
+      "flakiness": {
+        "droid-builtin": 0.6513215597999998,
+        "droid-you": 0.6513215597999998
+      }
+    },
+    {
+      "id": "websearch-2003",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0.9999998976,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 0.10737418240000011,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0.8926257151999999,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2005",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2006",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0.8926258175999999
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 1.0240000000000011e-7
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0.8926257151999999
+      }
+    },
+    {
+      "id": "websearch-2009",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0.9717524751000001
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 0.000005904899999999999
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0.9717465702000001
+      }
+    },
+    {
+      "id": "websearch-2007",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2008",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0.6513215598999998
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 1.0000000000000011e-10
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0.6513215597999998
+      }
+    },
+    {
+      "id": "websearch-2010",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0.6513215598999998
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 1.0000000000000011e-10
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0.6513215597999998
+      }
+    },
+    {
+      "id": "websearch-2011",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2012",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2013",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0.9717524751000001
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 0.000005904899999999999
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0.9717465702000001
+      }
+    },
+    {
+      "id": "websearch-2014",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0.9999998976,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 0.10737418240000011,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0.8926257151999999,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2015",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 1,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 1,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2016",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2019",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0.9990234375,
+        "droid-you": 0.9999999999
+      },
+      "passExpK": {
+        "droid-builtin": 0.0009765625,
+        "droid-you": 0.34867844010000015
+      },
+      "flakiness": {
+        "droid-builtin": 0.998046875,
+        "droid-you": 0.6513215597999998
+      }
+    },
+    {
+      "id": "websearch-2017",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2018",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0.6513215598999998,
+        "droid-you": 0.9998951424
+      },
+      "passExpK": {
+        "droid-builtin": 1.0000000000000011e-10,
+        "droid-you": 0.006046617599999999
+      },
+      "flakiness": {
+        "droid-builtin": 0.6513215597999998,
+        "droid-you": 0.9938485248
+      }
+    },
+    {
+      "id": "websearch-2020",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0.9939533824,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 0.00010485760000000011,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0.9938485248,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2025",
+      "capabilityWinner": "droid-builtin",
+      "reliabilityWinner": "droid-builtin",
+      "passAtK": {
+        "droid-builtin": 1,
+        "droid-you": 0.9999998976
+      },
+      "passExpK": {
+        "droid-builtin": 1,
+        "droid-you": 0.10737418240000011
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0.8926257151999999
+      }
+    },
+    {
+      "id": "websearch-2024",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0.9999998976
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 0.10737418240000011
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0.8926257151999999
+      }
+    },
+    {
+      "id": "websearch-2022",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0.9939533824
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 0.00010485760000000011
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0.9938485248
+      }
+    },
+    {
+      "id": "websearch-2023",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2021",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0.9939533824
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 0.00010485760000000011
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0.9938485248
+      }
+    },
+    {
+      "id": "websearch-2027",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 1,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 1,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2026",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0.8926258175999999
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 1.0240000000000011e-7
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0.8926257151999999
+      }
+    },
+    {
+      "id": "websearch-2028",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0.9939533824
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 0.00010485760000000011
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0.9938485248
+      }
+    },
+    {
+      "id": "websearch-2030",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2029",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2031",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0.9998951424,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 0.006046617599999999,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0.9938485248,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2032",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0.6513215598999998
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 1.0000000000000011e-10
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0.6513215597999998
+      }
+    },
+    {
+      "id": "websearch-2033",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2034",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0.9998951424
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 0.006046617599999999
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0.9938485248
+      }
+    },
+    {
+      "id": "websearch-2035",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0.9717524751000001
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 0.000005904899999999999
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0.9717465702000001
+      }
+    },
+    {
+      "id": "websearch-2036",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2038",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 1,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 1,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2039",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2037",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2040",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0.9717524751000001,
+        "droid-you": 0.9999999999
+      },
+      "passExpK": {
+        "droid-builtin": 0.000005904899999999999,
+        "droid-you": 0.34867844010000015
+      },
+      "flakiness": {
+        "droid-builtin": 0.9717465702000001,
+        "droid-you": 0.6513215597999998
+      }
+    },
+    {
+      "id": "websearch-2044",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 1,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 1,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2041",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0.6513215598999998,
+        "droid-you": 0.9998951424
+      },
+      "passExpK": {
+        "droid-builtin": 1.0000000000000011e-10,
+        "droid-you": 0.006046617599999999
+      },
+      "flakiness": {
+        "droid-builtin": 0.6513215597999998,
+        "droid-you": 0.9938485248
+      }
+    },
+    {
+      "id": "websearch-2045",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 1,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 1,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2042",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 1,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 1,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2043",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0.6513215598999998
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 1.0000000000000011e-10
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0.6513215597999998
+      }
+    },
+    {
+      "id": "websearch-2048",
+      "capabilityWinner": "droid-builtin",
+      "reliabilityWinner": "droid-builtin",
+      "passAtK": {
+        "droid-builtin": 0.8926258175999999,
+        "droid-you": 0
+      },
+      "passExpK": {
+        "droid-builtin": 1.0240000000000011e-7,
+        "droid-you": 0
+      },
+      "flakiness": {
+        "droid-builtin": 0.8926257151999999,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2049",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2046",
+      "capabilityWinner": "droid-builtin",
+      "reliabilityWinner": "droid-builtin",
+      "passAtK": {
+        "droid-builtin": 0.6513215598999998,
+        "droid-you": 0
+      },
+      "passExpK": {
+        "droid-builtin": 1.0000000000000011e-10,
+        "droid-you": 0
+      },
+      "flakiness": {
+        "droid-builtin": 0.6513215597999998,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2047",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0.9999940951
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 0.02824752489999998
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0.9717465702000001
+      }
+    },
+    {
+      "id": "websearch-2050",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0.8926258175999999,
+        "droid-you": 0.9998951424
+      },
+      "passExpK": {
+        "droid-builtin": 1.0240000000000011e-7,
+        "droid-you": 0.006046617599999999
+      },
+      "flakiness": {
+        "droid-builtin": 0.8926257151999999,
+        "droid-you": 0.9938485248
+      }
+    },
+    {
+      "id": "websearch-2052",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0.9999999999,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 0.34867844010000015,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0.6513215597999998,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2051",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0.9939533824
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 0.00010485760000000011
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0.9938485248
+      }
+    },
+    {
+      "id": "websearch-2053",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 1,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 1,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2054",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0.9939533824,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 0.00010485760000000011,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0.9938485248,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2056",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 1,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 1,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2057",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 1,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 1,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2055",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0.9717524751000001
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 0.000005904899999999999
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0.9717465702000001
+      }
+    },
+    {
+      "id": "websearch-2058",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2059",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0.9990234375,
+        "droid-you": 0.9998951424
+      },
+      "passExpK": {
+        "droid-builtin": 0.0009765625,
+        "droid-you": 0.006046617599999999
+      },
+      "flakiness": {
+        "droid-builtin": 0.998046875,
+        "droid-you": 0.9938485248
+      }
+    },
+    {
+      "id": "websearch-2060",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0.9999940951,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 0.02824752489999998,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0.9717465702000001,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2061",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0.9999998976,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 0.10737418240000011,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0.8926257151999999,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2062",
+      "capabilityWinner": "droid-builtin",
+      "reliabilityWinner": "droid-builtin",
+      "passAtK": {
+        "droid-builtin": 0.9999998976,
+        "droid-you": 0.9999940951
+      },
+      "passExpK": {
+        "droid-builtin": 0.10737418240000011,
+        "droid-you": 0.02824752489999998
+      },
+      "flakiness": {
+        "droid-builtin": 0.8926257151999999,
+        "droid-you": 0.9717465702000001
+      }
+    },
+    {
+      "id": "websearch-2063",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0.8926258175999999,
+        "droid-you": 0.9999940951
+      },
+      "passExpK": {
+        "droid-builtin": 1.0240000000000011e-7,
+        "droid-you": 0.02824752489999998
+      },
+      "flakiness": {
+        "droid-builtin": 0.8926257151999999,
+        "droid-you": 0.9717465702000001
+      }
+    },
+    {
+      "id": "websearch-2064",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0.9999999999,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 0.34867844010000015,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0.6513215597999998,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2065",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0.8926258175999999,
+        "droid-you": 0.9717524751000001
+      },
+      "passExpK": {
+        "droid-builtin": 1.0240000000000011e-7,
+        "droid-you": 0.000005904899999999999
+      },
+      "flakiness": {
+        "droid-builtin": 0.8926257151999999,
+        "droid-you": 0.9717465702000001
+      }
+    },
+    {
+      "id": "websearch-2066",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0.6513215598999998,
+        "droid-you": 0.9998951424
+      },
+      "passExpK": {
+        "droid-builtin": 1.0000000000000011e-10,
+        "droid-you": 0.006046617599999999
+      },
+      "flakiness": {
+        "droid-builtin": 0.6513215597999998,
+        "droid-you": 0.9938485248
+      }
+    },
+    {
+      "id": "websearch-2067",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2069",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2068",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0.9939533824
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 0.00010485760000000011
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0.9938485248
+      }
+    },
+    {
+      "id": "websearch-2070",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0.9939533824
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 0.00010485760000000011
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0.9938485248
+      }
+    },
+    {
+      "id": "websearch-2071",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0.9717524751000001,
+        "droid-you": 0.9999999999
+      },
+      "passExpK": {
+        "droid-builtin": 0.000005904899999999999,
+        "droid-you": 0.34867844010000015
+      },
+      "flakiness": {
+        "droid-builtin": 0.9717465702000001,
+        "droid-you": 0.6513215597999998
+      }
+    },
+    {
+      "id": "websearch-2072",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0.9998951424
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 0.006046617599999999
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0.9938485248
+      }
+    },
+    {
+      "id": "websearch-2074",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0.9999999999,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 0.34867844010000015,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0.6513215597999998,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2073",
+      "capabilityWinner": "droid-builtin",
+      "reliabilityWinner": "droid-builtin",
+      "passAtK": {
+        "droid-builtin": 0.9939533824,
+        "droid-you": 0.9717524751000001
+      },
+      "passExpK": {
+        "droid-builtin": 0.00010485760000000011,
+        "droid-you": 0.000005904899999999999
+      },
+      "flakiness": {
+        "droid-builtin": 0.9938485248,
+        "droid-you": 0.9717465702000001
+      }
+    },
+    {
+      "id": "websearch-2076",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 1,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 1,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2075",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0.9717524751000001,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 0.000005904899999999999,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0.9717465702000001,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2078",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 1,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 1,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2077",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0.8926258175999999,
+        "droid-you": 0.9717524751000001
+      },
+      "passExpK": {
+        "droid-builtin": 1.0240000000000011e-7,
+        "droid-you": 0.000005904899999999999
+      },
+      "flakiness": {
+        "droid-builtin": 0.8926257151999999,
+        "droid-you": 0.9717465702000001
+      }
+    },
+    {
+      "id": "websearch-2081",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0.9999999999,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 0.34867844010000015,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0.6513215597999998,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2079",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2082",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0.9999999999,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 0.34867844010000015,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0.6513215597999998,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2080",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0.9939533824
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 0.00010485760000000011
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0.9938485248
+      }
+    },
+    {
+      "id": "websearch-2083",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0.8926258175999999,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 1.0240000000000011e-7,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0.8926257151999999,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2087",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 1,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 1,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2084",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0.9999999999,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 0.34867844010000015,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0.6513215597999998,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2085",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0.6513215598999998,
+        "droid-you": 0.9990234375
+      },
+      "passExpK": {
+        "droid-builtin": 1.0000000000000011e-10,
+        "droid-you": 0.0009765625
+      },
+      "flakiness": {
+        "droid-builtin": 0.6513215597999998,
+        "droid-you": 0.998046875
+      }
+    },
+    {
+      "id": "websearch-2086",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0.9999999999,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 0.34867844010000015,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0.6513215597999998,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2088",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0.9999999999,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 0.34867844010000015,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0.6513215597999998,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2089",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0.6513215598999998
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 1.0000000000000011e-10
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0.6513215597999998
+      }
+    },
+    {
+      "id": "websearch-2090",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2091",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0.8926258175999999,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 1.0240000000000011e-7,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0.8926257151999999,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2092",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2093",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0.6513215598999998,
+        "droid-you": 0.9999998976
+      },
+      "passExpK": {
+        "droid-builtin": 1.0000000000000011e-10,
+        "droid-you": 0.10737418240000011
+      },
+      "flakiness": {
+        "droid-builtin": 0.6513215597999998,
+        "droid-you": 0.8926257151999999
+      }
+    },
+    {
+      "id": "websearch-2094",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0.9999998976
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 0.10737418240000011
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0.8926257151999999
+      }
+    },
+    {
+      "id": "websearch-2095",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0.6513215598999998
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 1.0000000000000011e-10
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0.6513215597999998
+      }
+    },
+    {
+      "id": "websearch-2096",
+      "capabilityWinner": "droid-builtin",
+      "reliabilityWinner": "droid-builtin",
+      "passAtK": {
+        "droid-builtin": 0.9939533824,
+        "droid-you": 0.9717524751000001
+      },
+      "passExpK": {
+        "droid-builtin": 0.00010485760000000011,
+        "droid-you": 0.000005904899999999999
+      },
+      "flakiness": {
+        "droid-builtin": 0.9938485248,
+        "droid-you": 0.9717465702000001
+      }
+    },
+    {
+      "id": "websearch-2097",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0.9939533824
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 0.00010485760000000011
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0.9938485248
+      }
+    },
+    {
+      "id": "websearch-2098",
+      "capabilityWinner": "droid-builtin",
+      "reliabilityWinner": "droid-builtin",
+      "passAtK": {
+        "droid-builtin": 0.8926258175999999,
+        "droid-you": 0.6513215598999998
+      },
+      "passExpK": {
+        "droid-builtin": 1.0240000000000011e-7,
+        "droid-you": 1.0000000000000011e-10
+      },
+      "flakiness": {
+        "droid-builtin": 0.8926257151999999,
+        "droid-you": 0.6513215597999998
+      }
+    },
+    {
+      "id": "websearch-2102",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 1,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 1,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2099",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2100",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2101",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2105",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 1,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 1,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2103",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2104",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2106",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0.6513215598999998
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 1.0000000000000011e-10
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0.6513215597999998
+      }
+    },
+    {
+      "id": "websearch-2107",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0.8926258175999999
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 1.0240000000000011e-7
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0.8926257151999999
+      }
+    },
+    {
+      "id": "websearch-2108",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0.8926258175999999
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 1.0240000000000011e-7
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0.8926257151999999
+      }
+    },
+    {
+      "id": "websearch-2109",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0.6513215598999998,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 1.0000000000000011e-10,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0.6513215597999998,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2110",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0.9999999999
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 0.34867844010000015
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0.6513215597999998
+      }
+    },
+    {
+      "id": "websearch-2111",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0.6513215598999998,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 1.0000000000000011e-10,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0.6513215597999998,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2112",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0.9999940951
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 0.02824752489999998
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0.9717465702000001
+      }
+    },
+    {
+      "id": "websearch-2114",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 1,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 1,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2113",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0.9998951424,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 0.006046617599999999,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0.9938485248,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2115",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2116",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0.9939533824,
+        "droid-you": 0.9999940951
+      },
+      "passExpK": {
+        "droid-builtin": 0.00010485760000000011,
+        "droid-you": 0.02824752489999998
+      },
+      "flakiness": {
+        "droid-builtin": 0.9938485248,
+        "droid-you": 0.9717465702000001
+      }
+    },
+    {
+      "id": "websearch-2117",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2118",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2119",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2121",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0.9999998976,
+        "droid-you": 0.9999999999
+      },
+      "passExpK": {
+        "droid-builtin": 0.10737418240000011,
+        "droid-you": 0.34867844010000015
+      },
+      "flakiness": {
+        "droid-builtin": 0.8926257151999999,
+        "droid-you": 0.6513215597999998
+      }
+    },
+    {
+      "id": "websearch-2120",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2122",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0.9999940951,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 0.02824752489999998,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0.9717465702000001,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2124",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 1,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 1,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2123",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2128",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 1,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 1,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2126",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0.9999999999,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 0.34867844010000015,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0.6513215597999998,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2125",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0.8926258175999999,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 1.0240000000000011e-7,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0.8926257151999999,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2127",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0.9717524751000001,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 0.000005904899999999999,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0.9717465702000001,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2129",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0.6513215598999998
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 1.0000000000000011e-10
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0.6513215597999998
+      }
+    },
+    {
+      "id": "websearch-2133",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 1,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 1,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2131",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0.6513215598999998
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 1.0000000000000011e-10
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0.6513215597999998
+      }
+    },
+    {
+      "id": "websearch-2130",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0.9717524751000001,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 0.000005904899999999999,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0.9717465702000001,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2132",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 0.6513215598999998,
+        "droid-you": 0.6513215598999998
+      },
+      "passExpK": {
+        "droid-builtin": 1.0000000000000011e-10,
+        "droid-you": 1.0000000000000011e-10
+      },
+      "flakiness": {
+        "droid-builtin": 0.6513215597999998,
+        "droid-you": 0.6513215597999998
+      }
+    },
+    {
+      "id": "websearch-2136",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 1,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 1,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2135",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 1,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 1,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2134",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2137",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0.9717524751000001,
+        "droid-you": 0.9999999999
+      },
+      "passExpK": {
+        "droid-builtin": 0.000005904899999999999,
+        "droid-you": 0.34867844010000015
+      },
+      "flakiness": {
+        "droid-builtin": 0.9717465702000001,
+        "droid-you": 0.6513215597999998
+      }
+    },
+    {
+      "id": "websearch-2138",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0.8926258175999999,
+        "droid-you": 0.9717524751000001
+      },
+      "passExpK": {
+        "droid-builtin": 1.0240000000000011e-7,
+        "droid-you": 0.000005904899999999999
+      },
+      "flakiness": {
+        "droid-builtin": 0.8926257151999999,
+        "droid-you": 0.9717465702000001
+      }
+    },
+    {
+      "id": "websearch-2140",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 1,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 1,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2139",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0.9717524751000001,
+        "droid-you": 0.9999999999
+      },
+      "passExpK": {
+        "droid-builtin": 0.000005904899999999999,
+        "droid-you": 0.34867844010000015
+      },
+      "flakiness": {
+        "droid-builtin": 0.9717465702000001,
+        "droid-you": 0.6513215597999998
+      }
+    },
+    {
+      "id": "websearch-2141",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0.6513215598999998,
+        "droid-you": 0.9717524751000001
+      },
+      "passExpK": {
+        "droid-builtin": 1.0000000000000011e-10,
+        "droid-you": 0.000005904899999999999
+      },
+      "flakiness": {
+        "droid-builtin": 0.6513215597999998,
+        "droid-you": 0.9717465702000001
+      }
+    },
+    {
+      "id": "websearch-2144",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 1,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 1,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2142",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0.9999940951
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 0.02824752489999998
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0.9717465702000001
+      }
+    },
+    {
+      "id": "websearch-2143",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2145",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0.9999999999,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 0.34867844010000015,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0.6513215597999998,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2146",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2147",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "passExpK": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      },
+      "flakiness": {
+        "droid-builtin": 0,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2148",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0.9998951424,
+        "droid-you": 1
+      },
+      "passExpK": {
+        "droid-builtin": 0.006046617599999999,
+        "droid-you": 1
+      },
+      "flakiness": {
+        "droid-builtin": 0.9938485248,
+        "droid-you": 0
+      }
+    },
+    {
+      "id": "websearch-2149",
+      "capabilityWinner": "droid-you",
+      "reliabilityWinner": "droid-you",
+      "passAtK": {
+        "droid-builtin": 0.6513215598999998,
+        "droid-you": 0.9999940951
+      },
+      "passExpK": {
+        "droid-builtin": 1.0000000000000011e-10,
+        "droid-you": 0.02824752489999998
+      },
+      "flakiness": {
+        "droid-builtin": 0.6513215597999998,
+        "droid-you": 0.9717465702000001
+      }
+    },
+    {
+      "id": "websearch-2150",
+      "capabilityWinner": null,
+      "reliabilityWinner": null,
+      "passAtK": {
+        "droid-builtin": 0.8926258175999999,
+        "droid-you": 0.8926258175999999
+      },
+      "passExpK": {
+        "droid-builtin": 1.0240000000000011e-7,
+        "droid-you": 1.0240000000000011e-7
+      },
+      "flakiness": {
+        "droid-builtin": 0.8926257151999999,
+        "droid-you": 0.8926257151999999
+      }
+    }
+  ]
+}

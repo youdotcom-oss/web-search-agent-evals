@@ -190,14 +190,8 @@ const buildRunLabel = (agent: Agent, searchProvider: SearchProvider): string => 
  *
  * @internal
  */
-const buildResultsPath = (
-  resultsDir: string,
-  agent: Agent,
-  searchProvider: SearchProvider,
-  trialType: TrialType,
-): string => {
-  const typeSuffix = trialType === "default" ? "" : `-${trialType}`;
-  return `${resultsDir}/${agent}/${searchProvider}${typeSuffix}.jsonl`;
+const buildResultsPath = (resultsDir: string, agent: Agent, searchProvider: SearchProvider): string => {
+  return `${resultsDir}/${agent}/${searchProvider}.jsonl`;
 };
 
 /**
@@ -276,7 +270,7 @@ const runComparison = async (
 
   for (const { agent, provider } of scenarios) {
     const label = buildRunLabel(agent, provider);
-    const path = buildResultsPath(resultsDir, agent, provider, trialType);
+    const path = buildResultsPath(resultsDir, agent, provider);
 
     // Check if file exists
     const exists = await Bun.file(path).exists();
@@ -324,7 +318,6 @@ const main = async () => {
     options.runDate = options.runDate ?? (await discoverLatestDate(resultsBaseDir));
     const runDate = options.runDate;
     const resultsDir = `${resultsBaseDir}/${runDate}`;
-    const typeSuffix = options.trialType === "default" ? "" : `-${options.trialType}`;
 
     console.log(`📊 COMPARISON - ${runDate}`);
     console.log(`Trial Type: ${options.trialType}`);
@@ -336,7 +329,7 @@ const main = async () => {
     const scenarios: Array<{ agent: Agent; provider: SearchProvider }> = [];
     for (const agent of options.agents) {
       for (const provider of options.searchProviders) {
-        const resultsFile = `${resultsDir}/${agent}/${provider}${typeSuffix}.jsonl`;
+        const resultsFile = `${resultsDir}/${agent}/${provider}.jsonl`;
         if (options.dryRun || (await Bun.file(resultsFile).exists())) {
           scenarios.push({ agent, provider });
         }

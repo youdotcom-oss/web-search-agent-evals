@@ -211,7 +211,11 @@ type FallbackStats = {
   promptsWithFallback: number;
   trialsWithFallback: number;
   totalTrials: number;
-  topAffectedPrompts: Array<{ id: string; trialsHit: number; totalTrials: number }>;
+  topAffectedPrompts: Array<{
+    id: string;
+    trialsHit: number;
+    totalTrials: number;
+  }>;
 };
 
 const calculatePercentile = (values: number[], percentile: number): number => {
@@ -271,7 +275,11 @@ const detectFallbacks = (results: TrialResult[]): FallbackStats => {
   let promptsWithFallback = 0;
   let trialsWithFallback = 0;
   let totalTrials = 0;
-  const promptHits: Array<{ id: string; trialsHit: number; totalTrials: number }> = [];
+  const promptHits: Array<{
+    id: string;
+    trialsHit: number;
+    totalTrials: number;
+  }> = [];
 
   for (const result of results) {
     let promptTrialHits = 0;
@@ -288,7 +296,11 @@ const detectFallbacks = (results: TrialResult[]): FallbackStats => {
 
     if (promptTrialHits > 0) {
       promptsWithFallback++;
-      promptHits.push({ id: result.id, trialsHit: promptTrialHits, totalTrials: promptTrialCount });
+      promptHits.push({
+        id: result.id,
+        trialsHit: promptTrialHits,
+        totalTrials: promptTrialCount,
+      });
     }
   }
 
@@ -296,14 +308,27 @@ const detectFallbacks = (results: TrialResult[]): FallbackStats => {
     .sort((a, b) => b.trialsHit / b.totalTrials - a.trialsHit / a.totalTrials)
     .slice(0, 10);
 
-  return { promptsWithFallback, trialsWithFallback, totalTrials, topAffectedPrompts };
+  return {
+    promptsWithFallback,
+    trialsWithFallback,
+    totalTrials,
+    topAffectedPrompts,
+  };
 };
 
 type FileAnalysis = {
   agent: string;
   provider: string;
   toolCalls: number[];
-  stats: { count: number; min: number; max: number; mean: number; median: number; p90: number; p99: number };
+  stats: {
+    count: number;
+    min: number;
+    max: number;
+    mean: number;
+    median: number;
+    p90: number;
+    p99: number;
+  };
   results: TrialResult[];
   toolLatencies: ToolLatencies;
   fallbackStats: FallbackStats;
@@ -345,7 +370,15 @@ const analyzeFile = async (filePath: string): Promise<FileAnalysis> => {
 
   const fallbackStats = detectFallbacks(results);
 
-  return { agent, provider, toolCalls, stats, results, toolLatencies: allLatencies, fallbackStats };
+  return {
+    agent,
+    provider,
+    toolCalls,
+    stats,
+    results,
+    toolLatencies: allLatencies,
+    fallbackStats,
+  };
 };
 
 type PassAtKAnalysis = {
@@ -566,7 +599,9 @@ const generateSummarySections = (
     const m = quality?.[bestQuality.run];
     if (m && isRegularRunQuality(m)) {
       md.push(
-        `**Best Quality:** ${bestQuality.run} (${fmt(bestQuality.avgScore)} avg score, ${pct(m.passRate)} pass rate)\n\n`,
+        `**Best Quality:** ${bestQuality.run} (${fmt(
+          bestQuality.avgScore,
+        )} avg score, ${pct(m.passRate)} pass rate)\n\n`,
       );
     } else {
       md.push(`**Best Quality:** ${bestQuality.run} (${fmt(bestQuality.avgScore)} avg score)\n\n`);
@@ -599,7 +634,9 @@ const generateSummarySections = (
         const m = quality[entry.run];
         if (!m || !isTrialQuality(m)) return;
         md.push(
-          `| ${idx + 1} | ${entry.run} | ${fmt(m.avgScore)} | ${fmt(m.medianScore)} | ${fmt(m.p25Score)} | ${fmt(m.p75Score)} |\n`,
+          `| ${idx + 1} | ${entry.run} | ${fmt(m.avgScore)} | ${fmt(
+            m.medianScore,
+          )} | ${fmt(m.p25Score)} | ${fmt(m.p75Score)} |\n`,
         );
       });
     } else {
@@ -609,7 +646,9 @@ const generateSummarySections = (
         const m = quality[entry.run];
         if (!m || !isRegularRunQuality(m)) return;
         md.push(
-          `| ${idx + 1} | ${entry.run} | ${fmt(entry.avgScore)} | ${pct(m.passRate)} | ${m.passCount} | ${m.failCount} |\n`,
+          `| ${idx + 1} | ${entry.run} | ${fmt(entry.avgScore)} | ${pct(
+            m.passRate,
+          )} | ${m.passCount} | ${m.failCount} |\n`,
         );
       });
     }
@@ -625,7 +664,9 @@ const generateSummarySections = (
       const m = performance[entry.run];
       if (!m) return;
       md.push(
-        `| ${idx + 1} | ${entry.run} | ${ms(m.latency.p50)} | ${ms(m.latency.p90)} | ${ms(m.latency.p99)} | ${ms(m.latency.mean)} | ${ms(m.totalDuration)} |\n`,
+        `| ${idx + 1} | ${entry.run} | ${ms(m.latency.p50)} | ${ms(
+          m.latency.p90,
+        )} | ${ms(m.latency.p99)} | ${ms(m.latency.mean)} | ${ms(m.totalDuration)} |\n`,
       );
     });
     md.push("\n");
@@ -647,7 +688,9 @@ const generateSummarySections = (
           completionRate: number;
         };
         md.push(
-          `| ${run} | ${r.toolErrors} | ${pct(r.toolErrorRate)} | ${r.timeouts} | ${pct(r.timeoutRate)} | ${pct(r.completionRate)} |\n`,
+          `| ${run} | ${r.toolErrors} | ${pct(r.toolErrorRate)} | ${
+            r.timeouts
+          } | ${pct(r.timeoutRate)} | ${pct(r.completionRate)} |\n`,
         );
       });
       md.push("\n");
@@ -667,7 +710,9 @@ const generateSummarySections = (
         const ciStr = analysis ? `[${pct(analysis.stats.ci95Lower)}, ${pct(analysis.stats.ci95Upper)}]` : "—";
         const stdStr = analysis ? fmt(analysis.stats.std, 4) : "—";
         md.push(
-          `| ${run} | ${pct(m.avgPassAtK)} | ${ciStr} | ${pct(m.medianPassAtK)} | ${pct(m.p25PassAtK)} | ${pct(m.p75PassAtK)} | ${stdStr} |\n`,
+          `| ${run} | ${pct(m.avgPassAtK)} | ${ciStr} | ${pct(
+            m.medianPassAtK,
+          )} | ${pct(m.p25PassAtK)} | ${pct(m.p75PassAtK)} | ${stdStr} |\n`,
         );
       });
     md.push("\n");
@@ -783,7 +828,10 @@ const generateSummarySections = (
             }
 
             md.push(
-              `| ${agent} (${mcpProvider}) | ${qa} ${fmt(Math.abs(qualityDiff), 1)}%${qm} | ${sa} ${fmt(Math.abs(speedDiff), 1)}%${sm} | ${ra} ${fmt(Math.abs(reliabilityDiff), 1)}pp${rm} |\n`,
+              `| ${agent} (${mcpProvider}) | ${qa} ${fmt(Math.abs(qualityDiff), 1)}%${qm} | ${sa} ${fmt(
+                Math.abs(speedDiff),
+                1,
+              )}%${sm} | ${ra} ${fmt(Math.abs(reliabilityDiff), 1)}pp${rm} |\n`,
             );
           });
       });
@@ -818,13 +866,18 @@ const generateToolCallSections = (analyses: FileAnalysis[]): string => {
       for (const r of agentResults) {
         const { stats } = r;
         md.push(
-          `**${r.provider}:** Median=${stats.median.toFixed(1)}, P90=${stats.p90.toFixed(1)}, P99=${stats.p99.toFixed(1)}, Mean=${stats.mean.toFixed(1)} (n=${stats.count})\n\n`,
+          `**${r.provider}:** Median=${stats.median.toFixed(1)}, P90=${stats.p90.toFixed(1)}, P99=${stats.p99.toFixed(
+            1,
+          )}, Mean=${stats.mean.toFixed(1)} (n=${stats.count})\n\n`,
         );
       }
       continue;
     }
 
-    const metrics: Array<{ label: string; key: "median" | "p90" | "p99" | "mean" | "min" | "max" }> = [
+    const metrics: Array<{
+      label: string;
+      key: "median" | "p90" | "p99" | "mean" | "min" | "max";
+    }> = [
       { label: "Median (P50)", key: "median" },
       { label: "P90", key: "p90" },
       { label: "P99", key: "p99" },
@@ -842,7 +895,9 @@ const generateToolCallSections = (analyses: FileAnalysis[]): string => {
         const pctChange = bv > 0 ? (diff / bv) * 100 : 0;
         const arrow = diff > 0 ? "↑" : diff < 0 ? "↓" : "→";
         md.push(
-          `| ${label} | ${bv.toFixed(1)} | ${mv.toFixed(1)} | ${arrow} ${Math.abs(diff).toFixed(1)} | ${pctChange > 0 ? "+" : ""}${pctChange.toFixed(1)}% |\n`,
+          `| ${label} | ${bv.toFixed(1)} | ${mv.toFixed(1)} | ${arrow} ${Math.abs(diff).toFixed(1)} | ${
+            pctChange > 0 ? "+" : ""
+          }${pctChange.toFixed(1)}% |\n`,
         );
       }
       md.push(`\n**Sample size:** ${builtin.stats.count} (builtin), ${mcp.stats.count} (${mcp.provider})\n\n`);
@@ -869,10 +924,14 @@ const generateToolCallSections = (analyses: FileAnalysis[]): string => {
       const m5 = mcp.toolCalls.filter((c) => c >= 5).length;
       md.push("**Key Observations:**\n\n");
       md.push(
-        `- Zero tool calls: Builtin=${b0} (${((b0 / builtin.toolCalls.length) * 100).toFixed(1)}%), ${mcp.provider}=${m0} (${((m0 / mcp.toolCalls.length) * 100).toFixed(1)}%)\n`,
+        `- Zero tool calls: Builtin=${b0} (${((b0 / builtin.toolCalls.length) * 100).toFixed(
+          1,
+        )}%), ${mcp.provider}=${m0} (${((m0 / mcp.toolCalls.length) * 100).toFixed(1)}%)\n`,
       );
       md.push(
-        `- Heavy users (5+ calls): Builtin=${b5} (${((b5 / builtin.toolCalls.length) * 100).toFixed(1)}%), ${mcp.provider}=${m5} (${((m5 / mcp.toolCalls.length) * 100).toFixed(1)}%)\n\n`,
+        `- Heavy users (5+ calls): Builtin=${b5} (${((b5 / builtin.toolCalls.length) * 100).toFixed(
+          1,
+        )}%), ${mcp.provider}=${m5} (${((m5 / mcp.toolCalls.length) * 100).toFixed(1)}%)\n\n`,
       );
     }
   }
@@ -934,7 +993,9 @@ const generateFallbackSection = (analyses: FileAnalysis[]): string => {
     const label = `${r.agent}-${r.provider}`;
     const promptsTotal = r.results.length;
     md.push(
-      `| ${label} | ${fs.promptsWithFallback}/${promptsTotal} (${pct(fs.promptsWithFallback / promptsTotal)}) | ${fs.trialsWithFallback}/${fs.totalTrials} (${pct(fs.trialsWithFallback / fs.totalTrials)}) |\n`,
+      `| ${label} | ${fs.promptsWithFallback}/${promptsTotal} (${pct(
+        fs.promptsWithFallback / promptsTotal,
+      )}) | ${fs.trialsWithFallback}/${fs.totalTrials} (${pct(fs.trialsWithFallback / fs.totalTrials)}) |\n`,
     );
   }
   md.push("\n");
@@ -1029,7 +1090,6 @@ const main = async () => {
   const outputPath = options.output ?? `${comparisonsDir}/REPORT.md`;
 
   const { trialType } = options;
-  const typeSuffix = trialType === "default" ? "" : `-${trialType}`;
 
   console.log("Report Configuration:");
   console.log(`  Run date:   ${runDate}`);
@@ -1054,12 +1114,7 @@ const main = async () => {
   // Load raw trial data for tool call analysis, filtered by trial type
   const glob = new Bun.Glob("**/*.jsonl");
   const allJsonlFiles = await Array.fromAsync(glob.scan({ cwd: resultsDir }));
-  const jsonlFiles = allJsonlFiles.filter((f) => {
-    if (trialType === "default") {
-      return !f.match(/-(capability|regression)\.jsonl$/);
-    }
-    return f.endsWith(`${typeSuffix}.jsonl`);
-  });
+  const jsonlFiles = allJsonlFiles.filter((f) => f.endsWith(".jsonl"));
   const analyses: FileAnalysis[] = await Promise.all(jsonlFiles.map((f) => analyzeFile(`${resultsDir}/${f}`)));
 
   // Load passAtK analyses

@@ -21,15 +21,19 @@
       "match": { "path": "$.type", "value": "tool_use" },
       "emitAs": "tool_call",
       "extract": {
-        "name": "$.tool_name",
         "title": "$.tool_name",
-        "status": "'pending'"
+        "status": "'pending'",
+        "input": "$.parameters"
       }
     },
     {
       "match": { "path": "$.type", "value": "tool_result" },
       "emitAs": "tool_call",
-      "extract": { "title": "$.tool_id", "status": "'completed'" }
+      "extract": {
+        "title": "$.tool_id",
+        "status": "'completed'",
+        "output": "$.output"
+      }
     }
   ],
   "result": {

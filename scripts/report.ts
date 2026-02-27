@@ -29,7 +29,8 @@ import { MCP_SERVERS } from "../mcp-servers.ts";
 import { loadJsonFile } from "./schemas/common.ts";
 import type { QualityMetrics, ReliabilityMetrics, WeightedComparison } from "./schemas/comparisons.ts";
 import { WeightedComparisonSchema } from "./schemas/comparisons.ts";
-import { ALL_AGENTS } from "./shared/shared.constants.ts";
+import { ALL_AGENTS, BUILTIN_SEARCH_TOOLS, MCP_TOOL_PATTERNS } from "./shared/shared.constants.ts";
+import type { Agent, TrialSearchBehavior } from "./shared/shared.types.ts";
 
 type TrialType = "default" | "capability" | "regression";
 
@@ -40,6 +41,15 @@ type ReportOptions = {
   trialType: TrialType;
 };
 
+type TrajectoryStep = {
+  type: string;
+  name?: string;
+  status?: string;
+  content?: string;
+  timestamp?: number;
+  duration?: number;
+};
+
 type TrialResult = {
   id: string;
   passRate: number;
@@ -48,7 +58,7 @@ type TrialResult = {
   trials: Array<{
     pass: boolean;
     score: number;
-    trajectory?: Array<{ type: string; name?: string }>;
+    trajectory?: TrajectoryStep[];
   }>;
 };
 
@@ -194,6 +204,49 @@ const isTrialQuality = (
 
 // ─── Tool Call Analysis ───────────────────────────────────────────────────────
 
+type ToolLatencies = Map<string, number[]>;
+
+type FallbackStats = {
+  mcpOnly: number;
+  builtinOnly: number;
+  both: number;
+  neither: number;
+  totalTrials: number;
+  promptsWithFallback: number;
+  topAffectedPrompts: Array<{
+    id: string;
+    trialsHit: number;
+    totalTrials: number;
+  }>;
+};
+
+/**
+ * Classify a single trial's search behavior by inspecting tool_call events.
+ *
+ * @param trajectory - Trajectory steps from a single trial
+ * @param agent - Agent name used to look up built-in search tools
+ * @returns Classification bucket for this trial
+ *
+ * @internal
+ */
+const classifyTrialSearchBehavior = (trajectory: TrajectoryStep[] | undefined, agent: string): TrialSearchBehavior => {
+  if (!trajectory) return "neither";
+
+  const toolNames = trajectory
+    .filter((step) => step.type === "tool_call" && step.name && !step.name.startsWith("toolu_"))
+    .map((step) => step.name as string);
+
+  const usedMcp = toolNames.some((name) => MCP_TOOL_PATTERNS.some((pattern) => name.includes(pattern)));
+
+  const builtinTools = BUILTIN_SEARCH_TOOLS[agent as Agent] ?? [];
+  const usedBuiltin = toolNames.some((name) => builtinTools.some((builtin) => name.startsWith(builtin)));
+
+  if (usedMcp && usedBuiltin) return "both";
+  if (usedMcp) return "mcp_only";
+  if (usedBuiltin) return "builtin_only";
+  return "neither";
+};
+
 const calculatePercentile = (values: number[], percentile: number): number => {
   if (values.length === 0) return 0;
   const sorted = values.slice().sort((a, b) => a - b);
@@ -204,18 +257,133 @@ const calculatePercentile = (values: number[], percentile: number): number => {
   return (sorted[lower] ?? 0) * (1 - (index - lower)) + (sorted[upper] ?? 0) * (index - lower);
 };
 
-const countToolCalls = (trajectory?: Array<{ type: string }>): number => {
+const countToolCalls = (trajectory?: TrajectoryStep[]): number => {
   if (!trajectory) return 0;
   return trajectory.filter((step) => step.type === "tool_call").length;
+};
+
+const extractToolLatencies = (trajectory?: TrajectoryStep[]): ToolLatencies => {
+  if (!trajectory) return new Map();
+  const latencies: ToolLatencies = new Map();
+  const queue: Array<{ name: string; timestamp: number }> = [];
+
+  for (const step of trajectory) {
+    if (step.type !== "tool_call") continue;
+
+    if (step.duration != null && step.duration > 0) {
+      // Explicit duration field (future harness versions)
+      const name = step.name ?? "unknown";
+      const existing = latencies.get(name) ?? [];
+      existing.push(step.duration);
+      latencies.set(name, existing);
+    } else if (step.status === "pending" && step.timestamp != null) {
+      queue.push({ name: step.name ?? "unknown", timestamp: step.timestamp });
+    } else if (step.status === "completed" && step.timestamp != null && queue.length > 0) {
+      const pending = queue.shift();
+      if (pending == null) continue;
+      const dur = step.timestamp - pending.timestamp;
+      if (dur > 0) {
+        const existing = latencies.get(pending.name) ?? [];
+        existing.push(dur);
+        latencies.set(pending.name, existing);
+      }
+    }
+  }
+
+  return latencies;
+};
+
+const mergeLatencies = (into: ToolLatencies, from: ToolLatencies): void => {
+  for (const [name, durs] of from.entries()) {
+    const existing = into.get(name) ?? [];
+    into.set(name, existing.concat(durs));
+  }
+};
+
+const detectFallbacks = (results: TrialResult[], agent: string): FallbackStats => {
+  let mcpOnly = 0;
+  let builtinOnly = 0;
+  let both = 0;
+  let neither = 0;
+  let totalTrials = 0;
+  let promptsWithFallback = 0;
+
+  const promptHits: Array<{
+    id: string;
+    trialsHit: number;
+    totalTrials: number;
+  }> = [];
+
+  for (const result of results) {
+    let promptTrialHits = 0;
+    const promptTrialCount = result.trials.length;
+    totalTrials += promptTrialCount;
+
+    for (const trial of result.trials) {
+      const behavior = classifyTrialSearchBehavior(trial.trajectory, agent);
+      switch (behavior) {
+        case "mcp_only":
+          mcpOnly++;
+          break;
+        case "builtin_only":
+          builtinOnly++;
+          promptTrialHits++;
+          break;
+        case "both":
+          both++;
+          promptTrialHits++;
+          break;
+        case "neither":
+          neither++;
+          break;
+      }
+    }
+
+    if (promptTrialHits > 0) {
+      promptsWithFallback++;
+      promptHits.push({
+        id: result.id,
+        trialsHit: promptTrialHits,
+        totalTrials: promptTrialCount,
+      });
+    }
+  }
+
+  const topAffectedPrompts = promptHits
+    .sort((a, b) => b.trialsHit / b.totalTrials - a.trialsHit / a.totalTrials)
+    .slice(0, 10);
+
+  return {
+    mcpOnly,
+    builtinOnly,
+    both,
+    neither,
+    totalTrials,
+    promptsWithFallback,
+    topAffectedPrompts,
+  };
 };
 
 type FileAnalysis = {
   agent: string;
   provider: string;
   toolCalls: number[];
-  stats: { count: number; min: number; max: number; mean: number; median: number; p90: number; p99: number };
+  stats: {
+    count: number;
+    min: number;
+    max: number;
+    mean: number;
+    median: number;
+    p90: number;
+    p99: number;
+  };
   results: TrialResult[];
+  toolLatencies: ToolLatencies;
+  fallbackStats: FallbackStats;
 };
+
+/** Per-run MCP adoption rate (0.0–1.0) keyed by run label e.g. "claude-code-you" */
+type McpAdoptionMap = Map<string, number>;
 
 const analyzeFile = async (filePath: string): Promise<FileAnalysis> => {
   const parts = filePath.split("/");
@@ -228,12 +396,14 @@ const analyzeFile = async (filePath: string): Promise<FileAnalysis> => {
 
   const toolCalls: number[] = [];
   const results: TrialResult[] = [];
+  const allLatencies: ToolLatencies = new Map();
 
   for (const line of lines) {
     const result: TrialResult = JSON.parse(line);
     results.push(result);
     for (const trial of result.trials) {
       toolCalls.push(countToolCalls(trial.trajectory));
+      mergeLatencies(allLatencies, extractToolLatencies(trial.trajectory));
     }
   }
 
@@ -249,7 +419,17 @@ const analyzeFile = async (filePath: string): Promise<FileAnalysis> => {
     p99: calculatePercentile(toolCalls, 99),
   };
 
-  return { agent, provider, toolCalls, stats, results };
+  const fallbackStats = detectFallbacks(results, agent);
+
+  return {
+    agent,
+    provider,
+    toolCalls,
+    stats,
+    results,
+    toolLatencies: allLatencies,
+    fallbackStats,
+  };
 };
 
 type PassAtKAnalysis = {
@@ -431,6 +611,7 @@ const generateSummarySections = (
   weighted: WeightedComparison,
   statistical: WeightedComparison | null,
   passAtKAnalyses: PassAtKAnalysis[] = [],
+  mcpAdoption: McpAdoptionMap = new Map(),
 ): string => {
   const { meta, quality, performance, reliability, capability, flakiness } = weighted;
   const md: string[] = [];
@@ -470,7 +651,9 @@ const generateSummarySections = (
     const m = quality?.[bestQuality.run];
     if (m && isRegularRunQuality(m)) {
       md.push(
-        `**Best Quality:** ${bestQuality.run} (${fmt(bestQuality.avgScore)} avg score, ${pct(m.passRate)} pass rate)\n\n`,
+        `**Best Quality:** ${bestQuality.run} (${fmt(
+          bestQuality.avgScore,
+        )} avg score, ${pct(m.passRate)} pass rate)\n\n`,
       );
     } else {
       md.push(`**Best Quality:** ${bestQuality.run} (${fmt(bestQuality.avgScore)} avg score)\n\n`);
@@ -503,7 +686,9 @@ const generateSummarySections = (
         const m = quality[entry.run];
         if (!m || !isTrialQuality(m)) return;
         md.push(
-          `| ${idx + 1} | ${entry.run} | ${fmt(m.avgScore)} | ${fmt(m.medianScore)} | ${fmt(m.p25Score)} | ${fmt(m.p75Score)} |\n`,
+          `| ${idx + 1} | ${entry.run} | ${fmt(m.avgScore)} | ${fmt(
+            m.medianScore,
+          )} | ${fmt(m.p25Score)} | ${fmt(m.p75Score)} |\n`,
         );
       });
     } else {
@@ -513,7 +698,9 @@ const generateSummarySections = (
         const m = quality[entry.run];
         if (!m || !isRegularRunQuality(m)) return;
         md.push(
-          `| ${idx + 1} | ${entry.run} | ${fmt(entry.avgScore)} | ${pct(m.passRate)} | ${m.passCount} | ${m.failCount} |\n`,
+          `| ${idx + 1} | ${entry.run} | ${fmt(entry.avgScore)} | ${pct(
+            m.passRate,
+          )} | ${m.passCount} | ${m.failCount} |\n`,
         );
       });
     }
@@ -529,7 +716,9 @@ const generateSummarySections = (
       const m = performance[entry.run];
       if (!m) return;
       md.push(
-        `| ${idx + 1} | ${entry.run} | ${ms(m.latency.p50)} | ${ms(m.latency.p90)} | ${ms(m.latency.p99)} | ${ms(m.latency.mean)} | ${ms(m.totalDuration)} |\n`,
+        `| ${idx + 1} | ${entry.run} | ${ms(m.latency.p50)} | ${ms(
+          m.latency.p90,
+        )} | ${ms(m.latency.p99)} | ${ms(m.latency.mean)} | ${ms(m.totalDuration)} |\n`,
       );
     });
     md.push("\n");
@@ -551,7 +740,9 @@ const generateSummarySections = (
           completionRate: number;
         };
         md.push(
-          `| ${run} | ${r.toolErrors} | ${pct(r.toolErrorRate)} | ${r.timeouts} | ${pct(r.timeoutRate)} | ${pct(r.completionRate)} |\n`,
+          `| ${run} | ${r.toolErrors} | ${pct(r.toolErrorRate)} | ${
+            r.timeouts
+          } | ${pct(r.timeoutRate)} | ${pct(r.completionRate)} |\n`,
         );
       });
       md.push("\n");
@@ -571,7 +762,9 @@ const generateSummarySections = (
         const ciStr = analysis ? `[${pct(analysis.stats.ci95Lower)}, ${pct(analysis.stats.ci95Upper)}]` : "—";
         const stdStr = analysis ? fmt(analysis.stats.std, 4) : "—";
         md.push(
-          `| ${run} | ${pct(m.avgPassAtK)} | ${ciStr} | ${pct(m.medianPassAtK)} | ${pct(m.p25PassAtK)} | ${pct(m.p75PassAtK)} | ${stdStr} |\n`,
+          `| ${run} | ${pct(m.avgPassAtK)} | ${ciStr} | ${pct(
+            m.medianPassAtK,
+          )} | ${pct(m.p25PassAtK)} | ${pct(m.p75PassAtK)} | ${stdStr} |\n`,
         );
       });
     md.push("\n");
@@ -624,6 +817,18 @@ const generateSummarySections = (
     const providers = Array.from(new Set(meta.runs.map((r) => parseRunLabel(r).provider)));
 
     if (providers.includes("builtin") && providers.length > 1) {
+      // Warn if any MCP runs have low adoption
+      const lowAdoptionRuns: string[] = [];
+      for (const [run, rate] of mcpAdoption.entries()) {
+        if (rate < 0.5) lowAdoptionRuns.push(run);
+      }
+      if (lowAdoptionRuns.length > 0) {
+        md.push(
+          `> **Caveat:** ${lowAdoptionRuns.join(", ")} used built-in search tools instead of MCP ` +
+            `(see MCP Adoption Analysis below). Rows marked \\* compare prompt phrasing, not MCP tool quality.\n\n`,
+        );
+      }
+
       md.push("| Agent | Quality (builtin → MCP) | Speed (builtin → MCP) | Reliability (builtin → MCP) |\n");
       md.push("|-------|------------------------|----------------------|----------------------------|\n");
 
@@ -655,6 +860,8 @@ const generateSummarySections = (
             }
 
             const mcpProvider = parseRunLabel(mcpRun).provider;
+            const adoption = mcpAdoption.get(mcpRun);
+            const asterisk = adoption !== undefined && adoption < 0.5 ? " \\*" : "";
             const qa = qualityDiff > 0 ? "↑" : qualityDiff < 0 ? "↓" : "→";
             const sa = speedDiff < 0 ? "↑" : speedDiff > 0 ? "↓" : "→";
             const ra = reliabilityDiff > 0 ? "↑" : reliabilityDiff < 0 ? "↓" : "→";
@@ -687,7 +894,10 @@ const generateSummarySections = (
             }
 
             md.push(
-              `| ${agent} (${mcpProvider}) | ${qa} ${fmt(Math.abs(qualityDiff), 1)}%${qm} | ${sa} ${fmt(Math.abs(speedDiff), 1)}%${sm} | ${ra} ${fmt(Math.abs(reliabilityDiff), 1)}pp${rm} |\n`,
+              `| ${agent} (${mcpProvider})${asterisk} | ${qa} ${fmt(Math.abs(qualityDiff), 1)}%${qm} | ${sa} ${fmt(
+                Math.abs(speedDiff),
+                1,
+              )}%${sm} | ${ra} ${fmt(Math.abs(reliabilityDiff), 1)}pp${rm} |\n`,
             );
           });
       });
@@ -722,13 +932,18 @@ const generateToolCallSections = (analyses: FileAnalysis[]): string => {
       for (const r of agentResults) {
         const { stats } = r;
         md.push(
-          `**${r.provider}:** Median=${stats.median.toFixed(1)}, P90=${stats.p90.toFixed(1)}, P99=${stats.p99.toFixed(1)}, Mean=${stats.mean.toFixed(1)} (n=${stats.count})\n\n`,
+          `**${r.provider}:** Median=${stats.median.toFixed(1)}, P90=${stats.p90.toFixed(1)}, P99=${stats.p99.toFixed(
+            1,
+          )}, Mean=${stats.mean.toFixed(1)} (n=${stats.count})\n\n`,
         );
       }
       continue;
     }
 
-    const metrics: Array<{ label: string; key: "median" | "p90" | "p99" | "mean" | "min" | "max" }> = [
+    const metrics: Array<{
+      label: string;
+      key: "median" | "p90" | "p99" | "mean" | "min" | "max";
+    }> = [
       { label: "Median (P50)", key: "median" },
       { label: "P90", key: "p90" },
       { label: "P99", key: "p99" },
@@ -746,7 +961,9 @@ const generateToolCallSections = (analyses: FileAnalysis[]): string => {
         const pctChange = bv > 0 ? (diff / bv) * 100 : 0;
         const arrow = diff > 0 ? "↑" : diff < 0 ? "↓" : "→";
         md.push(
-          `| ${label} | ${bv.toFixed(1)} | ${mv.toFixed(1)} | ${arrow} ${Math.abs(diff).toFixed(1)} | ${pctChange > 0 ? "+" : ""}${pctChange.toFixed(1)}% |\n`,
+          `| ${label} | ${bv.toFixed(1)} | ${mv.toFixed(1)} | ${arrow} ${Math.abs(diff).toFixed(1)} | ${
+            pctChange > 0 ? "+" : ""
+          }${pctChange.toFixed(1)}% |\n`,
         );
       }
       md.push(`\n**Sample size:** ${builtin.stats.count} (builtin), ${mcp.stats.count} (${mcp.provider})\n\n`);
@@ -773,12 +990,139 @@ const generateToolCallSections = (analyses: FileAnalysis[]): string => {
       const m5 = mcp.toolCalls.filter((c) => c >= 5).length;
       md.push("**Key Observations:**\n\n");
       md.push(
-        `- Zero tool calls: Builtin=${b0} (${((b0 / builtin.toolCalls.length) * 100).toFixed(1)}%), ${mcp.provider}=${m0} (${((m0 / mcp.toolCalls.length) * 100).toFixed(1)}%)\n`,
+        `- Zero tool calls: Builtin=${b0} (${((b0 / builtin.toolCalls.length) * 100).toFixed(
+          1,
+        )}%), ${mcp.provider}=${m0} (${((m0 / mcp.toolCalls.length) * 100).toFixed(1)}%)\n`,
       );
       md.push(
-        `- Heavy users (5+ calls): Builtin=${b5} (${((b5 / builtin.toolCalls.length) * 100).toFixed(1)}%), ${mcp.provider}=${m5} (${((m5 / mcp.toolCalls.length) * 100).toFixed(1)}%)\n\n`,
+        `- Heavy users (5+ calls): Builtin=${b5} (${((b5 / builtin.toolCalls.length) * 100).toFixed(
+          1,
+        )}%), ${mcp.provider}=${m5} (${((m5 / mcp.toolCalls.length) * 100).toFixed(1)}%)\n\n`,
       );
     }
+  }
+
+  return md.join("");
+};
+
+const generateToolLatencySection = (analyses: FileAnalysis[]): string => {
+  const byAgent = new Map<string, FileAnalysis[]>();
+  for (const a of analyses) {
+    const existing = byAgent.get(a.agent) ?? [];
+    existing.push(a);
+    byAgent.set(a.agent, existing);
+  }
+
+  const sections: string[] = [];
+
+  for (const agentResults of byAgent.values()) {
+    for (const r of agentResults) {
+      const qualifying = Array.from(r.toolLatencies.entries()).filter(([, durs]) => durs.length >= 5);
+      if (qualifying.length === 0) continue;
+
+      const rows = qualifying
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .map(([tool, durs]) => {
+          const p50 = calculatePercentile(durs, 50);
+          const p90 = calculatePercentile(durs, 90);
+          const p99 = calculatePercentile(durs, 99);
+          const mean = durs.reduce((s, v) => s + v, 0) / durs.length;
+          return `| ${tool} | ${durs.length} | ${ms(p50)} | ${ms(p90)} | ${ms(p99)} | ${ms(mean)} |`;
+        });
+
+      sections.push(
+        `### ${r.agent} — ${r.provider}\n\n` +
+          "| Tool | n | P50 | P90 | P99 | Mean |\n" +
+          "|------|---|-----|-----|-----|------|\n" +
+          rows.join("\n") +
+          "\n",
+      );
+    }
+  }
+
+  if (sections.length === 0) return "";
+  return `## Individual Tool Call Latency\n\n${sections.join("\n")}\n`;
+};
+
+const generateFallbackSection = (analyses: FileAnalysis[]): string => {
+  const mcpAnalyses = analyses.filter((a) => a.provider !== "builtin");
+  if (mcpAnalyses.length === 0) return "";
+
+  const md: string[] = [];
+  md.push("## MCP Adoption Analysis\n\n");
+  md.push("_Per-trial classification based on which search tools were actually invoked._\n\n");
+  md.push("| Agent + Provider | MCP Only | Builtin Only | Both | Neither | Total |\n");
+  md.push("|------------------|----------|--------------|------|---------|-------|\n");
+
+  for (const r of mcpAnalyses) {
+    const { fallbackStats: fs } = r;
+    const label = `${r.agent}-${r.provider}`;
+    const fmtBucket = (n: number) => `${n} (${pct(n / fs.totalTrials)})`;
+    md.push(
+      `| ${label} | ${fmtBucket(fs.mcpOnly)} | ${fmtBucket(fs.builtinOnly)} | ${fmtBucket(fs.both)} | ${fmtBucket(fs.neither)} | ${fs.totalTrials} |\n`,
+    );
+  }
+  md.push("\n");
+
+  // Per-agent diagnostic notes
+  const diagnostics: string[] = [];
+  for (const r of mcpAnalyses) {
+    const { fallbackStats: fs } = r;
+    const mcpRate = fs.totalTrials > 0 ? (fs.mcpOnly + fs.both) / fs.totalTrials : 0;
+    const builtinRate = fs.totalTrials > 0 ? (fs.builtinOnly + fs.both) / fs.totalTrials : 0;
+    const label = `${r.agent}-${r.provider}`;
+
+    if (mcpRate === 0 && builtinRate > 0) {
+      // Full built-in fallback — MCP never used
+      if (r.agent === "gemini") {
+        diagnostics.push(
+          `- **${label}** (${pct(builtinRate)} builtin): MCP tools never loaded. ` +
+            `Gemini runs in iterative mode (new process per prompt) and the MCP server connection ` +
+            `is not established for short-lived commands. Trajectory shows the model attempting ` +
+            `hallucinated tool names (e.g. \`ydc_search\`, \`ydc_server__web_search\`) after ` +
+            `failing to discover real MCP tools via \`cli_help\` and \`list_directory\`.`,
+        );
+      } else if (r.agent === "claude-code") {
+        diagnostics.push(
+          `- **${label}** (${pct(builtinRate)} builtin): MCP server configured but model ` +
+            `exclusively prefers its built-in \`WebSearch\` tool. The prompt "Use ydc-server" ` +
+            `is not specific enough to override Claude Code's strong affinity for native tools.`,
+        );
+      } else {
+        diagnostics.push(
+          `- **${label}** (${pct(builtinRate)} builtin): Agent used built-in search ` +
+            `instead of configured MCP tools.`,
+        );
+      }
+    } else if (mcpRate > 0.95) {
+      diagnostics.push(
+        `- **${label}** (${pct(mcpRate)} MCP): Full MCP adoption. Agent reliably uses configured MCP tools.`,
+      );
+    } else if (mcpRate > 0 && mcpRate <= 0.95) {
+      diagnostics.push(
+        `- **${label}** (${pct(mcpRate)} MCP, ${pct(builtinRate)} builtin): Partial MCP adoption. ` +
+          `Agent uses MCP in most trials but occasionally falls back to built-in search.`,
+      );
+    }
+  }
+
+  if (diagnostics.length > 0) {
+    md.push("### Diagnostic Notes\n\n");
+    md.push(`${diagnostics.join("\n")}\n\n`);
+  }
+
+  // Per-agent "most affected prompts" for agents that fell back to builtin
+  for (const r of mcpAnalyses) {
+    const { fallbackStats: fs } = r;
+    if (fs.topAffectedPrompts.length === 0) continue;
+    const label = `${r.agent}-${r.provider}`;
+    md.push(`### ${label} — Prompts Using Builtin Fallback\n\n`);
+    md.push("| Prompt ID | Trials with Builtin | Total Trials | Rate |\n");
+    md.push("|-----------|---------------------|--------------|------|\n");
+    for (const p of fs.topAffectedPrompts) {
+      md.push(`| ${p.id} | ${p.trialsHit} | ${p.totalTrials} | ${pct(p.trialsHit / p.totalTrials)} |\n`);
+    }
+    md.push("\n");
   }
 
   return md.join("");
@@ -858,7 +1202,6 @@ const main = async () => {
   const outputPath = options.output ?? `${comparisonsDir}/REPORT.md`;
 
   const { trialType } = options;
-  const typeSuffix = trialType === "default" ? "" : `-${trialType}`;
 
   console.log("Report Configuration:");
   console.log(`  Run date:   ${runDate}`);
@@ -882,13 +1225,8 @@ const main = async () => {
 
   // Load raw trial data for tool call analysis, filtered by trial type
   const glob = new Bun.Glob("**/*.jsonl");
-  const allJsonlFiles = await Array.fromAsync(glob.scan({ cwd: resultsDir }));
-  const jsonlFiles = allJsonlFiles.filter((f) => {
-    if (trialType === "default") {
-      return !f.match(/-(capability|regression)\.jsonl$/);
-    }
-    return f.endsWith(`${typeSuffix}.jsonl`);
-  });
+  const allJsonlFiles = await Array.fromAsync(glob.scan({ cwd: resultsDir, followSymlinks: true }));
+  const jsonlFiles = allJsonlFiles.filter((f) => f.endsWith(".jsonl"));
   const analyses: FileAnalysis[] = await Promise.all(jsonlFiles.map((f) => analyzeFile(`${resultsDir}/${f}`)));
 
   // Load passAtK analyses
@@ -900,14 +1238,28 @@ const main = async () => {
     }
   }
 
+  // Build MCP adoption map from trial data
+  const mcpAdoption: McpAdoptionMap = new Map();
+  for (const a of analyses) {
+    if (a.provider === "builtin") continue;
+    const label = `${a.agent}-${a.provider}`;
+    const { fallbackStats: fs } = a;
+    const mcpRate = fs.totalTrials > 0 ? (fs.mcpOnly + fs.both) / fs.totalTrials : 0;
+    mcpAdoption.set(label, mcpRate);
+  }
+
   // Generate report sections
-  const summarySections = generateSummarySections(weighted, statistical, passAtKAnalyses);
+  const summarySections = generateSummarySections(weighted, statistical, passAtKAnalyses, mcpAdoption);
   const toolCallSections = analyses.length > 0 ? generateToolCallSections(analyses) : "";
+  const toolLatencySection = analyses.length > 0 ? generateToolLatencySection(analyses) : "";
+  const fallbackSection = analyses.length > 0 ? generateFallbackSection(analyses) : "";
   const failingPromptsSection = analyses.length > 0 ? await generateFailingPromptsSection(analyses) : "";
 
   const footer = "\n---\n\n*Generated by `bun scripts/report.ts`*\n";
 
-  const report = [summarySections, toolCallSections, failingPromptsSection, footer].filter(Boolean).join("\n");
+  const report = [summarySections, toolCallSections, toolLatencySection, fallbackSection, failingPromptsSection, footer]
+    .filter(Boolean)
+    .join("\n");
 
   await Bun.$`mkdir -p ${comparisonsDir}`.quiet();
   await Bun.write(outputPath, report);

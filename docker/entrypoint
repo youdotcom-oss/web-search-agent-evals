@@ -29,6 +29,7 @@ const AGENT = process.env.AGENT;
 const SEARCH_PROVIDER = (process.env.SEARCH_PROVIDER || "builtin") as McpServerKey | "builtin";
 const PROMPT_CONCURRENCY = process.env.PROMPT_CONCURRENCY ? Number.parseInt(process.env.PROMPT_CONCURRENCY, 10) : undefined;
 const PROMPT_COUNT = process.env.PROMPT_COUNT ? Number.parseInt(process.env.PROMPT_COUNT, 10) : undefined;
+const K_OVERRIDE = process.env.K ? Number.parseInt(process.env.K, 10) : undefined;
 
 /**
  * Configure Codex CLI with API key
@@ -171,10 +172,9 @@ const buildTrialsCommand = async (): Promise<string[]> => {
   if (!(VALID_TRIAL_TYPES as readonly string[]).includes(trialType)) {
     throw new Error(`Invalid TRIAL_TYPE: ${trialType}. Must be one of: ${VALID_TRIAL_TYPES.join(", ")}`);
   }
-  const typeSuffix = trialType === "default" ? "" : `-${trialType}`;
   const outputDir = `/eval/data/results/${runDate}/${AGENT}`;
   await $`mkdir -p ${outputDir}`.quiet();
-  const outputFile = `${outputDir}/${SEARCH_PROVIDER}${typeSuffix}.jsonl`;
+  const outputFile = `${outputDir}/${SEARCH_PROVIDER}.jsonl`;
 
   console.log(`📊 Trials mode`);
   console.log(`   Trial type: ${trialType}`);
@@ -188,9 +188,21 @@ const buildTrialsCommand = async (): Promise<string[]> => {
 
   cmd.push("--cwd", "/workspace");
 
-  // Extract k value from TRIAL_TYPE preset or use default (5)
+  // Gemini CLI (Node.js) has a slow cold-start (~15–55s for JIT/module load).
+  // Increase per-trial timeout to 120s to survive container cold starts.
+  if (AGENT === "gemini") {
+    cmd.push("--timeout", "120000");
+  }
+
+  // Claude Code with claude-sonnet-4-6 can take 40–50s on complex queries
+  // (API call + web search + response generation). Default 60s is too tight.
+  if (AGENT === "claude-code") {
+    cmd.push("--timeout", "90000");
+  }
+
+  // Extract k value: CLI override → TRIAL_TYPE preset → default (5)
   const kValues: Record<string, number> = { default: 5, capability: 10, regression: 3 };
-  const k = kValues[trialType] ?? 5;
+  const k = K_OVERRIDE ?? kValues[trialType] ?? 5;
   cmd.push("-k", k.toString());
 
   // Add prompt concurrency and workspace isolation if specified

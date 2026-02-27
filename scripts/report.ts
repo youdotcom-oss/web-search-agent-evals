@@ -29,7 +29,8 @@ import { MCP_SERVERS } from "../mcp-servers.ts";
 import { loadJsonFile } from "./schemas/common.ts";
 import type { QualityMetrics, ReliabilityMetrics, WeightedComparison } from "./schemas/comparisons.ts";
 import { WeightedComparisonSchema } from "./schemas/comparisons.ts";
-import { ALL_AGENTS } from "./shared/shared.constants.ts";
+import { ALL_AGENTS, BUILTIN_SEARCH_TOOLS, MCP_TOOL_PATTERNS } from "./shared/shared.constants.ts";
+import type { Agent, TrialSearchBehavior } from "./shared/shared.types.ts";
 
 type TrialType = "default" | "capability" | "regression";
 
@@ -203,19 +204,47 @@ const isTrialQuality = (
 
 // ─── Tool Call Analysis ───────────────────────────────────────────────────────
 
-const FALLBACK_PHRASE = "Let me try with the WebSearch tool instead:";
-
 type ToolLatencies = Map<string, number[]>;
 
 type FallbackStats = {
-  promptsWithFallback: number;
-  trialsWithFallback: number;
+  mcpOnly: number;
+  builtinOnly: number;
+  both: number;
+  neither: number;
   totalTrials: number;
+  promptsWithFallback: number;
   topAffectedPrompts: Array<{
     id: string;
     trialsHit: number;
     totalTrials: number;
   }>;
+};
+
+/**
+ * Classify a single trial's search behavior by inspecting tool_call events.
+ *
+ * @param trajectory - Trajectory steps from a single trial
+ * @param agent - Agent name used to look up built-in search tools
+ * @returns Classification bucket for this trial
+ *
+ * @internal
+ */
+const classifyTrialSearchBehavior = (trajectory: TrajectoryStep[] | undefined, agent: string): TrialSearchBehavior => {
+  if (!trajectory) return "neither";
+
+  const toolNames = trajectory
+    .filter((step) => step.type === "tool_call" && step.name && !step.name.startsWith("toolu_"))
+    .map((step) => step.name as string);
+
+  const usedMcp = toolNames.some((name) => MCP_TOOL_PATTERNS.some((pattern) => name.includes(pattern)));
+
+  const builtinTools = BUILTIN_SEARCH_TOOLS[agent as Agent] ?? [];
+  const usedBuiltin = toolNames.some((name) => builtinTools.some((builtin) => name.startsWith(builtin)));
+
+  if (usedMcp && usedBuiltin) return "both";
+  if (usedMcp) return "mcp_only";
+  if (usedBuiltin) return "builtin_only";
+  return "neither";
 };
 
 const calculatePercentile = (values: number[], percentile: number): number => {
@@ -271,10 +300,14 @@ const mergeLatencies = (into: ToolLatencies, from: ToolLatencies): void => {
   }
 };
 
-const detectFallbacks = (results: TrialResult[]): FallbackStats => {
-  let promptsWithFallback = 0;
-  let trialsWithFallback = 0;
+const detectFallbacks = (results: TrialResult[], agent: string): FallbackStats => {
+  let mcpOnly = 0;
+  let builtinOnly = 0;
+  let both = 0;
+  let neither = 0;
   let totalTrials = 0;
+  let promptsWithFallback = 0;
+
   const promptHits: Array<{
     id: string;
     trialsHit: number;
@@ -287,10 +320,22 @@ const detectFallbacks = (results: TrialResult[]): FallbackStats => {
     totalTrials += promptTrialCount;
 
     for (const trial of result.trials) {
-      const trialHit = (trial.trajectory ?? []).some((step) => step.content?.includes(FALLBACK_PHRASE));
-      if (trialHit) {
-        promptTrialHits++;
-        trialsWithFallback++;
+      const behavior = classifyTrialSearchBehavior(trial.trajectory, agent);
+      switch (behavior) {
+        case "mcp_only":
+          mcpOnly++;
+          break;
+        case "builtin_only":
+          builtinOnly++;
+          promptTrialHits++;
+          break;
+        case "both":
+          both++;
+          promptTrialHits++;
+          break;
+        case "neither":
+          neither++;
+          break;
       }
     }
 
@@ -309,9 +354,12 @@ const detectFallbacks = (results: TrialResult[]): FallbackStats => {
     .slice(0, 10);
 
   return {
-    promptsWithFallback,
-    trialsWithFallback,
+    mcpOnly,
+    builtinOnly,
+    both,
+    neither,
     totalTrials,
+    promptsWithFallback,
     topAffectedPrompts,
   };
 };
@@ -333,6 +381,9 @@ type FileAnalysis = {
   toolLatencies: ToolLatencies;
   fallbackStats: FallbackStats;
 };
+
+/** Per-run MCP adoption rate (0.0–1.0) keyed by run label e.g. "claude-code-you" */
+type McpAdoptionMap = Map<string, number>;
 
 const analyzeFile = async (filePath: string): Promise<FileAnalysis> => {
   const parts = filePath.split("/");
@@ -368,7 +419,7 @@ const analyzeFile = async (filePath: string): Promise<FileAnalysis> => {
     p99: calculatePercentile(toolCalls, 99),
   };
 
-  const fallbackStats = detectFallbacks(results);
+  const fallbackStats = detectFallbacks(results, agent);
 
   return {
     agent,
@@ -560,6 +611,7 @@ const generateSummarySections = (
   weighted: WeightedComparison,
   statistical: WeightedComparison | null,
   passAtKAnalyses: PassAtKAnalysis[] = [],
+  mcpAdoption: McpAdoptionMap = new Map(),
 ): string => {
   const { meta, quality, performance, reliability, capability, flakiness } = weighted;
   const md: string[] = [];
@@ -765,6 +817,18 @@ const generateSummarySections = (
     const providers = Array.from(new Set(meta.runs.map((r) => parseRunLabel(r).provider)));
 
     if (providers.includes("builtin") && providers.length > 1) {
+      // Warn if any MCP runs have low adoption
+      const lowAdoptionRuns: string[] = [];
+      for (const [run, rate] of mcpAdoption.entries()) {
+        if (rate < 0.5) lowAdoptionRuns.push(run);
+      }
+      if (lowAdoptionRuns.length > 0) {
+        md.push(
+          `> **Caveat:** ${lowAdoptionRuns.join(", ")} used built-in search tools instead of MCP ` +
+            `(see MCP Adoption Analysis below). Rows marked \\* compare prompt phrasing, not MCP tool quality.\n\n`,
+        );
+      }
+
       md.push("| Agent | Quality (builtin → MCP) | Speed (builtin → MCP) | Reliability (builtin → MCP) |\n");
       md.push("|-------|------------------------|----------------------|----------------------------|\n");
 
@@ -796,6 +860,8 @@ const generateSummarySections = (
             }
 
             const mcpProvider = parseRunLabel(mcpRun).provider;
+            const adoption = mcpAdoption.get(mcpRun);
+            const asterisk = adoption !== undefined && adoption < 0.5 ? " \\*" : "";
             const qa = qualityDiff > 0 ? "↑" : qualityDiff < 0 ? "↓" : "→";
             const sa = speedDiff < 0 ? "↑" : speedDiff > 0 ? "↓" : "→";
             const ra = reliabilityDiff > 0 ? "↑" : reliabilityDiff < 0 ? "↓" : "→";
@@ -828,7 +894,7 @@ const generateSummarySections = (
             }
 
             md.push(
-              `| ${agent} (${mcpProvider}) | ${qa} ${fmt(Math.abs(qualityDiff), 1)}%${qm} | ${sa} ${fmt(
+              `| ${agent} (${mcpProvider})${asterisk} | ${qa} ${fmt(Math.abs(qualityDiff), 1)}%${qm} | ${sa} ${fmt(
                 Math.abs(speedDiff),
                 1,
               )}%${sm} | ${ra} ${fmt(Math.abs(reliabilityDiff), 1)}pp${rm} |\n`,
@@ -979,33 +1045,79 @@ const generateToolLatencySection = (analyses: FileAnalysis[]): string => {
 };
 
 const generateFallbackSection = (analyses: FileAnalysis[]): string => {
-  const relevant = analyses.filter((a) => a.provider !== "builtin" && a.fallbackStats.trialsWithFallback > 0);
-  if (relevant.length === 0) return "";
+  const mcpAnalyses = analyses.filter((a) => a.provider !== "builtin");
+  if (mcpAnalyses.length === 0) return "";
 
   const md: string[] = [];
-  md.push("## MCP Fallback Analysis\n\n");
-  md.push(`_Detected phrase: "${FALLBACK_PHRASE}"_\n\n`);
-  md.push("| Agent + Provider | Prompts Affected | Trial Hit Rate |\n");
-  md.push("|-----------------|------------------|----------------|\n");
+  md.push("## MCP Adoption Analysis\n\n");
+  md.push("_Per-trial classification based on which search tools were actually invoked._\n\n");
+  md.push("| Agent + Provider | MCP Only | Builtin Only | Both | Neither | Total |\n");
+  md.push("|------------------|----------|--------------|------|---------|-------|\n");
 
-  for (const r of relevant) {
+  for (const r of mcpAnalyses) {
     const { fallbackStats: fs } = r;
     const label = `${r.agent}-${r.provider}`;
-    const promptsTotal = r.results.length;
+    const fmtBucket = (n: number) => `${n} (${pct(n / fs.totalTrials)})`;
     md.push(
-      `| ${label} | ${fs.promptsWithFallback}/${promptsTotal} (${pct(
-        fs.promptsWithFallback / promptsTotal,
-      )}) | ${fs.trialsWithFallback}/${fs.totalTrials} (${pct(fs.trialsWithFallback / fs.totalTrials)}) |\n`,
+      `| ${label} | ${fmtBucket(fs.mcpOnly)} | ${fmtBucket(fs.builtinOnly)} | ${fmtBucket(fs.both)} | ${fmtBucket(fs.neither)} | ${fs.totalTrials} |\n`,
     );
   }
   md.push("\n");
 
-  for (const r of relevant) {
+  // Per-agent diagnostic notes
+  const diagnostics: string[] = [];
+  for (const r of mcpAnalyses) {
+    const { fallbackStats: fs } = r;
+    const mcpRate = fs.totalTrials > 0 ? (fs.mcpOnly + fs.both) / fs.totalTrials : 0;
+    const builtinRate = fs.totalTrials > 0 ? (fs.builtinOnly + fs.both) / fs.totalTrials : 0;
+    const label = `${r.agent}-${r.provider}`;
+
+    if (mcpRate === 0 && builtinRate > 0) {
+      // Full built-in fallback — MCP never used
+      if (r.agent === "gemini") {
+        diagnostics.push(
+          `- **${label}** (${pct(builtinRate)} builtin): MCP tools never loaded. ` +
+            `Gemini runs in iterative mode (new process per prompt) and the MCP server connection ` +
+            `is not established for short-lived commands. Trajectory shows the model attempting ` +
+            `hallucinated tool names (e.g. \`ydc_search\`, \`ydc_server__web_search\`) after ` +
+            `failing to discover real MCP tools via \`cli_help\` and \`list_directory\`.`,
+        );
+      } else if (r.agent === "claude-code") {
+        diagnostics.push(
+          `- **${label}** (${pct(builtinRate)} builtin): MCP server configured but model ` +
+            `exclusively prefers its built-in \`WebSearch\` tool. The prompt "Use ydc-server" ` +
+            `is not specific enough to override Claude Code's strong affinity for native tools.`,
+        );
+      } else {
+        diagnostics.push(
+          `- **${label}** (${pct(builtinRate)} builtin): Agent used built-in search ` +
+            `instead of configured MCP tools.`,
+        );
+      }
+    } else if (mcpRate > 0.95) {
+      diagnostics.push(
+        `- **${label}** (${pct(mcpRate)} MCP): Full MCP adoption. Agent reliably uses configured MCP tools.`,
+      );
+    } else if (mcpRate > 0 && mcpRate <= 0.95) {
+      diagnostics.push(
+        `- **${label}** (${pct(mcpRate)} MCP, ${pct(builtinRate)} builtin): Partial MCP adoption. ` +
+          `Agent uses MCP in most trials but occasionally falls back to built-in search.`,
+      );
+    }
+  }
+
+  if (diagnostics.length > 0) {
+    md.push("### Diagnostic Notes\n\n");
+    md.push(`${diagnostics.join("\n")}\n\n`);
+  }
+
+  // Per-agent "most affected prompts" for agents that fell back to builtin
+  for (const r of mcpAnalyses) {
     const { fallbackStats: fs } = r;
     if (fs.topAffectedPrompts.length === 0) continue;
     const label = `${r.agent}-${r.provider}`;
-    md.push(`### ${label} — Most Affected Prompts\n\n`);
-    md.push("| Prompt ID | Trials with Fallback | Total Trials | Rate |\n");
+    md.push(`### ${label} — Prompts Using Builtin Fallback\n\n`);
+    md.push("| Prompt ID | Trials with Builtin | Total Trials | Rate |\n");
     md.push("|-----------|---------------------|--------------|------|\n");
     for (const p of fs.topAffectedPrompts) {
       md.push(`| ${p.id} | ${p.trialsHit} | ${p.totalTrials} | ${pct(p.trialsHit / p.totalTrials)} |\n`);
@@ -1126,8 +1238,18 @@ const main = async () => {
     }
   }
 
+  // Build MCP adoption map from trial data
+  const mcpAdoption: McpAdoptionMap = new Map();
+  for (const a of analyses) {
+    if (a.provider === "builtin") continue;
+    const label = `${a.agent}-${a.provider}`;
+    const { fallbackStats: fs } = a;
+    const mcpRate = fs.totalTrials > 0 ? (fs.mcpOnly + fs.both) / fs.totalTrials : 0;
+    mcpAdoption.set(label, mcpRate);
+  }
+
   // Generate report sections
-  const summarySections = generateSummarySections(weighted, statistical, passAtKAnalyses);
+  const summarySections = generateSummarySections(weighted, statistical, passAtKAnalyses, mcpAdoption);
   const toolCallSections = analyses.length > 0 ? generateToolCallSections(analyses) : "";
   const toolLatencySection = analyses.length > 0 ? generateToolLatencySection(analyses) : "";
   const fallbackSection = analyses.length > 0 ? generateFallbackSection(analyses) : "";

@@ -115,10 +115,12 @@ codex-you                 │█████████████████
 
 ## MCP Tool Impact Analysis
 
+> **Caveat:** gemini-you, claude-code-you used built-in search tools instead of MCP (see MCP Adoption Analysis below). Rows marked \* compare prompt phrasing, not MCP tool quality.
+
 | Agent | Quality (builtin → MCP) | Speed (builtin → MCP) | Reliability (builtin → MCP) |
 |-------|------------------------|----------------------|----------------------------|
-| claude-code (you) | ↑ 22.1% | ↑ 5.4% | ↑ 7.1pp |
-| gemini (you) | ↓ 6.7% | ↓ 19.9% | ↓ 7.5pp |
+| claude-code (you) \* | ↑ 22.1% | ↑ 5.4% | ↑ 7.1pp |
+| gemini (you) \* | ↓ 6.7% | ↓ 19.9% | ↓ 7.5pp |
 | droid (you) | ↑ 18.5% | ↑ 6.2% | ↑ 21.9pp |
 | codex (you) | ↑ 55.2% | ↓ 0.0% | ↓ 7.4pp |
 
@@ -496,6 +498,70 @@ codex-you                 │█████████████████
 | Read | 30 | 8ms | 4.4s | 10.0s | 1.3s |
 | TodoWrite | 13 | 6.6s | 9.6s | 12.9s | 5.9s |
 | WebSearch | 1510 | 6.9s | 10.7s | 14.9s | 5.4s |
+
+
+## MCP Adoption Analysis
+
+_Per-trial classification based on which search tools were actually invoked._
+
+| Agent + Provider | MCP Only | Builtin Only | Both | Neither | Total |
+|------------------|----------|--------------|------|---------|-------|
+| codex-you | 1510 (100.0%) | 0 (0.0%) | 0 (0.0%) | 0 (0.0%) | 1510 |
+| gemini-you | 0 (0.0%) | 1309 (86.7%) | 0 (0.0%) | 201 (13.3%) | 1510 |
+| claude-code-you | 0 (0.0%) | 1478 (97.9%) | 0 (0.0%) | 32 (2.1%) | 1510 |
+| droid-you | 1478 (97.9%) | 6 (0.4%) | 26 (1.7%) | 0 (0.0%) | 1510 |
+
+### Diagnostic Notes
+
+- **codex-you** (100.0% MCP): Full MCP adoption. Agent reliably uses configured MCP tools.
+- **gemini-you** (86.7% builtin): MCP tools never loaded. Gemini runs in iterative mode (new process per prompt) and the MCP server connection is not established for short-lived commands. Trajectory shows the model attempting hallucinated tool names (e.g. `ydc_search`, `ydc_server__web_search`) after failing to discover real MCP tools via `cli_help` and `list_directory`.
+- **claude-code-you** (97.9% builtin): MCP server configured but model exclusively prefers its built-in `WebSearch` tool. The prompt "Use ydc-server" is not specific enough to override Claude Code's strong affinity for native tools.
+- **droid-you** (99.6% MCP): Full MCP adoption. Agent reliably uses configured MCP tools.
+
+### gemini-you — Prompts Using Builtin Fallback
+
+| Prompt ID | Trials with Builtin | Total Trials | Rate |
+|-----------|---------------------|--------------|------|
+| websearch-2000 | 10 | 10 | 100.0% |
+| websearch-2004 | 10 | 10 | 100.0% |
+| websearch-2003 | 10 | 10 | 100.0% |
+| websearch-2001 | 10 | 10 | 100.0% |
+| websearch-2002 | 10 | 10 | 100.0% |
+| websearch-2005 | 10 | 10 | 100.0% |
+| websearch-2006 | 10 | 10 | 100.0% |
+| websearch-2007 | 10 | 10 | 100.0% |
+| websearch-2008 | 10 | 10 | 100.0% |
+| websearch-2010 | 10 | 10 | 100.0% |
+
+### claude-code-you — Prompts Using Builtin Fallback
+
+| Prompt ID | Trials with Builtin | Total Trials | Rate |
+|-----------|---------------------|--------------|------|
+| websearch-2000 | 10 | 10 | 100.0% |
+| websearch-2006 | 10 | 10 | 100.0% |
+| websearch-2003 | 10 | 10 | 100.0% |
+| websearch-2004 | 10 | 10 | 100.0% |
+| websearch-2007 | 10 | 10 | 100.0% |
+| websearch-2001 | 10 | 10 | 100.0% |
+| websearch-2002 | 10 | 10 | 100.0% |
+| websearch-2005 | 10 | 10 | 100.0% |
+| websearch-2010 | 10 | 10 | 100.0% |
+| websearch-2015 | 10 | 10 | 100.0% |
+
+### droid-you — Prompts Using Builtin Fallback
+
+| Prompt ID | Trials with Builtin | Total Trials | Rate |
+|-----------|---------------------|--------------|------|
+| websearch-2000 | 1 | 10 | 10.0% |
+| websearch-2003 | 1 | 10 | 10.0% |
+| websearch-2001 | 1 | 10 | 10.0% |
+| websearch-2004 | 1 | 10 | 10.0% |
+| websearch-2002 | 1 | 10 | 10.0% |
+| websearch-2010 | 1 | 10 | 10.0% |
+| websearch-2034 | 1 | 10 | 10.0% |
+| websearch-2033 | 1 | 10 | 10.0% |
+| websearch-2040 | 1 | 10 | 10.0% |
+| websearch-2046 | 1 | 10 | 10.0% |
 
 
 ## Failing Prompts (pass@k = 0)

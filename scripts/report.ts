@@ -1113,7 +1113,7 @@ const main = async () => {
 
   // Load raw trial data for tool call analysis, filtered by trial type
   const glob = new Bun.Glob("**/*.jsonl");
-  const allJsonlFiles = await Array.fromAsync(glob.scan({ cwd: resultsDir }));
+  const allJsonlFiles = await Array.fromAsync(glob.scan({ cwd: resultsDir, followSymlinks: true }));
   const jsonlFiles = allJsonlFiles.filter((f) => f.endsWith(".jsonl"));
   const analyses: FileAnalysis[] = await Promise.all(jsonlFiles.map((f) => analyzeFile(`${resultsDir}/${f}`)));
 

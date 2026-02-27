@@ -17,18 +17,13 @@
   },
   "outputEvents": [
     {
-      "match": { "path": "$.type", "value": "assistant" },
-      "emitAs": "message",
-      "extract": { "content": "$.message.content[0].text" }
-    },
-    {
       "match": { "path": "$.message.content[*].type", "value": "tool_use" },
       "emitAs": "tool_call",
       "extract": {
-        "title": "$.message.content[?(@.type=='tool_use')].name",
+        "title": "$.name",
         "status": "'pending'",
-        "toolName": "$.message.content[?(@.type=='tool_use')].name",
-        "input": "$.message.content[?(@.type=='tool_use')].input"
+        "toolName": "$.name",
+        "input": "$.input"
       }
     },
     {
@@ -37,8 +32,13 @@
       "extract": {
         "title": "$.tool_use_id",
         "status": "'completed'",
-        "output": "$.message.content[?(@.type=='tool_result')].content"
+        "output": "$.content"
       }
+    },
+    {
+      "match": { "path": "$.type", "value": "assistant" },
+      "emitAs": "message",
+      "extract": { "content": "$.message.content[0].text" }
     }
   ],
   "result": {

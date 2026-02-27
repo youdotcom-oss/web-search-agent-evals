@@ -188,6 +188,18 @@ const buildTrialsCommand = async (): Promise<string[]> => {
 
   cmd.push("--cwd", "/workspace");
 
+  // Gemini CLI (Node.js) has a slow cold-start (~15–55s for JIT/module load).
+  // Increase per-trial timeout to 120s to survive container cold starts.
+  if (AGENT === "gemini") {
+    cmd.push("--timeout", "120000");
+  }
+
+  // Claude Code with claude-sonnet-4-6 can take 40–50s on complex queries
+  // (API call + web search + response generation). Default 60s is too tight.
+  if (AGENT === "claude-code") {
+    cmd.push("--timeout", "90000");
+  }
+
   // Extract k value: CLI override → TRIAL_TYPE preset → default (5)
   const kValues: Record<string, number> = { default: 5, capability: 10, regression: 3 };
   const k = K_OVERRIDE ?? kValues[trialType] ?? 5;
